@@ -14,13 +14,14 @@ boundary wire reciever coils in the following configuration
    |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (0)|<br/>
    |(2)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|  ----> Mowing direction<br/>
    |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(1)|</br>
-    -----------------</br>
+    ----------------</br>
      wheel</br>
+<br/>
 </div>
 
+Licensed under GNU GPL 3.0 
 
-(c) Jonas Forssell & team
-Free to use for all.
+(c) 2017 Jonas Forssell & team
 
 Configuration
 ------
