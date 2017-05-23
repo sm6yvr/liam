@@ -9,13 +9,13 @@ The mower is assumed to be rear wheel driven and have three
 boundary wire reciever coils in the following configuration
    
 <div>
-   	wheel<br/>
-    ----------------<br/>
-   |			(0)	|<br/>
-   |(2)         	|  ----> Mowing direction<br/>
-   |			(1)	|</br>
-    ----------------</br>
-	wheel</br>
+     wheel<br/>
+    ------------------<br/>
+   |               (0)|<br/>
+   |(2)	              |  ----> Mowing direction<br/>
+   |               (1)|</br>
+    -------------------</br>
+     wheel</br>
 </div>
 
 (c) Jonas Forssell & team
