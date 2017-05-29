@@ -28,7 +28,7 @@ class CONTROLLER {
         int turnToReleaseRight(int degrees);
         int waitWhileChecking(int duration);
         int waitWhileInside(int duration);
-        
+	int GoBackwardUntilInside(BWFSENSOR *Sensor);
         void runForward(int speed);
         void runBackward(int speed);
         void stop();

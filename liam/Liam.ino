@@ -156,7 +156,7 @@ void loop()
 {
 	boolean in_contact;
 	boolean mower_is_outside;
-
+	int err=0;
 	LCDi++;  //Loops 0-10
   	if (LCDi % 25 == 0 ){
 		Display.update();
@@ -221,7 +221,11 @@ void loop()
 			Serial.println("Left outside");
     		Serial.println(Battery.getSOC());
     		Mower.stop();
-    		
+		#ifdef GO_BACKWARD_UNTIL_INSIDE
+			err=Mower.GoBackwardUntilInside (&Sensor);
+			if(err)
+				Error.flag(err);
+		#endif
     		if (Battery.mustCharge()) {
 	      		Mower.stopCutter();
 	      		Mower.runForward(FULLSPEED);
@@ -233,15 +237,15 @@ void loop()
     		}
     		
     		// Tries to turn, but if timeout then reverse and try again
-			if (int err = Mower.turnToReleaseRight(30) > 0) {
-				Mower.runBackward(FULLSPEED);
-				delay(1000);
-				Mower.stop();
-				if (int err = Mower.turnToReleaseRight(30) > 0)
-					Error.flag(err);
-				}
+		if (err = Mower.turnToReleaseRight(30) > 0) {
+			Mower.runBackward(FULLSPEED);
+			delay(1000);
+			Mower.stop();
+			if (err = Mower.turnToReleaseRight(30) > 0)
+				Error.flag(err);
+		}
 			
-			Compass.setNewTargetHeading();
+		Compass.setNewTargetHeading();
 
     		if (Mower.allSensorsAreOutside()) { 
 				Mower.runBackward(FULLSPEED);
@@ -263,16 +267,22 @@ void loop()
 		if (mower_is_outside) {
 			Serial.println("Right Outside");
 			Serial.println(Battery.getSOC());
-    		Mower.stop();
+			Mower.stop();
 
-    		// Tries to turn, but if timeout then reverse and try again
-			if (int err = Mower.turnToReleaseLeft(30) > 0) {
+			#ifdef GO_BACKWARD_UNTIL_INSIDE
+				err=Mower.GoBackwardUntilInside(&Sensor);
+				if(err)
+					Error.flag(err);
+			#endif
+
+		// Tries to turn, but if timeout then reverse and try again
+			if (err = Mower.turnToReleaseLeft(30) > 0) {
 				Mower.runBackward(FULLSPEED);
 				delay(1000);
 				Mower.stop();
-				if (int err = Mower.turnToReleaseLeft(30) > 0)
+				if (err = Mower.turnToReleaseLeft(30) > 0)
 					Error.flag(err);
-				}
+			}
 				
 			Compass.setNewTargetHeading();
 
