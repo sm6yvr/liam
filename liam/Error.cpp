@@ -90,8 +90,8 @@ void ERROR::flag(int error_number_) {
   case 9:
     mylcd->setCursor(0,2);
     mylcd->print("Mower tilted");
-    break;  
-  } 
+    break;
+  }
 
   // blink LED forever
   while (true) 
