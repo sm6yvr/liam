@@ -8,16 +8,13 @@ configuration (0 and 1) with an optional (2).
 The mower is assumed to be rear wheel driven and have three 
 boundary wire reciever coils in the following configuration
    
-<div>
-     wheel<br/>
-    ----------------<br/>
-   |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (0)|<br/>
-   |(2)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|  ----> Mowing direction<br/>
-   |&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(1)|</br>
-    ----------------</br>
-     wheel</br>
-<br/>
-</div>
+    wheel
+    ----------------
+    |           (0)|
+    |(2)           |  ----> Mowing direction
+    |           (1)|
+    ----------------
+    wheel
 
 Licensed under GNU GPL 3.0 
 
@@ -41,7 +38,7 @@ The following libraries must be added to your arduino IDE to be able to compile 
   * RTClib
   * RTIMULib
 
-  It's possible to download a zip bundle with all libraries you need from our facebook groups file area. 
+  The libraries you need are bundled with the liam code within each release. 
 
 Change log
 ------
@@ -49,6 +46,9 @@ Change log
 
 Links
 ------
+
+[Wiki - work in progress](https://github.com/sm6yvr/liam/wiki)
+
 [Facebook group DIY Robot Lawn Mower](https://www.facebook.com/groups/319588508137220/)
 
 [Build instructions Trello](https://trello.com/b/gYQjoWY5/liam)
