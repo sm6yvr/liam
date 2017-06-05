@@ -100,8 +100,6 @@ int CONTROLLER::turnLeft(int angle) {
     return outcome;
 }
 
-
-
 int CONTROLLER::waitWhileChecking(int duration) {
   
   delay(200);   // Let any current spikes settle
@@ -255,12 +253,29 @@ int CONTROLLER::compensateSpeedToCompassHeading() {
 	rightMotor->setSpeed(default_dir_fwd*rms);
 }
 
-boolean CONTROLLER::wheelsAreOverloaded() {
-	delay(200);				// Settle current spikes
-	if (leftMotor->isOverloaded() | rightMotor->isOverloaded())
-		return true;
-	else
-		return false;
+boolean CONTROLLER::wheelsAreOverloaded()
+{
+  delay(200);       // Settle current spikes
+  if (leftMotor->isOverloaded() | rightMotor->isOverloaded()) {
+    overloadInterval = millis() - overloadTime;
+    overloadTime = millis();
+    return true;
+  }
+    
+  else
+    return false;
+}
+
+
+boolean CONTROLLER::hasReachedAStop()
+{
+  if (overloadInterval > OVERLOAD_INTERVAL) 
+  {
+    overloadInterval = 0;
+    return true;
+      }
+  else
+    return false;
 }
 
 boolean CONTROLLER::hasBumped() {

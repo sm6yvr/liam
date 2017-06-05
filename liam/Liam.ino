@@ -407,6 +407,20 @@ void loop()
 				delay(1000);
 			}
 
+      // See if mower has repeated overload
+      // If so, turn away from the BWF and try to hook on somewhere else
+      if (Mower.hasReachedAStop()) {
+        Mower.runBackward(FULLSPEED);
+        delay(1000);
+        Mower.turnRight(90);
+        Mower.runForward(FULLSPEED);
+        delay(1000);
+        Mower.startCutter();
+        state = MOWING;
+        break;
+      }
+
+
 			// Track the BWF by compensating the wheel motor speeds
 			Mower.adjustMotorSpeeds();
 			
