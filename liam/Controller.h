@@ -46,7 +46,8 @@ class CONTROLLER {
         
         boolean wheelsAreOverloaded();
         boolean cutterIsOverloaded();
-        
+        boolean hasReachedAStop();
+                
         boolean hasBumped();
         boolean hasTilted();
         boolean hasFlipped();
@@ -77,6 +78,9 @@ class CONTROLLER {
 		int leftMotorSpeed;
 		int rightMotorSpeed;
 		int cutterSpeed;
+
+    unsigned long overloadTime;
+    unsigned long overloadInterval;
 
 };
 
