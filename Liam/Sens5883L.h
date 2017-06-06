@@ -4,9 +4,9 @@
 //     2014-12-12 - Initial version by Jonas
 
 /* ============================================
-  Placed under the GNU license
+Placed under the GNU license
 
-  ===============================================
+===============================================
 */
 
 #ifndef _MS5883L_H_
@@ -18,19 +18,16 @@
 #include <HMC5883L.h>
 
 class MS5883L : public MOTIONSENSOR {
-  public:
-    virtual boolean initialize();
-    virtual void updateHeading();
-    virtual int getHeading();
-    virtual void setNewTargetHeading();
-    virtual int headingVsTarget();
-    virtual int getTiltAngle();
-    virtual int getZAngle();
-    virtual int getYAngle();
-    virtual int getXAngle();
-
-  private:
-    HMC5883L sensor;
+    public:
+        virtual boolean initialize();
+        virtual void updateHeading();
+        virtual int getHeading();
+        virtual void setNewTargetHeading();
+        virtual int headingVsTarget();
+        virtual int getTiltAngle();
+        
+    private:
+    	HMC5883L sensor;
 
 };
 
