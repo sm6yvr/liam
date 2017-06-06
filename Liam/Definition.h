@@ -53,6 +53,10 @@ const int NUMBER_OF_SENSORS = 3;	// Number of BWF sensors can be 1-4 depending o
 #define WHEELMOTOR_OVERLOAD		130
 #define WHEELMOTOR_SMOOTHNESS	300
 
+// If the mower has repeated overload within the interval below (in milliseconds), it will flag as having reached a bump.
+// It will then do some action as stated in the Controller.cpp file.
+#define OVERLOAD_INTERVAL        3000
+
 // CUTTER
 #define CUTTER_OVERLOAD			100
 
