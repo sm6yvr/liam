@@ -25,12 +25,12 @@
 *
 */
 
+#include "MotionSensor.h"
 #include <Wire.h>
+#include "Definition.h"
 
 #ifndef _SENSADXL345_H_
 #define _SENSADXL345_H_
-
-#include "Definition.h"
 
 /* 0x53 if SDO is connected to GND otherwise 0x1D */
 #define ADDRESS_I2C 0x53
@@ -41,7 +41,7 @@
 #define DATAX0  0x32
 #define ADRESS_DATAX0 0x32
 
-class SENSADXL345 {
+class SENSADXL345 : public MOTIONSENSOR { 
   public:
     virtual boolean initialize();
     virtual void updateHeading();
