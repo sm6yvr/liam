@@ -81,18 +81,18 @@ const int CHARGING = 3;
 
 // Code for inside and outside
 //#define INSIDE_BWF						103,4,103
-//#define OUTSIDE_BWF						103,107,103			
+//#define OUTSIDE_BWF						103,107,103
 
 // Version 2 of the BWF transmitter
-#define INSIDE_BWF					85
-#define OUTSIDE_BWF					5			
+#define INSIDE_BWF					5
+#define OUTSIDE_BWF					86
 
 #define MAJOR_VERSION				4
 #define MINOR_VERSION_1				9
 #define MINOR_VERSION_2				1
 
 // If you have a bumper connected to pin8, uncomment the line below. Remember to cut the brake connection on your motor shield
-//#define __Bumper__	
+//#define __Bumper__
 
 // If you have a lift sensor connection to front wheel (connected to pin9), uncomment this line
 //#define __Lift_Sensor__
@@ -100,6 +100,7 @@ const int CHARGING = 3;
 // Do you have a Sensor? If so, uncomment one of these lines
 //#define __MS5883L__
 //#define __MS9150__
+//#define __ADXL345__
 
 // Do you have a Display? If so, uncomment one of these lines
 //#define __OLED__
@@ -121,6 +122,11 @@ const int CHARGING = 3;
 #define SLOWSPEED						30
 #define CUTTERSPEED						100
 
+/* Settings for ADXL345, what angle values the sensor reports when the mover is standing flat.
+*  IMPORTANT! You must calibrate those values for your setup, see the wiki:https://github.com/sm6yvr/liam/wiki/12.-Gyro-Accelerometer */
+#define Z_ANGLE_NORMAL 195
+#define Y_ANGLE_NORMAL 180
+
 // Enable this if you need the mower to go backward until it's inside and then turn.
 // Default behavior is to turn directly when mower is outside BWF, if definition below is enabled this might help mower not to get stuck in slopes.
 // If mower is not inside within x seconds mower will stop.
@@ -131,7 +137,7 @@ class DEFINITION {
     public:
         void definePinsInputOutput();
         void setDefaultLevels(BATTERY* battery, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cutter);
-        
+
     private:
 };
 

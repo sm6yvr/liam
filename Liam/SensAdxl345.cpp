@@ -29,7 +29,7 @@
 *
 */
 
-#include "SensADXL345.h"
+#include "SensAdxl345.h"
 #include "Definition.h"
 
 boolean SENSADXL345::initialize() {
