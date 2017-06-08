@@ -26,16 +26,16 @@ MYDISPLAY::MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERM
 // Do not override
 boolean MYDISPLAY::initialize() {
 	char buffer [9]; //Format 09.00.00
-	
+
 	current_row = 0;
 	current_col = 0;
 
-	for (int i=0; i<3; i++) 
+	for (int i=0; i<3; i++)
 		blink();
 
-	setCursor(0, 0); 
+	setCursor(0, 0);
 	print("SW version:");
-	setCursor(0, 1); 
+	setCursor(0, 1);
   	sprintf (buffer, "%d.%d.%d", MAJOR_VERSION, MINOR_VERSION_1, MINOR_VERSION_2);
   	print(buffer);
 	setCursor(0, 2);
@@ -51,7 +51,7 @@ void MYDISPLAY::update() {
 	int sens = 0;
 
     // Rad 1: Sensors
-	#if defined __MS9150__ || defined __MS5883L__
+	#if __MS9150__ || __MS5883L__
 	    setCursor(0,0);
 	    print("Comp:");
 	    setCursor(7,0);
@@ -62,7 +62,7 @@ void MYDISPLAY::update() {
 	    setCursor(7,0);
 	    print("Disabled");
     #endif
-    
+
     setCursor(10,0);
     print("InOut:");
     setCursor(17,0);
@@ -102,7 +102,7 @@ void MYDISPLAY::update() {
     case CHARGING:
       print("CHARGING");
       break;
-    } 
+    }
 }
 
 // This is the basic implementation of the print and println command
