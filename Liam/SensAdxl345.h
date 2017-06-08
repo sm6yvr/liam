@@ -41,7 +41,7 @@
 #define DATAX0  0x32
 #define ADRESS_DATAX0 0x32
 
-class SENSADXL345 : public MOTIONSENSOR { 
+class SENSADXL345 : public MOTIONSENSOR {
   public:
     virtual boolean initialize();
     virtual void updateHeading();
@@ -49,6 +49,8 @@ class SENSADXL345 : public MOTIONSENSOR {
     virtual void setNewTargetHeading();
     virtual int headingVsTarget();
     virtual int getTiltAngle();
+    int getZAngle();
+    int getYAngle();
   protected:
     int current_heading;
     int target_heading;

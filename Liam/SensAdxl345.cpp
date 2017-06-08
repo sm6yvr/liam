@@ -1,32 +1,32 @@
 /*
-*  SemsADXL345.cpp is part of the project: liam - DIY Robot Lawn mover
-*
-*  Description: This file is a representation of a accelerometer/gyro sensor
-*              ADXL345 and are used in liam to detect the tilt angle of the mover.
-*              The class structure are reused from the MotionSensor class to easy
-*              plugin it in the current liam code base.
-*
-*              The Heading/Target methods is just mock because the controller are built
-*              to use a compass sensor with included gyro to get the tilt angle.
-*              This sensor has not any compass but the methods must be implemented.
-*
-*  2017-06-06  - Initial commit
-*
-*  Copyright (c) 2017 Roberth Andersson (and team)
-*
-*  liam - DIY Robot LAwn mower is free software: you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation, either version 3 of the License, or
-*  (at your option) any later version.
-*
-*  Foobar is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU General Public License
-*  along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-*
+  SemsADXL345.cpp is part of the project: liam - DIY Robot Lawn mover
+
+  Description: This file is a representation of a accelerometer/gyro sensor
+              ADXL345 and are used in liam to detect the tilt angle of the mover.
+              The class structure are reused from the MotionSensor class to easy
+              plugin it in the current liam code base.
+
+              The Heading/Target methods is just mock because the controller are built
+              to use a compass sensor with included gyro to get the tilt angle.
+              This sensor has not any compass but the methods must be implemented.
+
+  2017-06-06  - Initial commit
+
+  Copyright (c) 2017 Roberth Andersson (and team)
+
+  liam - DIY Robot LAwn mower is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  Foobar is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+
 */
 
 #include "SensAdxl345.h"
@@ -82,21 +82,24 @@ int SENSADXL345::getHeading() {
 int SENSADXL345::getTiltAngle() {
 
   SENSADXL345::readRegister(DATAX0, 6);
-  gyro_y = ((int)buffer[3]<<8)|(int)buffer[2];
-  gyro_z = ((int)buffer[5]<<8)|(int)buffer[4];
+//  gyro_y = ((int)buffer[3]<<8)|(int)buffer[2];
+//  gyro_z = ((int)buffer[5]<<8)|(int)buffer[4];
 
   /* Do X and Y positive */
-  gyro_y = gyro_y + 180;
-  gyro_z = gyro_z + 180;
+//  gyro_y = gyro_y + 180;
+//  gyro_z = gyro_z + 180;
+  int gyro_y = SENSADXL345::getYAngle();
+  int gyro_z = SENSADXL345::getZAngle();
 
   int y_angle_diff;
+  int z_angle_diff;
+
   if (gyro_y > Y_ANGLE_NORMAL) {
       y_angle_diff = gyro_y - Y_ANGLE_NORMAL;
   } else {
       y_angle_diff = Y_ANGLE_NORMAL - gyro_y;
   }
 
-  int z_angle_diff;
   if (gyro_z > Z_ANGLE_NORMAL) {
       z_angle_diff = gyro_z - Z_ANGLE_NORMAL;
   } else {
@@ -108,6 +111,24 @@ int SENSADXL345::getTiltAngle() {
   } else {
     return z_angle_diff;
   }
+}
+
+int SENSADXL345::getYAngle() {
+  SENSADXL345::readRegister(DATAX0, 6);
+  int y = ((int)buffer[3]<<8)|(int)buffer[2];
+
+  /* Do y positive */
+  y = y + 180;
+  return y;
+}
+
+int SENSADXL345::getZAngle() {
+  SENSADXL345::readRegister(DATAX0, 6);
+  int z = ((int)buffer[5]<<8)|(int)buffer[4];
+
+  /* Do Z positive */
+  z = z + 180;
+  return z;
 }
 
 /* Reading single value from the register and retun it as an byte */
