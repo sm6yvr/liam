@@ -96,9 +96,9 @@ void MMA_7455::autoupdate()
     if (xavg == 0 && yavg == 0 && zavg == 64)
     {
       Serial.println("Set X,Y,& Z values in definition.h to:");
-      Serial.println(xc, DEC);
-      Serial.println(yc, DEC);
-      Serial.println(zc, DEC);
+      Serial.print("X: ");Serial.println(xc, DEC);
+      Serial.print("Y: ");Serial.println(yc, DEC);
+      Serial.print("Z: ");Serial.println(zc, DEC);
   found = true;
     }
     delay(200);

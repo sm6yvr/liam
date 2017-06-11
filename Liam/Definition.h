@@ -42,7 +42,7 @@
    You can also see some values reported by the sensors. You need probably to tweek some
    of the parameters in this file and when you are done remove or comment out this line to
    run your mover in real mode. */
-#define __SETUP_AND_DEBUG_MODE__ false
+#define __SETUP_AND_DEBUG_MODE__ true
 
 /******************************************************************
   User specific settings depends on how you have built your mover.
@@ -108,7 +108,9 @@ const int NUMBER_OF_SENSORS = 2;
   See the wiki:https://github.com/sm6yvr/liam/wiki/12.-Gyro-Accelerometer */
   /* Try to get inside for max x seconds, then stop and error. */
 
-  /*IMPORTANT II If you are using MMA_7455 you are can get these values from running the setup and press CAPITAL G */
+  /*IMPORTANT II !! 
+   * If you are using MMA_7455 you will get these values automatic from running setup-debug and type CAPITAL G, you still have to 
+  come back here and type them in though*/
 
 #define Z_ANGLE_NORMAL 276 //false
 #define Y_ANGLE_NORMAL 30 // false
