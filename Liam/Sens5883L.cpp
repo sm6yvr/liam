@@ -22,6 +22,9 @@ boolean MS5883L::initialize() {
 
 	return test;						// true = connection OK
 }
+int MS5883L::getZAngle(){return 0;}
+int MS5883L::getYAngle(){return 0;}
+int MS5883L::getXAngle(){return 0;}
 
 
 void MS5883L::updateHeading() {

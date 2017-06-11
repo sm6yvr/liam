@@ -70,7 +70,7 @@
 #include "Sens9150.h"
 #include "Definition.h"
 #include "SensAdxl345.h"
-
+#include "MMA_7455.h"
 // Global variables
 int state;
 long time_at_turning = millis();
@@ -100,6 +100,8 @@ BWFSENSOR Sensor(BWF_SELECT_B_PIN, BWF_SELECT_A_PIN);
 	MS9150 Compass;
 #elif __ADXL345__
   SENSADXL345 Compass;
+#elif __MMA7455__
+  MMA_7455 Compass;
 #else
 	MOTIONSENSOR Compass;
 #endif
@@ -148,10 +150,9 @@ void updateBWF() {
 // ****************** Setup **************************************
 void setup()
 {
-	char buffer [9]; //Format 09.00.00
+	//char buffer [9]; //Format 09.00.00  / OLA PALM, Denna är oanvänd i prg.. Ska den bort?
 
 	Serial.begin(115200); 						// Fast communication on the serial port for all terminal messages
-
 	Defaults.definePinsInputOutput();			// Configure all the pins for input or output
 	Defaults.setDefaultLevels(&Battery, &leftMotor, &rightMotor, &CutterMotor); // Set default levels (defined in Definition.h) for your mower
 
@@ -160,7 +161,12 @@ void setup()
 	CutterMotor.initialize();
 	Battery.resetSOC();							// Set the SOC to current value
 	Compass.initialize();
-
+ #if __MMA7455__
+ if(X_ANGLE_NORMAL!=false)
+ {
+ Compass.setAxisOffset(X_ANGLE_NORMAL, Y_ANGLE_NORMAL, Z_ANGLE_NORMAL);
+ }
+#endif
 	#if __RTC_CLOCK__
 		myClock.initialize();
 		myClock.setGoOutTime(GO_OUT_TIME);
@@ -193,6 +199,9 @@ void loop()
 {
   #if __SETUP_AND_DEBUG_MODE__
     char inChar;
+       int tilt_angle, y, z, x;
+     
+
     while (!Serial.available());			// Stay here until data is available
     inChar = (char)Serial.read();	// get the new byte:
 
@@ -372,18 +381,36 @@ void loop()
       // break;
 
       case 'g':
+        y = Compass.getYAngle();
+        z = Compass.getZAngle();
+        x = Compass.getXAngle();
+        tilt_angle = Compass.getTiltAngle();
+                     
+        Serial.print("RAW Z = ");
+        Serial.println(z);
+        Serial.print("RAW Y = ");
+        Serial.println(y);
+          Serial.print("RAW X = ");
+        Serial.println(x);
+      
+        Serial.print("Tilt angle = ");
+        Serial.println(tilt_angle);
+break;
       case 'G':
-        int tilt_angle = Compass.getTiltAngle();
-        int y = Compass.getYAngle();
-        int z = Compass.getZAngle();
-
+        #ifdef __MMA7455__
+        Compass.autoupdate();
+        #endif 
+        y = Compass.getYAngle();
+        z = Compass.getZAngle();
+        tilt_angle = Compass.getTiltAngle();
+                     
         Serial.print("RAW Z = ");
         Serial.println(z);
         Serial.print("RAW Y = ");
         Serial.println(y);
         Serial.print("Tilt angle = ");
         Serial.println(tilt_angle);
-
+       
         // Compass.getHeading();
         // Compass.headingVsTarget();
         // Compass.updateHeading();
@@ -417,7 +444,7 @@ void loop()
     }
 
     // Security check Mower is flipped/lifted.
-  	#if __MS9150__ || __MS5883L__ || __ADXL345__
+  	#if __MS9150__ || __MS5883L__ || __ADXL345__ || __MMA_7455__
     if (Mower.hasFlipped()) {
         Serial.print("Mower has flipped ");
       	Mower.stopCutter();
@@ -490,11 +517,11 @@ void loop()
       		}
 
       		// Tries to turn, but if timeout then reverse and try again
-  		if (err = Mower.turnToReleaseRight(30) > 0) {
+  		if ((err = Mower.turnToReleaseRight(30) > 0)) {
   			Mower.runBackward(FULLSPEED);
   			delay(1000);
   			Mower.stop();
-  			if (err = Mower.turnToReleaseRight(30) > 0)
+  			if ((err = Mower.turnToReleaseRight(30) > 0))
   				Error.flag(err);
   		}
 
@@ -529,11 +556,11 @@ void loop()
   			#endif
 
   		// Tries to turn, but if timeout then reverse and try again
-  			if (err = Mower.turnToReleaseLeft(30) > 0) {
+  			if ((err = Mower.turnToReleaseLeft(30) > 0)) {
   				Mower.runBackward(FULLSPEED);
   				delay(1000);
   				Mower.stop();
-  				if (err = Mower.turnToReleaseLeft(30) > 0)
+  				if ((err = Mower.turnToReleaseLeft(30) > 0))
   					Error.flag(err);
   			}
 
