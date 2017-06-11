@@ -159,15 +159,10 @@ void setup()
 	Display.initialize();							// Start up the display
 
 	CutterMotor.initialize();
-	Battery.resetSOC();							// Set the SOC to current value
+	Battery.resetSOC();// Set the SOC to current value
+  
 	Compass.initialize();
- #if __MMA7455__
- if(X_ANGLE_NORMAL!=false)
- {
- Compass.setAxisOffset(X_ANGLE_NORMAL, Y_ANGLE_NORMAL, Z_ANGLE_NORMAL);
- }
-#endif
-	#if __RTC_CLOCK__
+ #if __RTC_CLOCK__
 		myClock.initialize();
 		myClock.setGoOutTime(GO_OUT_TIME);
 		myClock.setGoHomeTime(GO_HOME_TIME);
@@ -386,18 +381,18 @@ void loop()
         x = Compass.getXAngle();
         tilt_angle = Compass.getTiltAngle();
                      
-        Serial.print("RAW Z = ");
+        Serial.print("Z = ");
         Serial.println(z);
-        Serial.print("RAW Y = ");
+        Serial.print("Y = ");
         Serial.println(y);
-          Serial.print("RAW X = ");
+        Serial.print("X = ");
         Serial.println(x);
       
         Serial.print("Tilt angle = ");
         Serial.println(tilt_angle);
 break;
       case 'G':
-        #ifdef __MMA7455__
+        #if __MMA7455__
         Compass.autoupdate();
         #endif 
         y = Compass.getYAngle();
@@ -442,9 +437,9 @@ break;
     if (LCDi % 25 == 0 ) {
   	    Display.update();
     }
-
+    Serial.println("");
     // Security check Mower is flipped/lifted.
-  	#if __MS9150__ || __MS5883L__ || __ADXL345__ || __MMA_7455__
+  	#if __MS9150__ || __MS5883L__ || __ADXL345__ || __MMA7455__
     if (Mower.hasFlipped()) {
         Serial.print("Mower has flipped ");
       	Mower.stopCutter();
@@ -501,7 +496,7 @@ break;
   			Serial.println("Left outside");
       		Serial.println(Battery.getSOC());
       		Mower.stop();
-  		#ifdef GO_BACKWARD_UNTIL_INSIDE
+  		#if GO_BACKWARD_UNTIL_INSIDE
   			err=Mower.GoBackwardUntilInside (&Sensor);
   			if(err)
   				Error.flag(err);
@@ -549,7 +544,7 @@ break;
   			Serial.println(Battery.getSOC());
   			Mower.stop();
 
-  			#ifdef GO_BACKWARD_UNTIL_INSIDE
+  			#if GO_BACKWARD_UNTIL_INSIDE
   				err=Mower.GoBackwardUntilInside(&Sensor);
   				if(err)
   					Error.flag(err);
@@ -625,7 +620,7 @@ break;
   		#endif
 
   		// Check if mower has tilted (providing you have one enabled)
-      #if  __MS9150__ ||  __MS5883L__ ||  __ADXL345__
+      #if  __MS9150__ ||  __MS5883L__ ||  __ADXL345__ || __MMA7455__
           if (Mower.hasFlipped()) {
               Serial.print("Mower has flipped ");
               Mower.stopCutter();

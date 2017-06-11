@@ -14,6 +14,7 @@ Placed under the GNU license
 #include "BWFSensor.h"
 #include "MotionSensor.h"
 #include "Definition.h"
+#include "MMA_7455.h"
 
 #ifndef _CONTROLLER_H_
 #define _CONTROLLER_H_

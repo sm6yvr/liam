@@ -11,6 +11,7 @@ Placed under the GNU license
 
 #include "Controller.h"
 #include "Definition.h"
+#include "Arduino.h"
 
 /** Specific constructor.
  */
@@ -135,7 +136,7 @@ int CONTROLLER::waitWhileInside(int duration) {
   return 0;      
   }
 
-#ifdef GO_BACKWARD_UNTIL_INSIDE
+#if GO_BACKWARD_UNTIL_INSIDE
 int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
 	int counter=MAX_GO_BACKWARD_TIME;
 	//Mover has just stoped. Let it pause for a second.
@@ -283,10 +284,18 @@ boolean CONTROLLER::hasBumped() {
 }
 
 boolean CONTROLLER::hasTilted() {
+  Serial.println("");
+  Serial.println("NU är tiltvärdet :");
+ Serial.println(compass->getTiltAngle(),DEC);
+ Serial.println(compass->getTiltAngle() > TILTANGLE);
 	return (compass->getTiltAngle() > TILTANGLE);
 }
 
 boolean CONTROLLER::hasFlipped() {
+  Serial.println("");
+  Serial.println("NU är Flippvärdet :");
+ Serial.println(compass->getTiltAngle(),DEC);
+ Serial.println(compass->getTiltAngle() > FLIPANGLE);
 	return (compass->getTiltAngle() > FLIPANGLE);
 }
 
