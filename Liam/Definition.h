@@ -84,7 +84,7 @@ const int NUMBER_OF_SENSORS = 2;
 #define __MMA7455__ true
 
 /* Tiltangle */
-#define TILTANGLE 20
+#define TILTANGLE 45
 
 /* Flipangle (turn off cutter and stop everything) */
 #define FLIPANGLE 75
@@ -107,18 +107,20 @@ const int NUMBER_OF_SENSORS = 2;
   IMPORTANT! You must calibrate those values for your setup.
   See the wiki:https://github.com/sm6yvr/liam/wiki/12.-Gyro-Accelerometer */
   /* Try to get inside for max x seconds, then stop and error. */
-  
+
   /*IMPORTANT II If you are using MMA_7455 you are can get these values from running the setup and press CAPITAL G */
 
 #define Z_ANGLE_NORMAL 276 //false
 #define Y_ANGLE_NORMAL 30 // false
-#define X_ANGLE_NORMAL -20 // false 
+#define X_ANGLE_NORMAL -20 // false
 
 /* Enable this if you need the mower to go backward until it's inside and then turn.
    Default behavior is to turn directly when mower is outside BWF, if definition below is enabled this might help mower not to get stuck in slopes.
    If mower is not inside within x seconds mower will stop. */
 #define GO_BACKWARD_UNTIL_INSIDE true
 #define MAX_GO_BACKWARD_TIME 5
+/* Slopeangle. Mower will not go backwards if slope is less then slopeangle.*/
+#define SLOPEANGLE 20
 
 /******************************************************************
   Common settings that should be same for the most of us.

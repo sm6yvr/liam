@@ -27,19 +27,19 @@ CONTROLLER::CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BW
 
 
 boolean CONTROLLER::allSensorsAreOutside() {
-	
+
 	for(int i=0; i<NUMBER_OF_SENSORS; i++) {
 		sensor->select(i);
 		if (!sensor->isOutside())
 			return false;
 	}
 
-	return true;	
+	return true;
 }
 
 int CONTROLLER::turnToReleaseLeft(int angle) {
 	turnLeft(angle);
-	
+
 	for (int i=0; i<20; i++) {
 		sensor->select(1);
 
@@ -48,19 +48,19 @@ int CONTROLLER::turnToReleaseLeft(int angle) {
 			if (sensor->isInside())
 				return 0;				// OK
 		}
-		
+
 		if (wheelsAreOverloaded())
 			return 1;					// Overloaded
-		
+
 		turnLeft(10);
 	}
-	
+
 	return 2;							// Timed Out
 }
 
 int CONTROLLER::turnToReleaseRight(int angle) {
 	turnRight(angle);
-	
+
 	for (int i=0; i<20; i++) {
 		sensor->select(0);
 
@@ -69,22 +69,22 @@ int CONTROLLER::turnToReleaseRight(int angle) {
 			if (sensor->isInside())
 				return 0;				// OK
 		}
-		
+
 		if (wheelsAreOverloaded())
 			return 1;					// Overloaded
-		
+
 		turnRight(10);
 	}
-	
+
 	return 2;							// Timed Out
 }
 
 int CONTROLLER::turnRight(int angle) {
 	int outcome = 0;
-	
+
 	leftMotor->setSpeed(default_dir_fwd*100);
 	rightMotor->setSpeed(default_dir_fwd*-100);
-	
+
 	delay(angle*TURNDELAY);
 
     return outcome;
@@ -92,29 +92,29 @@ int CONTROLLER::turnRight(int angle) {
 
 int CONTROLLER::turnLeft(int angle) {
 	int outcome = 0;
-	
+
 	leftMotor->setSpeed(default_dir_fwd*-100);
 	rightMotor->setSpeed(default_dir_fwd*100);
-	
+
 	delay(angle*TURNDELAY);
 
     return outcome;
 }
 
 int CONTROLLER::waitWhileChecking(int duration) {
-  
+
   delay(200);   // Let any current spikes settle
 
   for (int i=0; i<duration/30; i++) {
     // check for problems
-    if(leftMotor->isOverloaded()) 
+    if(leftMotor->isOverloaded())
       return 2;
     if(rightMotor->isOverloaded())
       return 2;
     if (sensor->isTimedOut())
       return 3;
-    
-    delay(turnDelay); 
+
+    delay(turnDelay);
     }
 
 	// Successful delay
@@ -124,16 +124,16 @@ int CONTROLLER::waitWhileChecking(int duration) {
 
 
 int CONTROLLER::waitWhileInside(int duration) {
-  
+
   for (int k=0; k<duration/(NUMBER_OF_SENSORS*200); k++)
   	for (int i=0; i<NUMBER_OF_SENSORS; i++) {
     	sensor->select(i);
-    	if(!sensor->isInside()) 
+    	if(!sensor->isInside())
       		return 2;
   	}
-  
+
   // Successful delay
-  return 0;      
+  return 0;
   }
 
 #if GO_BACKWARD_UNTIL_INSIDE
@@ -147,13 +147,14 @@ int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
 		delay(1000);
 		counter--;
 		if(counter<=0)
-			return 1;
+      return 1;
 	}
 	return 0;
 }
 #endif
+
 void CONTROLLER::startCutter() {
-	for (int i=0; i<CUTTERSPEED; i++) 
+	for (int i=0; i<CUTTERSPEED; i++)
 		cutter->setSpeed(i);
 }
 
@@ -198,7 +199,7 @@ void CONTROLLER::adjustMotorSpeeds() {
   	lms = 100;
   	rms = 10;
   }
-  else 
+  else
   if (sensor->isInside())
   {
 	lms = 10;
@@ -220,7 +221,7 @@ void CONTROLLER::adjustMotorSpeeds() {
 
 void CONTROLLER::updateBalance() {
 	balance = balance + leftMotor->getSpeed() - rightMotor->getSpeed();
-	
+
 	if(balance > 0)
 		balance-=10;
 	else
@@ -236,7 +237,7 @@ void CONTROLLER::stop() {
 }
 
 int CONTROLLER::compensateSpeedToCutterLoad() {
-	
+
 }
 
 int CONTROLLER::compensateSpeedToCompassHeading() {
@@ -262,7 +263,7 @@ boolean CONTROLLER::wheelsAreOverloaded()
     overloadTime = millis();
     return true;
   }
-    
+
   else
     return false;
 }
@@ -270,7 +271,7 @@ boolean CONTROLLER::wheelsAreOverloaded()
 
 boolean CONTROLLER::hasReachedAStop()
 {
-  if (overloadInterval > OVERLOAD_INTERVAL) 
+  if (overloadInterval > OVERLOAD_INTERVAL)
   {
     overloadInterval = 0;
     return true;

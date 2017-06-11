@@ -1,3 +1,5 @@
+#include <LiquidCrystal.h>
+
 
 /*
    Welcome to the Liam5_1 program
@@ -35,7 +37,7 @@
                  - Added gyro sensor ADXL345 support
           - 2017-06-05 Jonas Forsell:
                  - Added function Obstacle when docking
-	        - 2017-06-02 Ola Palm:           
+	        - 2017-06-02 Ola Palm:
                  - Added function GO_BACKWARD_UNTIL_INSIDE
         5.1
           - Removed OzOLED Support for Arduino101 Compatibility
@@ -52,7 +54,8 @@
 
 #include <Servo.h>
 #include <Wire.h>
-#include <LiquidCrystal_I2C.h>
+
+//#include <LiquidCrystal_I2C.h>
 #include <I2Cdev.h>
 #include "RTClib.h"
 #include "HMC5883L.h"
@@ -160,8 +163,8 @@ void setup()
 
 	CutterMotor.initialize();
 	Battery.resetSOC();// Set the SOC to current value
-  
-	Compass.initialize();
+  	Compass.initialize();
+
  #if __RTC_CLOCK__
 		myClock.initialize();
 		myClock.setGoOutTime(GO_OUT_TIME);
@@ -195,7 +198,7 @@ void loop()
   #if __SETUP_AND_DEBUG_MODE__
     char inChar;
        int tilt_angle, y, z, x;
-     
+
 
     while (!Serial.available());			// Stay here until data is available
     inChar = (char)Serial.read();	// get the new byte:
@@ -380,32 +383,32 @@ void loop()
         z = Compass.getZAngle();
         x = Compass.getXAngle();
         tilt_angle = Compass.getTiltAngle();
-                     
+
         Serial.print("Z = ");
         Serial.println(z);
         Serial.print("Y = ");
         Serial.println(y);
         Serial.print("X = ");
         Serial.println(x);
-      
+
         Serial.print("Tilt angle = ");
         Serial.println(tilt_angle);
 break;
       case 'G':
         #if __MMA7455__
         Compass.autoupdate();
-        #endif 
+        #endif
         y = Compass.getYAngle();
         z = Compass.getZAngle();
         tilt_angle = Compass.getTiltAngle();
-                     
+
         Serial.print("RAW Z = ");
         Serial.println(z);
         Serial.print("RAW Y = ");
         Serial.println(y);
         Serial.print("Tilt angle = ");
         Serial.println(tilt_angle);
-       
+
         // Compass.getHeading();
         // Compass.headingVsTarget();
         // Compass.updateHeading();
@@ -497,9 +500,11 @@ break;
       		Serial.println(Battery.getSOC());
       		Mower.stop();
   		#if GO_BACKWARD_UNTIL_INSIDE
-  			err=Mower.GoBackwardUntilInside (&Sensor);
-  			if(err)
-  				Error.flag(err);
+				/* function will return 0 if inside else none zero value */
+				err=Mower.GoBackwardUntilInside (&Sensor);
+				/* if value is zero both sensors are inside and we can return*/
+				if(err==0)
+  				return;
   		#endif
       		if (Battery.mustCharge()) {
   	      		Mower.stopCutter();
@@ -546,8 +551,8 @@ break;
 
   			#if GO_BACKWARD_UNTIL_INSIDE
   				err=Mower.GoBackwardUntilInside(&Sensor);
-  				if(err)
-  					Error.flag(err);
+  				if(err==0)
+  					return;
   			#endif
 
   		// Tries to turn, but if timeout then reverse and try again

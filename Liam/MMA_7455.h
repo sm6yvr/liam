@@ -1,3 +1,4 @@
+
 /**
      Freescale 3-Axis Accelerometer MMA7455 Library designed for Arduino
      Copyright (C) 2015  Alexandre Boni
@@ -52,7 +53,6 @@
 #define __MMA_7455_H__
 
 #include "MotionSensor.h"
-#include "Arduino.h"
 #include "Wire.h"
 
 /* I2C address */
@@ -254,7 +254,7 @@ class MMA_7455 : public MOTIONSENSOR
   public:
        MMA_7455();
     /* MOTIONSENSOR */
-    
+
     boolean initialize();
     void updateHeading();
     int getHeading();
