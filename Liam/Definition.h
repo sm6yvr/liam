@@ -54,7 +54,7 @@
                     BRUSHLESS  0     (for all hobbyking motors with external ESC)
                     BRUSHED:   1     (for all brushed motors, A3620 and NIDEC 22)
                     NIDEC      2     (for NIDEC 24 or NIDEC 22 connected to morgan shield without any modifications) */
-const int MY_CUTTERMOTOR = 2;
+const int MY_CUTTERMOTOR = 1;
 
 /* Configure which type of battery you have.
    Types availible:
@@ -68,8 +68,8 @@ const int MY_BATTERY = 2;
 const int NUMBER_OF_SENSORS = 2;
 
 /* BWF transmitter signals */
-#define INSIDE_BWF 5
-#define OUTSIDE_BWF 86
+#define INSIDE_BWF 85
+#define OUTSIDE_BWF 5
 
 /* If you have a bumper connected to pin8, set it to true. Remember to cut the brake connection on your motor shield */
 #define __Bumper__ false
@@ -84,7 +84,7 @@ const int NUMBER_OF_SENSORS = 2;
 #define __MMA7455__ true
 
 /* Tiltangle */
-#define TILTANGLE 45
+#define TILTANGLE 20
 
 /* Flipangle (turn off cutter and stop everything) */
 #define FLIPANGLE 75
@@ -109,15 +109,15 @@ const int NUMBER_OF_SENSORS = 2;
   /* Try to get inside for max x seconds, then stop and error. */
   
   /*IMPORTANT II If you are using MMA_7455 you are can get these values from running the setup and press CAPITAL G */
-   
-#define Z_ANGLE_NORMAL 279 //false
-#define Y_ANGLE_NORMAL 28 // false
-#define X_ANGLE_NORMAL -16 // false 
+
+#define Z_ANGLE_NORMAL 276 //false
+#define Y_ANGLE_NORMAL 30 // false
+#define X_ANGLE_NORMAL -20 // false 
 
 /* Enable this if you need the mower to go backward until it's inside and then turn.
    Default behavior is to turn directly when mower is outside BWF, if definition below is enabled this might help mower not to get stuck in slopes.
    If mower is not inside within x seconds mower will stop. */
-#define GO_BACKWARD_UNTIL_INSIDE false
+#define GO_BACKWARD_UNTIL_INSIDE true
 #define MAX_GO_BACKWARD_TIME 5
 
 /******************************************************************
