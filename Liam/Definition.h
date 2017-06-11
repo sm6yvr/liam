@@ -42,7 +42,7 @@
    You can also see some values reported by the sensors. You need probably to tweek some
    of the parameters in this file and when you are done remove or comment out this line to
    run your mover in real mode. */
-#define __SETUP_AND_DEBUG_MODE__ true
+#define __SETUP_AND_DEBUG_MODE__ false
 
 /******************************************************************
   User specific settings depends on how you have built your mover.
@@ -80,7 +80,8 @@ const int NUMBER_OF_SENSORS = 2;
 /* Do you have a Sensor? If so, set one of these lines to true. */
 #define __MS5883L__ false
 #define __MS9150__ false
-#define __ADXL345__ true
+#define __ADXL345__ false
+#define __MMA7455__ true
 
 /* Tiltangle */
 #define TILTANGLE 45
@@ -102,12 +103,16 @@ const int NUMBER_OF_SENSORS = 2;
 #define SLOWSPEED 30
 #define CUTTERSPEED 100
 
-/* Settings for ADXL345, what angle values the sensor reports when the mover is standing flat.
+/* Settings for ADXL345 and MMA_7455, what angle values the sensor reports when the mover is standing flat.
   IMPORTANT! You must calibrate those values for your setup.
   See the wiki:https://github.com/sm6yvr/liam/wiki/12.-Gyro-Accelerometer */
   /* Try to get inside for max x seconds, then stop and error. */
-#define Z_ANGLE_NORMAL 181
-#define Y_ANGLE_NORMAL 195
+  
+  /*IMPORTANT II If you are using MMA_7455 you are can get these values from running the setup and press CAPITAL G */
+   
+#define Z_ANGLE_NORMAL 279 //false
+#define Y_ANGLE_NORMAL 28 // false
+#define X_ANGLE_NORMAL -16 // false 
 
 /* Enable this if you need the mower to go backward until it's inside and then turn.
    Default behavior is to turn directly when mower is outside BWF, if definition below is enabled this might help mower not to get stuck in slopes.
