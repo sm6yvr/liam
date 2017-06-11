@@ -39,13 +39,12 @@
 */
 
 #include "MMA_7455.h"
-#include <Arduino.h>
 
 MMA_7455::MMA_7455(void)
 {
-Serial.print("MMA contrukt");
  Wire.begin();
 }
+
 void MMA_7455::autoupdate()
 {
   bool found = false;
@@ -65,17 +64,14 @@ void MMA_7455::autoupdate()
   //if (getMode() != measure)    Serial.println("Set mode failure");
   /* Reset current axis offsets */
   setAxisOffset(0, 0, 0);
-
-  //  Serial.print("MMA7455 Auto-calibration ----\n");
-  //Serial.print("-----------------------------\n");
-  //Serial.print("The calibration will look for\n");
-  //Serial.print("the following idle values:\n");
-  //Serial.print("X: 0\tY: 0\tZ: 64\n");
-  //Serial.print("-----------------------------\n");
-  // Serial.print("Be patient,\n");
-  //Serial.print("good things take time...\n");
-  //Serial.print("-----------------------------\n");
-  //delay(2000);
+  Serial.print("The calibration will look for\n");
+  Serial.print("the following idle values:\n");
+  Serial.print("X: 0\tY: 0\tZ: 64\n");
+  Serial.print("---\n");
+  Serial.print("Be patient,\n");
+  Serial.print("good things take time...\n");
+  Serial.print("-\n");
+  delay(2000);
 
   while (!found)
   {
@@ -88,9 +84,9 @@ void MMA_7455::autoupdate()
     yavg = yavg * lpratio + y10 * (1 - lpratio);
     zavg = zavg * lpratio + z10 * (1 - lpratio);
     /* Display current axis values */
-    //Serial.print("X: ");   Serial.print(xavg, DEC);
-    //Serial.print("\tY: "); Serial.print(yavg, DEC);
-    //Serial.print("\tZ: "); Serial.println(zavg, DEC);
+    Serial.print("X: ");   Serial.print(xavg, DEC);
+    Serial.print("\tY: "); Serial.print(yavg, DEC);
+    Serial.print("\tZ: "); Serial.println(zavg, DEC);
     /* Calculate axis offset */
     xc += -2 * x10;
     yc += -2 * y10;
@@ -99,27 +95,14 @@ void MMA_7455::autoupdate()
     /* Check if offsets found */
     if (xavg == 0 && yavg == 0 && zavg == 64)
     {
-      //    Serial.print("-----------------------------\n");
-      //   Serial.print("Axis Offset:\n");
-      //  getAxisOffset(&xc, &yc, &zc);
-      //Serial.print("X: ");   Serial.print(xc, DEC);
-      //Serial.print("\tY: "); Serial.print(yc, DEC);
-      //Serial.print("\tZ: "); Serial.println(zc, DEC);
-      //Serial.print("-----------------------------\n");
       Serial.println("Set X,Y,& Z values in definition.h to:");
-      // Serial.print("  setAxisOffset(");
       Serial.println(xc, DEC);
       Serial.println(yc, DEC);
       Serial.println(zc, DEC);
-
-      //  Serial.print("-----------------------------\n");
-      // Serial.print("DONE. -----------------------\n");
-      found = true;
+  found = true;
     }
-
     delay(200);
   }
-
 }
 boolean MMA_7455::initialize() {
   Wire.begin();
