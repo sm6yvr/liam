@@ -496,10 +496,8 @@ void loop()
         Mower.stop();
 #if GO_BACKWARD_UNTIL_INSIDE
         /* function will return 0 if inside else none zero value */
-        err = Mower.GoBackwardUntilInside (&Sensor);
+        Mower.GoBackwardUntilInside (&Sensor);
         /* if value is zero both sensors are inside and we can return*/
-        if (err == 0)
-          return;
 #endif
         if (Battery.mustCharge()) {
           Mower.stopCutter();
