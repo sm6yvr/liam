@@ -140,10 +140,18 @@ int CONTROLLER::waitWhileInside(int duration) {
 int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
   int counter = MAX_GO_BACKWARD_TIME;
   // Check if tiltAngle is greater then slopeangle, if not return directly.
-  if (compass->getTiltAngle() <= SLOPEANGLE)
+  int angle = 0;
+  int timesToCheck = 10;
+  for (int i = 0; i < timesToCheck; i++)
+  {
+    angle += compass->getTiltAngle();
+    
+    delay(100);
+  }
+  Serial.print("\nbackwards active. angle is :");Serial.print(angle/10); 
+  if (abs(angle / timesToCheck) <= SLOPEANGLE)
     return 0;
-  //Mover has just stoped. Let it pause for a second.
-  delay(1000);
+  
   while (Sensor->isInside() == false)
   {
     runBackward(FULLSPEED);
