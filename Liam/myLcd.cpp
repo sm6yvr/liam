@@ -59,7 +59,7 @@ void myLCD::setCursor(int col, int row) {
     }
     
 size_t myLCD::write(uint8_t s) {
-    	lcd.print(s);
+    	lcd.write(s);
     }
 
 void myLCD::clear() {
