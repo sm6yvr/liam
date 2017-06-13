@@ -51,7 +51,7 @@ void MYDISPLAY::update() {
 	int sens = 0;
 
     // Rad 1: Sensors
-	#if __MS9150__ || __MS5883L__
+	#if __MS9150__ || __MS5883L__ || __ADXL345__ || __MMA7455__ 
 	    setCursor(0,0);
 	    print("Comp:");
 	    setCursor(7,0);
@@ -131,7 +131,8 @@ void MYDISPLAY::blink() {
 	// For a serial port, do very little
 	println("");
 	delay(1000);
-	println("**********************");
+	//println("**********************");
+  println("*");
 	delay(1000);
 	setCursor(0,0);
 }
