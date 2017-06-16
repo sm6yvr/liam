@@ -41,3 +41,4 @@ int MOTIONSENSOR::getTiltAngle() {
 int MOTIONSENSOR::getZAngle(){return 0;}
 int MOTIONSENSOR::getYAngle(){return 0;}
 int MOTIONSENSOR::getXAngle(){return 0;}
+void MOTIONSENSOR::autoupdate(){}

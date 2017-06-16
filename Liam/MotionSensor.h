@@ -27,6 +27,7 @@ class MOTIONSENSOR {
     virtual int getZAngle();
     virtual int getYAngle();
     virtual int getXAngle();
+    void autoupdate(void);
 
   protected:
     int current_heading;
