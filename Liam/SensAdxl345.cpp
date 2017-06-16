@@ -113,6 +113,10 @@ int SENSADXL345::getTiltAngle() {
   }
 }
 
+int SENSADXL345::getXAngle() {
+  return 0;  
+}
+
 int SENSADXL345::getYAngle() {
   SENSADXL345::readRegister(DATAX0, 6);
   int y = ((int)buffer[3]<<8)|(int)buffer[2];

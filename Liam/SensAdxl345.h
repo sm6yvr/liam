@@ -49,6 +49,7 @@ class SENSADXL345 : public MOTIONSENSOR {
     virtual void setNewTargetHeading();
     virtual int headingVsTarget();
     virtual int getTiltAngle();
+    virtual int getXAngle();
     virtual int getZAngle();
     virtual int getYAngle();
 
