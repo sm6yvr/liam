@@ -54,7 +54,7 @@
                     BRUSHLESS  0     (for all hobbyking motors with external ESC)
                     BRUSHED:   1     (for all brushed motors, A3620 and NIDEC 22)
                     NIDEC      2     (for NIDEC 24 or NIDEC 22 connected to morgan shield without any modifications) */
-const int MY_CUTTERMOTOR = 1;
+const int MY_CUTTERMOTOR = 2;
 
 /* Configure which type of battery you have.
    Types availible:
@@ -81,7 +81,7 @@ const int NUMBER_OF_SENSORS = 2;
 #define __MS5883L__ false
 #define __MS9150__ false
 #define __ADXL345__ false
-#define __MMA7455__ true
+#define __MMA7455__ false
 
 /* Tiltangle */
 #define TILTANGLE 45
@@ -108,8 +108,8 @@ const int NUMBER_OF_SENSORS = 2;
   See the wiki:https://github.com/sm6yvr/liam/wiki/12.-Gyro-Accelerometer */
   /* Try to get inside for max x seconds, then stop and error. */
 
-  /*IMPORTANT II !! 
-   * If you are using MMA_7455 you will get these values automatic from running setup-debug and type CAPITAL G, you still have to 
+  /*IMPORTANT II !!
+   * If you are using MMA_7455 you will get these values automatic from running setup-debug and type CAPITAL G, you still have to
   come back here and type them in though*/
 
 #define Z_ANGLE_NORMAL 276 //false
