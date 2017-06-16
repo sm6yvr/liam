@@ -24,6 +24,9 @@
         Changelog:
 
         5.2-SNAPSHOT
+          - 2017-06-16 Roberth Andersson:
+                 - Added SetupDebug class
+                 - Removed SetupDebug code from Liam.ino
           - 2017-06-08 Roberth Andersson :
                  - New structure in definition.h so the user-specific parameters
                    are in the beginning.
@@ -70,6 +73,8 @@
 #include "Definition.h"
 #include "SensAdxl345.h"
 #include "MMA_7455.h"
+#include "SetupDebug.h"
+
 // Global variables
 int state;
 long time_at_turning = millis();
@@ -123,21 +128,7 @@ CLOCK myClock;
 ERROR Error(&Display, LED_PIN, &Mower);
 
 #if __SETUP_AND_DEBUG_MODE__
-int pitch = 0;
-
-boolean cutter_motor_is_on;
-boolean left_wheel_motor_is_on;
-boolean right_wheel_motor_is_on;
-boolean led_is_on = false;
-boolean cutter_is_attached = false;
-
-int cutterspeed = 0;
-
-int16_t mx, gx, ax;
-int16_t my, gy, ay;
-int16_t mz, gz, az;
-
-int current_heading, target_heading;
+  SETUPDEBUG SetupDebug(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery);
 #endif
 
 // This function calls the sensor object every time there is a new signal pulse on pin2
@@ -148,14 +139,11 @@ void updateBWF() {
 // ****************** Setup **************************************
 void setup()
 {
-  //char buffer [9]; //Format 09.00.00  / OLA PALM, Denna är oanvänd i prg.. Ska den bort?
-
   Serial.begin(115200); 						// Fast communication on the serial port for all terminal messages
   Defaults.definePinsInputOutput();			// Configure all the pins for input or output
   Defaults.setDefaultLevels(&Battery, &leftMotor, &rightMotor, &CutterMotor); // Set default levels (defined in Definition.h) for your mower
 
   Display.initialize();							// Start up the display
-
   CutterMotor.initialize();
   Battery.resetSOC();// Set the SOC to current value
   Compass.initialize();
@@ -170,8 +158,8 @@ void setup()
   Sensor.select(0);
 
 #if __SETUP_AND_DEBUG_MODE__
-  Serial.println("Welcome to Liam Test Program");
-  Serial.println("Send 'H' for list commands");
+  Serial.println("LIAM is running in setup debug mode!!!!");
+  SetupDebug.initialize(&Serial);
 #else
   if (Battery.isBeingCharged())	{			// If Liam is in docking station then
     state = CHARGING;						// continue charging
@@ -185,247 +173,10 @@ void setup()
 
 }
 
-
-
 // ***************** Main loop ***********************************
-void loop()
-{
+void loop() {
 #if __SETUP_AND_DEBUG_MODE__
-  char inChar;
-  int tilt_angle, y, z, x;
-
-
-  while (!Serial.available());			// Stay here until data is available
-  inChar = (char)Serial.read();	// get the new byte:
-
-  switch (inChar) {
-    case 'H':
-    case 'h':
-      Serial.println("------- Help menu ------------");
-      Serial.println("L = Left Wheel motor on/off");
-      Serial.println("R = Right Wheel motor on/off");
-      Serial.println("C = Cutter motor on/off");
-      Serial.println("S = test BWF Sensor");
-      Serial.println("G = test Gyro/Compass/Accelerometer");
-      Serial.println("D = turn LED on/off");
-      Serial.println("T = make a 10 second test run");
-      Serial.println("P = print SOC & debug values");
-      Serial.println("E = Cutter motor calibrate");
-      break;
-
-    case 'D':
-    case 'd':
-      if (led_is_on)
-        digitalWrite(10, LOW);
-      else
-        digitalWrite(10, HIGH);
-
-      led_is_on = (led_is_on ? false : true);
-      break;
-
-    case 'L':
-    case 'l':
-      if (left_wheel_motor_is_on == true) {
-        Serial.println("Ramping down left wheel");
-        for (int i = 100; i > 0; i--) {
-          leftMotor.setSpeed(i);
-          delay(10);
-        }
-        Serial.println("Ramp down completed");
-        left_wheel_motor_is_on = false;
-        break;
-      }
-      else
-      {
-        Serial.println("Ramping up left wheel");
-        for (int i = 0; i < 100; i++) {
-          leftMotor.setSpeed(i);
-          delay(10);
-        }
-        Serial.println("Ramp up completed");
-        left_wheel_motor_is_on = true;
-        break;
-      }
-      break;
-
-    case 'R':
-    case 'r':
-      if (right_wheel_motor_is_on == true) {
-        Serial.println("Ramping down right wheel");
-        for (int i = 100; i > 0; i--) {
-          rightMotor.setSpeed(i);
-          delay(10);
-        }
-        Serial.println("Ramp down completed");
-        right_wheel_motor_is_on = false;
-        break;
-      }
-      else
-      {
-        Serial.println("Ramping up right wheel");
-        for (int i = 0; i < 100; i++) {
-          rightMotor.setSpeed(i);
-          delay(10);
-        }
-        Serial.println("Ramp up completed");
-        right_wheel_motor_is_on = true;
-        break;
-      }
-      break;
-
-    case 'S':
-    case 's':
-      Serial.println("-------- Testing Sensors 0 -> 3 --------");
-      attachInterrupt(0, updateBWF, RISING);
-      for (int i = 0; i < 4; i++) {
-        Sensor.select(i);
-        delay(1000);
-        Serial.print(i);
-        Serial.print(": ");
-        Sensor.printSignal();
-        Serial.print(" in:");
-        Serial.print(Sensor.isInside());
-        Serial.print(" out:");
-        Serial.print(Sensor.isOutside());
-        Serial.println();
-      }
-      Serial.println("Sensor test completed");
-      detachInterrupt(0);
-      break;
-
-
-    case 'C':
-    case 'c':
-      if (cutter_motor_is_on) {
-        Serial.println("Ramping down cutter");
-        for (int i = 100; i >= 0; i--) {
-          CutterMotor.setSpeed(i);
-          delay(10);
-        }
-        Serial.println("Ramp down completed");
-        cutter_motor_is_on = false;
-      }
-      else
-      {
-        Serial.println("Ramping up cutter");
-        for (int i = 0; i < 100; i++) {
-          CutterMotor.setSpeed(i);
-          delay(10);
-        }
-        Serial.println("Ramp up completed");
-        cutter_motor_is_on = true;
-      }
-      break;
-
-    case 'T':
-    case 't':
-      attachInterrupt(0, updateBWF, RISING);
-
-      for (int i = 0; i < 100; i++) {
-        Sensor.select(0);
-        delay(100);
-        rightMotor.setSpeed((Sensor.isInside() ? 100 : -100));
-
-        Sensor.select(1);
-        delay(100);
-        leftMotor.setSpeed((Sensor.isInside() ? 100 : -100));
-      }
-      leftMotor.setSpeed(0);
-      rightMotor.setSpeed(0);
-
-      break;
-
-    case '+':
-      cutterspeed += 10;
-      CutterMotor.setSpeed(cutterspeed);
-      Serial.println(cutterspeed);
-      break;
-
-    case '-':
-      cutterspeed -= 10;
-      CutterMotor.setSpeed(cutterspeed);
-      Serial.println(cutterspeed);
-      break;
-
-    case 'P':
-    case 'p':
-      Serial.print(" LMot: ");
-      Serial.print(leftMotor.getLoad());
-      Serial.print(" RMot: ");
-      Serial.print(rightMotor.getLoad());
-      Serial.print(" SOC: ");
-      Battery.resetSOC();
-      Serial.print(Battery.getSOC());
-      Serial.print(" Dock: ");
-      Serial.print(Battery.isBeingCharged());
-      break;
-
-    // case 'e':
-    // case 'E':
-    //   if (cutter_is_attached) {
-    //     CutterMotor.detachMotor();
-    //     Serial.println("Cutter is detached");
-    //   }
-    //   else {
-    //     CutterMotor.initialize();
-    //     Serial.println("Cutter is attached");
-    //   }
-    //   cutter_is_attached = !cutter_is_attached;
-    // break;
-
-    case 'g':
-      y = Compass.getYAngle();
-      z = Compass.getZAngle();
-      x = Compass.getXAngle();
-      tilt_angle = Compass.getTiltAngle();
-
-      Serial.print("Z = ");
-      Serial.println(z);
-      Serial.print("Y = ");
-      Serial.println(y);
-      Serial.print("X = ");
-      Serial.println(x);
-
-      Serial.print("Tilt angle = ");
-      Serial.println(tilt_angle);
-      break;
-    case 'G':
-#if __MMA7455__
-      Compass.autoupdate();
-#endif
-      y = Compass.getYAngle();
-      z = Compass.getZAngle();
-      tilt_angle = Compass.getTiltAngle();
-
-      Serial.print("RAW Z = ");
-      Serial.println(z);
-      Serial.print("RAW Y = ");
-      Serial.println(y);
-      Serial.print("Tilt angle = ");
-      Serial.println(tilt_angle);
-
-      // Compass.getHeading();
-      // Compass.headingVsTarget();
-      // Compass.updateHeading();
-
-      // my9150.getMotion9(&ax, &ay, &az, &gx, &gy, &gz, &mx, &my, &mz);
-      // Serial.print("TiltXZ: ");
-      // Serial.print(abs(atan2(ax,az))* 180 / M_PI);
-      // Serial.print(" TiltYZ: ");
-      // Serial.print(abs(atan2(ay,az))* 180 / M_PI);
-      // Serial.print("Heading: ");
-      // Serial.print(current_heading = atan2(my,mz)* 180 / M_PI);
-      // Serial.print("Diff to last heading: ");
-      // Serial.println(copysign(1.0,current_heading - target_heading) *
-      // copysign(1.0,abs(current_heading-target_heading)-180) *
-      // (180-abs(abs(current_heading-target_heading)-180)));
-      // target_heading = current_heading;
-      break;
-
-
-  }
-
-  inChar = 0;
+  SetupDebug.startListeningOnSerial();
 #else
   /* MAIN PROGRAM */
   boolean in_contact;
