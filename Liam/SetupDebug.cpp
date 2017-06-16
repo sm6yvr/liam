@@ -118,11 +118,11 @@ void SETUPDEBUG::startListeningOnSerial() {
         case 'e':
         case 'E':
             if (cutter_is_attached) {
-              cutter->detachMotor();
+            //  cutter->detachMotor();
               Serial.println("Cutter is detached");
             }
             else {
-              cutter.initialize();
+            //  cutter.initialize();
               Serial.println("Cutter is attached");
             }
             cutter_is_attached = !cutter_is_attached;
@@ -131,14 +131,23 @@ void SETUPDEBUG::startListeningOnSerial() {
 
         case 'g':
         case 'G':
-            int tilt_angle = compass->getTiltAngle();
-            int y = compass->getYAngle();
-            int z = compass->getZAngle();
+            #if __MMA7455__
+              compass->autoupdate();
+            #endif
 
-            Serial.print("RAW Z = ");
+            tilt_angle = compass->getTiltAngle();
+
+            x = compass->getXAngle();
+            y = compass->getYAngle();
+            z = compass->getZAngle();
+
+            Serial.print("Z = ");
             Serial.println(z);
-            Serial.print("RAW Y = ");
+            Serial.print("Y = ");
             Serial.println(y);
+            Serial.print("X = ");
+            Serial.println(x);
+
             Serial.print("Tilt angle = ");
             Serial.println(tilt_angle);
 
@@ -160,7 +169,6 @@ void SETUPDEBUG::startListeningOnSerial() {
             // target_heading = current_heading;
 
         break;
-
 
   }
   //   case 'g':
@@ -186,6 +194,8 @@ void SETUPDEBUG::printHelp() {
       _Serial->println("G = test Gyro/Compass/Accelerometer");
       _Serial->println("D = turn LED on/off");
       _Serial->println("T = make a 10 second test run");
+      _Serial->println("P = print SOC & debug values");
+      _Serial->println("E = Cutter motor calibrate");
 }
 
 void SETUPDEBUG::toggleWheelLeft() {

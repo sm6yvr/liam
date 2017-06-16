@@ -42,8 +42,9 @@ class SETUPDEBUG {
         int16_t mx, gx, ax;
         int16_t my, gy, ay;
         int16_t mz, gz, az;
+        int x, y, z;
 
-        int current_heading, target_heading;
+        int current_heading, target_heading, tilt_angle;
 };
 
 #endif /* _SETUPDEBUG_H_ */
