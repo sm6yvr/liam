@@ -42,7 +42,7 @@
    You can also see some values reported by the sensors. You need probably to tweek some
    of the parameters in this file and when you are done remove or comment out this line to
    run your mover in real mode. */
-#define __SETUP_AND_DEBUG_MODE__ true
+#define __SETUP_AND_DEBUG_MODE__ false
 
 /******************************************************************
   User specific settings depends on how you have built your mover.
@@ -54,7 +54,7 @@
                     BRUSHLESS  0     (for all hobbyking motors with external ESC)
                     BRUSHED:   1     (for all brushed motors, A3620 and NIDEC 22)
                     NIDEC      2     (for NIDEC 24 or NIDEC 22 connected to morgan shield without any modifications) */
-const int MY_CUTTERMOTOR = 2;
+const int MY_CUTTERMOTOR = 1;
 
 /* Configure which type of battery you have.
    Types availible:
@@ -121,8 +121,12 @@ const int NUMBER_OF_SENSORS = 2;
    If mower is not inside within x seconds mower will stop. */
 #define GO_BACKWARD_UNTIL_INSIDE true
 #define MAX_GO_BACKWARD_TIME 5
-/* Slopeangle. Mower will not go backwards if slope is less then slopeangle.*/
-#define SLOPEANGLE 20
+// The amount of times to check and sum angle, sum will be divided by this value to get avrage angle of slopereadings number of time read.
+#define SLOPEREADINGS 1
+/* Slopeangle. Mower will not go backwards if slope is less then slopeangle.
+if you have no angle-sensor and still want mower to go backwards until it's inside, then set SLOPEANGLE to -1
+*/
+#define SLOPEANGLE -1
 
 /******************************************************************
   Common settings that should be same for the most of us.
