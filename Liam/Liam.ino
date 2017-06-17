@@ -295,8 +295,6 @@ void loop() {
 
 #if GO_BACKWARD_UNTIL_INSIDE
         err = Mower.GoBackwardUntilInside(&Sensor);
-        if (err == 0)
-          return;
 #endif
 
         // Tries to turn, but if timeout then reverse and try again

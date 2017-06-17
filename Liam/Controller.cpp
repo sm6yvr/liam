@@ -141,15 +141,12 @@ int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
   int counter = MAX_GO_BACKWARD_TIME;
   // Check if tiltAngle is greater then slopeangle, if not return directly.
   int angle = 0;
-  int timesToCheck = 10;
-  for (int i = 0; i < timesToCheck; i++)
+  for (int i = 0; i < SLOPEREADINGS; i++)
   {
     angle += compass->getTiltAngle();
-    
     delay(100);
   }
-  Serial.print("\nbackwards active. angle is :");Serial.print(angle/10); 
-  if (abs(angle / timesToCheck) <= SLOPEANGLE)
+  if (abs(angle / SLOPEREADINGS) <= SLOPEANGLE)
     return 0;
   
   while (Sensor->isInside() == false)
