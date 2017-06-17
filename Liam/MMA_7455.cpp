@@ -53,7 +53,7 @@ void MMA_7455::autoupdate()
   int16_t xc = 0, yc = 0, zc = 0;
   float lpratio = 0.2; /* between 0 and 1 */
   /* Set serial baud rate */
-  //Serial.begin(115200);
+  Serial.begin(115200);
   /* Set accelerometer sensibility to 2g */
   setSensitivity(2);
   /* Verify sensibility - optional */
@@ -106,7 +106,7 @@ void MMA_7455::autoupdate()
 }
 boolean MMA_7455::initialize() {
   Wire.begin();
-  //Serial.begin(115200);
+  Serial.begin(115200);
   setSensitivity(2);
   setMode(measure);
   setAxisOffset(X_ANGLE_NORMAL, Y_ANGLE_NORMAL, Z_ANGLE_NORMAL);
