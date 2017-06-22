@@ -232,17 +232,21 @@ void loop() {
     case MOWING:
       Battery.updateSOC();
       Display.update();
-
-      Sensor.select(0);
+      for(int i = 0; i < NUMBER_OF_SENSORS; i++) {
+      Sensor.select(i);
 
       if (BWF_DETECTION_ALWAYS)
         mower_is_outside = !Sensor.isInside();
       else
         mower_is_outside = Sensor.isOutside();
 
-      // Check left sensor (0) and turn right if needed
+      // Check left sensor (i) and turn right if needed
       if (mower_is_outside) {
-        Serial.println("Left outside");
+        if(i==0)
+          Serial.println("Left outside");
+        else if(i==1)
+          Serial.println("Right outside");
+        
         Serial.println(Battery.getSOC());
         Mower.stop();
 #if GO_BACKWARD_UNTIL_INSIDE
@@ -252,9 +256,15 @@ void loop() {
 #endif
         if (Battery.mustCharge()) {
           Mower.stopCutter();
+          /*
+          There might be reasons, but why should the mower run fullspeed forward when it finds out that it has to charge battery??
+
+          Ola Palm.
+          */
           Mower.runForward(FULLSPEED);
           delay(1000);
           Mower.stop();
+          // change this value to 1 if you would like the mower to go home counter clock wise.
           Sensor.select(0);
           state = DOCKING;
           break;
@@ -279,7 +289,15 @@ void loop() {
             Error.flag(4);
         }
       }
-
+    }
+      
+  
+   /* This should be ok to remove from now. 
+   
+   Ola Palm 2017-06-23
+   */
+  
+  /*
       Sensor.select(1);
 
       if (BWF_DETECTION_ALWAYS)
@@ -317,7 +335,7 @@ void loop() {
         }
       }
 
-
+*/
       Mower.runForward(FULLSPEED);
 
       // Adjust the speed of the mower to the grass thickness
