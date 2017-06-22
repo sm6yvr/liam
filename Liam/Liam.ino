@@ -412,7 +412,8 @@ void loop() {
 
     //----------------------- DOCKING -----------------------------
     case DOCKING:
-
+    Battery.updateSOC();
+    Display.update();
       //Make the wheel motors extra responsive
       leftMotor.setSmoothness(10);
       rightMotor.setSmoothness(10);
@@ -460,6 +461,8 @@ void loop() {
 
     //----------------------- CHARGING ----------------------------
     case CHARGING:
+    Battery.updateSOC();
+    Display.update();
       // restore wheelmotor smoothness
       leftMotor.setSmoothness(WHEELMOTOR_SMOOTHNESS);
       rightMotor.setSmoothness(WHEELMOTOR_SMOOTHNESS);

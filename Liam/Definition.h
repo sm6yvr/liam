@@ -54,7 +54,7 @@
                     BRUSHLESS  0     (for all hobbyking motors with external ESC)
                     BRUSHED:   1     (for all brushed motors, A3620 and NIDEC 22)
                     NIDEC      2     (for NIDEC 24 or NIDEC 22 connected to morgan shield without any modifications) */
-const int MY_CUTTERMOTOR = 1;
+const int MY_CUTTERMOTOR = 2;
 
 /* Configure which type of battery you have.
    Types availible:
@@ -68,8 +68,8 @@ const int MY_BATTERY = 2;
 const int NUMBER_OF_SENSORS = 2;
 
 /* BWF transmitter signals */
-#define INSIDE_BWF 85
-#define OUTSIDE_BWF 5
+#define INSIDE_BWF 86
+#define OUTSIDE_BWF 6
 
 /* If you have a bumper connected to pin8, set it to true. Remember to cut the brake connection on your motor shield */
 #define __Bumper__ false
@@ -91,12 +91,12 @@ const int NUMBER_OF_SENSORS = 2;
 
 /* Do you have a Display? If so, set one of these lines to true. */
 #define __OLED__ false
-#define __LCD__ false
+#define __LCD__ true
 
 /* Do you have a clock? If so, set it to true. */
-#define __RTC_CLOCK__ false
-#define GO_OUT_TIME 16, 00
-#define GO_HOME_TIME 22, 00
+#define __RTC_CLOCK__ true
+#define GO_OUT_TIME 01, 00
+#define GO_HOME_TIME 23, 00
 
 /* Motor Speeds */
 #define FULLSPEED 100
@@ -150,7 +150,7 @@ if you have no angle-sensor and still want mower to go backwards until it's insi
 #define BWF_SELECT_B_PIN 7
 #define BUMPER 8
 #define LIFT_SENSOR_PIN 9
-#define LED_PIN 13
+#define LED_PIN 10
 #define WHEEL_MOTOR_B_PWM_PIN 11
 #define WHEEL_MOTOR_A_DIRECTION_PIN 12
 #define WHEEL_MOTOR_B_DIRECTION_PIN 13
@@ -205,6 +205,9 @@ const int CHARGING = 3;
 #define MAJOR_VERSION 5
 #define MINOR_VERSION_1	2
 #define MINOR_VERSION_2	0
+
+/* Dicks tillägg */
+#define OUTSIDE_READINGS 2
 
 class DEFINITION {
     public:
