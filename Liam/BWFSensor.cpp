@@ -85,7 +85,7 @@ void BWFSENSOR::readSensor() {
     pulse_count_inside=0;
 
   // Check if the latest pulse fits the code for outside
-  if (abs(pulse_unit-outside_code[pulse_count_outside]) < 2) {
+  if (abs(pulse_unit-outside_code[pulse_count_outside]) < OUTSIDE_READINGS) {
     pulse_count_outside++;
     if (pulse_count_outside >= sizeof(outside_code)/sizeof(outside_code[0])) {
  		signal_status = OUTSIDE;

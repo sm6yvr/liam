@@ -183,8 +183,10 @@ void CONTROLLER::restoreState() {
 }
 
 void CONTROLLER::runForward(int speed) {
-  leftMotor->setSpeed(default_dir_fwd * speed);
-  rightMotor->setSpeed(default_dir_fwd * speed);
+  //leftMotor->setSpeed(default_dir_fwd * speed);
+  //rightMotor->setSpeed(default_dir_fwd * speed);
+  leftMotor->setSpeed(100);
+  rightMotor->setSpeed(96);
 }
 
 void CONTROLLER::runBackward(int speed) {
@@ -224,6 +226,7 @@ void CONTROLLER::adjustMotorSpeeds() {
 
   leftMotor->setSpeed(default_dir_fwd * lms);
   rightMotor->setSpeed(default_dir_fwd * rms);
+
 }
 
 void CONTROLLER::updateBalance() {
@@ -260,6 +263,8 @@ int CONTROLLER::compensateSpeedToCompassHeading() {
 
   leftMotor->setSpeed(default_dir_fwd * lms);
   rightMotor->setSpeed(default_dir_fwd * rms);
+  leftMotor->setSpeed(100);
+  rightMotor->setSpeed(96);
 }
 
 boolean CONTROLLER::wheelsAreOverloaded()
