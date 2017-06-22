@@ -150,7 +150,7 @@ if you have no angle-sensor and still want mower to go backwards until it's insi
 #define BWF_SELECT_B_PIN 7
 #define BUMPER 8
 #define LIFT_SENSOR_PIN 9
-#define LED_PIN 13
+#define LED_PIN 10
 #define WHEEL_MOTOR_B_PWM_PIN 11
 #define WHEEL_MOTOR_A_DIRECTION_PIN 12
 #define WHEEL_MOTOR_B_DIRECTION_PIN 13
