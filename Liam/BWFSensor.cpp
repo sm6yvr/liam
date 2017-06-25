@@ -42,7 +42,7 @@ void BWFSENSOR::clearSignal() {
 
 
 bool BWFSENSOR::isInside() {
-	return (signal_status == INSIDE);
+  return (signal_status == INSIDE);
 }
 
 bool BWFSENSOR::isOutside() {

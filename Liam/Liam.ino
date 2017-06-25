@@ -269,7 +269,7 @@ void loop() {
           state = DOCKING;
           break;
         }
-
+        
         // Tries to turn, but if timeout then reverse and try again
         if ((err = Mower.turnToReleaseRight(30) > 0)) {
           Mower.runBackward(FULLSPEED);

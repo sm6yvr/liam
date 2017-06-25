@@ -89,8 +89,8 @@ word BATTERY::readBatteryAndCalcValue(){
     unsigned long newReading = analogRead(batSocpin);	
     newReading = newReading * 488  * VOLTDIVATOR;
     newReading /= 10000;
-    return newReading;
-  	//return word(newReading);  
+    //return newReading;
+  	return word(newReading);  
 }
 
 bool BATTERY::isBeingCharged() {
