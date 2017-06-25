@@ -65,9 +65,15 @@ int CONTROLLER::turnToReleaseRight(int angle) {
     sensor->select(0);
 
     if (sensor->isInside()) {
-      sensor->select(1);
-      if (sensor->isInside())
-        return 0;				// OK
+      // Only check sensor one if more than 1 sensor defined.
+      if(NUMBER_OF_SENSORS>1)
+      {
+        sensor->select(1);
+          if (sensor->isInside())
+            return 0;				// OK
+      }
+      else
+        return 0; // OK
     }
 
     if (wheelsAreOverloaded())
@@ -292,18 +298,10 @@ boolean CONTROLLER::hasBumped() {
 }
 
 boolean CONTROLLER::hasTilted() {
-  Serial.println("");
-  Serial.println("NU är tiltvärdet :");
-  Serial.println(compass->getTiltAngle(), DEC);
-  Serial.println(compass->getTiltAngle() > TILTANGLE);
   return (compass->getTiltAngle() > TILTANGLE);
 }
 
 boolean CONTROLLER::hasFlipped() {
-  Serial.println("");
-  Serial.println("NU är Flippvärdet :");
-  Serial.println(compass->getTiltAngle(), DEC);
-  Serial.println(compass->getTiltAngle() > FLIPANGLE);
   return (compass->getTiltAngle() > FLIPANGLE);
 }
 
