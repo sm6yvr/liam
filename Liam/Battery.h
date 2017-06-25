@@ -26,10 +26,10 @@ Placed under the GNU license
 #define LIION    			 2
 
 //All voltage value need to be x100 to avoid decimals (12.54V = 1254)
-#define LIIONFULL			1300	
-#define LIIONEMPTY			1040
-#define NIMHFULL			1450
-#define NIMHEMPTY			1150
+#define LIIONFULL			  1256	
+#define LIIONEMPTY		  1040
+#define NIMHFULL			  1450
+#define NIMHEMPTY			  1150
 #define LEADACIDFULL		1330
 #define LEADACIDEMPTY		1200
 

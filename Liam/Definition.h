@@ -65,10 +65,10 @@ const int MY_CUTTERMOTOR = 1;
 const int MY_BATTERY = 2;
 
 /* Number of BWF sensors can be 1-4 depending on shield */
-const int NUMBER_OF_SENSORS = 2;
+const int NUMBER_OF_SENSORS = 1;
 
 /* BWF transmitter signals */
-#define INSIDE_BWF 85
+#define INSIDE_BWF 86
 #define OUTSIDE_BWF 5
 
 /* If you have a bumper connected to pin8, set it to true. Remember to cut the brake connection on your motor shield */
