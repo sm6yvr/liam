@@ -20,9 +20,10 @@ ERROR::ERROR(MYDISPLAY* display_, int led_pin_, CONTROLLER* Mower_) {
 }
 
 void ERROR::flag(int error_number_) {
-	
+
   Mower->stopCutter();
   Mower->stop();
+  mylcd->clear();
 
   mylcd->setCursor(5,0);
   mylcd->print("Error!!");
@@ -94,7 +95,7 @@ void ERROR::flag(int error_number_) {
   }
 
   // blink LED forever
-  while (true) 
+  while (true)
 	blink_led(error_number_);
 }
 
