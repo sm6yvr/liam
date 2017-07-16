@@ -36,13 +36,6 @@
 #ifndef _DEFINITION_H_
 #define _DEFINITION_H_
 
-/* SETUP AND DEBUG MODE .
-   First time you start your mover the code is configured to run in debug mode.
-   In that mode you can send different commands to the mover to test different functions.
-   You can also see some values reported by the sensors. You need probably to tweek some
-   of the parameters in this file and when you are done remove or comment out this line to
-   run your mover in real mode. */
-#define __SETUP_AND_DEBUG_MODE__ false
 
 /******************************************************************
   User specific settings depends on how you have built your mover.
@@ -210,7 +203,22 @@ class DEFINITION {
     public:
         void definePinsInputOutput();
         void setDefaultLevels(BATTERY* battery, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cutter);
+        void set_SETUP_AND_DEBUG_MODE(bool & value);
+        bool get_SETUP_AND_DEBUG_MODE();
     private:
+/*Ola Palm..
+
+Mitt förslag.
+Vi behåller namnen så som de är definerade idag, man kan ju ta bort __ framför och bakom.
+Initierar värdet av variable till samma som står som define idag.. */
+      /* SETUP AND DEBUG MODE .
+         First time you start your mover the code is configured to run in debug mode.
+         In that mode you can send different commands to the mover to test different functions.
+         You can also see some values reported by the sensors. You need probably to tweek some
+         of the parameters in this file and when you are done remove or comment out this line to
+         run your mover in real mode. */
+      bool SETUP_AND_DEBUG_MODE= false;
+
 };
 
 #endif /* _DEFINITION_H_ */
