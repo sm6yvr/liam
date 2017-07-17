@@ -76,12 +76,16 @@
 #include "SensAdxl345.h"
 #include "MMA_7455.h"
 #include "SetupDebug.h"
+#include "SerialCommand.h"
 
 // Global variables
 int state;
 long time_at_turning = millis();
 int turn_direction = 1;
 int LCDi = 0;
+
+// SerialCommand to connect command to a method
+SerialCommand SCmd;
 
 // Set up all the defaults (check the Definition.h file for all default values)
 DEFINITION Defaults;
@@ -138,6 +142,30 @@ void updateBWF() {
   Sensor.readSensor();
 }
 
+// Added to test serialCommand
+void setSetupDebug() {
+  bool aValue;
+  char *arg;
+  arg = SCmd.next();
+
+  if (arg != NULL) {
+    aValue=atoi(arg);
+    Serial.println(aValue);
+    Defaults.set_SETUP_AND_DEBUG_MODE(aValue);
+  }
+}
+
+enum API_COMMAND : char {
+  apiSetSetupDebug = '0',
+  apiGetSetupDebug = '1',
+};
+
+// This gets set as the default handler, and gets called when no other command matches.
+void unrecognized()
+{
+  Serial.println("What?");
+}
+
 // ****************** Setup **************************************
 void setup()
 {
@@ -149,6 +177,8 @@ void setup()
   CutterMotor.initialize();
   Battery.resetSOC();// Set the SOC to current value
   Compass.initialize();
+  SCmd.addCommand(apiSetSetupDebug ,setSetupDebug);  // Converts two arguments to integers and echos them back
+  SCmd.addDefaultHandler(unrecognized);
 
 #if __RTC_CLOCK__
   myClock.initialize();
@@ -192,8 +222,14 @@ else
 
 }
 
+
+
 // ***************** Main loop ***********************************
 void loop() {
+
+  // Process serial API commands
+  SCmd.readSerial();
+
 /* om värdet på denna variable sätt till false via något så kommer vi inte längre att köra setup.. så man skulle kunna ha den till true, eller sätta den till true vid kompilering och köra en setup, från setup skriva ner de värden som är intressanta, inne/ute, SOC, osv osv.. sedan sätta SETUP_AND_DEBUG_MODE
 till false, vilket skulle tvinga oss till else satsen här nedan vid nästa körning..
 
@@ -202,6 +238,7 @@ I setup ovan skulle jag vilja ha en method som kolla av eeprom och läser värde
   if(Defaults.get_SETUP_AND_DEBUG_MODE())
   {
   SetupDebug.startListeningOnSerial();
+
   }
   else
   {
