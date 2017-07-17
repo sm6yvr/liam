@@ -155,9 +155,9 @@ void setSetupDebug() {
   }
 }
 
-enum API_COMMAND : char {
-  apiSetSetupDebug = '0',
-  apiGetSetupDebug = '1',
+enum API_COMMAND {
+  apiSetSetupDebug, // =0;
+  apiGetSetupDebug
 };
 
 // This gets set as the default handler, and gets called when no other command matches.
@@ -177,7 +177,7 @@ void setup()
   CutterMotor.initialize();
   Battery.resetSOC();// Set the SOC to current value
   Compass.initialize();
-  SCmd.addCommand(apiSetSetupDebug ,setSetupDebug);  // Converts two arguments to integers and echos them back
+  SCmd.addCommand((char)apiSetSetupDebug ,setSetupDebug);  // Converts two arguments to integers and echos them back
   SCmd.addDefaultHandler(unrecognized);
 
 #if __RTC_CLOCK__
