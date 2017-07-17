@@ -246,7 +246,7 @@ void loop() {
           Serial.println("Left outside");
         else if(i==1)
           Serial.println("Right outside");
-        
+
         Serial.println(Battery.getSOC());
         Mower.stop();
 #if GO_BACKWARD_UNTIL_INSIDE
@@ -269,15 +269,28 @@ void loop() {
           state = DOCKING;
           break;
         }
-        
+
+        if(i==0)
+        {
         // Tries to turn, but if timeout then reverse and try again
-        if ((err = Mower.turnToReleaseRight(30) > 0)) {
-          Mower.runBackward(FULLSPEED);
-          delay(1000);
-          Mower.stop();
-          if ((err = Mower.turnToReleaseRight(30) > 0))
-            Error.flag(err);
+          if ((err = Mower.turnToReleaseRight(30) > 0)) {
+            Mower.runBackward(FULLSPEED);
+            delay(1000);
+            Mower.stop();
+            if ((err = Mower.turnToReleaseRight(30) > 0))
+              Error.flag(err);
+          }
         }
+      else
+      {
+        if ((err = Mower.turnToReleaseLeft(30) > 0)) {
+        Mower.runBackward(FULLSPEED);
+        delay(1000);
+        Mower.stop();
+        if ((err = Mower.turnToReleaseLeft(30) > 0))
+          Error.flag(err);
+        }
+      }
 
         Compass.setNewTargetHeading();
 
@@ -290,13 +303,13 @@ void loop() {
         }
       }
     }
-      
-  
-   /* This should be ok to remove from now. 
-   
+
+
+   /* This should be ok to remove from now.
+
    Ola Palm 2017-06-23
    */
-  
+
   /*
       Sensor.select(1);
 
