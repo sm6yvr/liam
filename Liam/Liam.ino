@@ -84,6 +84,12 @@ long time_at_turning = millis();
 int turn_direction = 1;
 int LCDi = 0;
 
+// This is to check if setup debug has been executed
+bool setupDebugIsInitialized = false;
+
+// This is to check if liam has been initialized
+bool liamIsInitialized = false;
+
 // SerialCommand to connect command to a method
 SerialCommand SCmd;
 
@@ -143,7 +149,16 @@ void updateBWF() {
 }
 
 // Added to test serialCommand
+boolean getSetupDebug() {
+  Serial.print("getSetupDebug is");
+  Serial.println(Defaults.get_SETUP_AND_DEBUG_MODE());
+
+  return Defaults.get_SETUP_AND_DEBUG_MODE();
+
+
+}
 void setSetupDebug() {
+  Serial.println("In setSetupDebug");
   bool aValue;
   char *arg;
   arg = SCmd.next();
@@ -152,12 +167,15 @@ void setSetupDebug() {
     aValue=atoi(arg);
     Serial.println(aValue);
     Defaults.set_SETUP_AND_DEBUG_MODE(aValue);
+  } else {
+    Serial.println("Argument is null");
   }
 }
 
 enum API_COMMAND {
   apiSetSetupDebug, // =0;
-  apiGetSetupDebug
+  apiGetSetupDebug,
+  apiToggleLed
 };
 
 // This gets set as the default handler, and gets called when no other command matches.
@@ -166,6 +184,15 @@ void unrecognized()
   Serial.println("What?");
 }
 
+void toggleLed() {
+  Serial.println("ToggleLed");
+  SetupDebug.toggleLed();
+  // pinMode(13,OUTPUT);
+  // digitalWrite(13,LOW);
+  // delay(1000);
+  // digitalWrite(13,HIGH);
+
+}
 // ****************** Setup **************************************
 void setup()
 {
@@ -177,7 +204,10 @@ void setup()
   CutterMotor.initialize();
   Battery.resetSOC();// Set the SOC to current value
   Compass.initialize();
-  SCmd.addCommand((char)apiSetSetupDebug ,setSetupDebug);  // Converts two arguments to integers and echos them back
+  char buf[4];
+  SCmd.addCommand(itoa(apiSetSetupDebug, buf, 10) ,setSetupDebug);  // Converts two arguments to integers and echos them back
+  SCmd.addCommand(itoa(apiGetSetupDebug, buf, 10) ,getSetupDebug);  // Converts two arguments to integers and echos them back
+  SCmd.addCommand(itoa(apiToggleLed, buf, 10), toggleLed);
   SCmd.addDefaultHandler(unrecognized);
 
 #if __RTC_CLOCK__
@@ -188,24 +218,22 @@ void setup()
 
   attachInterrupt(0, updateBWF, RISING);		// Run the updateBWF function every time there is a pulse on digital pin2
   Sensor.select(0);
+
+  // bool v = true;
+  // Defaults.set_SETUP_AND_DEBUG_MODE(v);
 /* denna check kommer då bli såhär.
 */
-if(Defaults.get_SETUP_AND_DEBUG_MODE())
-{
-  Serial.println("LIAM is running in setup debug mode!!!!");
-  SetupDebug.initialize(&Serial);
-}
-else
-{
-  if (Battery.isBeingCharged())	{			// If Liam is in docking station then
-    state = CHARGING;						// continue charging
-    Mower.stopCutter();
-  } else {										// otherwise
-    state = MOWING;
-    Mower.startCutter();					// Start up the cutter motor
-    Mower.runForward(FULLSPEED);
-  }
-}
+// if(!Defaults.get_SETUP_AND_DEBUG_MODE())
+// {
+//   if (Battery.isBeingCharged())	{			// If Liam is in docking station then
+//     state = CHARGING;						// continue charging
+//     Mower.stopCutter();
+//   } else {										// otherwise
+//     state = MOWING;
+//     Mower.startCutter();					// Start up the cutter motor
+//     Mower.runForward(FULLSPEED);
+//   }
+// }
 /*#if __SETUP_AND_DEBUG_MODE__
   Serial.println("LIAM is running in setup debug mode!!!!");
   SetupDebug.initialize(&Serial);
@@ -228,6 +256,7 @@ else
 void loop() {
 
   // Process serial API commands
+  Serial.println("Read Serial" );
   SCmd.readSerial();
 
 /* om värdet på denna variable sätt till false via något så kommer vi inte längre att köra setup.. så man skulle kunna ha den till true, eller sätta den till true vid kompilering och köra en setup, från setup skriva ner de värden som är intressanta, inne/ute, SOC, osv osv.. sedan sätta SETUP_AND_DEBUG_MODE
@@ -235,13 +264,33 @@ till false, vilket skulle tvinga oss till else satsen här nedan vid nästa kör
 
 I setup ovan skulle jag vilja ha en method som kolla av eeprom och läser värden från den om de finns.
 */
-  if(Defaults.get_SETUP_AND_DEBUG_MODE())
-  {
-  SetupDebug.startListeningOnSerial();
+  if (Defaults.get_SETUP_AND_DEBUG_MODE()) {
+    Serial.println("debug");
+    delay(2000);
+    //Mower.stopCutter();
+    if (!setupDebugIsInitialized) {
+      setupDebugIsInitialized = true;
+      Serial.println("LIAM is now running in setup debug mode!");
+      SetupDebug.initialize(&Serial);
+    }
+    //SetupDebug.startListeningOnSerial();
 
-  }
-  else
-  {
+  } else if (!liamIsInitialized) {
+
+     Serial.println("LIAM is now running in standard mode!");
+
+     // Do what is needed the first time when the mode has been changed from setupDebug
+     if (Battery.isBeingCharged())	{			// If Liam is in docking station then
+       state = CHARGING;						// continue charging
+       Mower.stopCutter();
+     } else {										// otherwise
+       state = MOWING;
+       Mower.startCutter();					// Start up the cutter motor
+       Mower.runForward(FULLSPEED);
+     }
+     liamIsInitialized = true;
+
+  } else {
     /* MAIN PROGRAM */
     boolean in_contact;
     boolean mower_is_outside;

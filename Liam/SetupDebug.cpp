@@ -269,9 +269,9 @@ void SETUPDEBUG::getMotionValues() {
 void SETUPDEBUG::toggleLed() {
 
   if (led_is_on)
-    digitalWrite(10,LOW);
+    digitalWrite(LED_PIN,LOW);
   else
-    digitalWrite(10,HIGH);
+    digitalWrite(LED_PIN,HIGH);
 
   led_is_on = (led_is_on?false:true);
 }
