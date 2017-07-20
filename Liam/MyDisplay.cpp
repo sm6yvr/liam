@@ -30,8 +30,9 @@ boolean MYDISPLAY::initialize() {
 	current_row = 0;
 	current_col = 0;
 
-	for (int i=0; i<3; i++)
-		blink();
+  // Removed this so that Liam can start with SerialCommand..
+	//for (int i=0; i<3; i++)
+		//blink();
 
 	setCursor(0, 0);
 	print("SW version:");
@@ -42,7 +43,8 @@ boolean MYDISPLAY::initialize() {
 	print(__DATE__);
 	setCursor(0, 3);
 	print(__TIME__);
-	delay(3000);
+  // Removed in order to get faster start, I donät know if something could be out of sync because of this..
+  //delay(3000);
 	clear();
 }
 
@@ -51,7 +53,7 @@ void MYDISPLAY::update() {
 	int sens = 0;
 
     // Rad 1: Sensors
-	#if __MS9150__ || __MS5883L__ || __ADXL345__ || __MMA7455__ 
+	#if __MS9150__ || __MS5883L__ || __ADXL345__ || __MMA7455__
 	    setCursor(0,0);
 	    print("Comp:");
 	    setCursor(7,0);

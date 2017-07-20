@@ -14,6 +14,7 @@ class SETUPDEBUG {
         void initialize(HardwareSerial *serIn);
         void startListeningOnSerial();
         void updateBWF();
+        void toggleLed();
     private:
         WHEELMOTOR* leftMotor;
         WHEELMOTOR* rightMotor;
@@ -28,7 +29,6 @@ class SETUPDEBUG {
         void toggleCutterMotor();
         void getBwfSignals();
         void getMotionValues();
-        void toggleLed();
 
         int pitch;
         boolean led_is_on;
