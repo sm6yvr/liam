@@ -79,11 +79,23 @@ void DEFINITION::setDefaultLevels(BATTERY* battery, WHEELMOTOR* left, WHEELMOTOR
 	right->setOverloadLevel(WHEELMOTOR_OVERLOAD);
 	cutter->setOverloadLevel(CUTTER_OVERLOAD);
 }
-void DEFINITION::set_SETUP_AND_DEBUG_MODE(bool &value)
+
+void DEFINITION::set_SETUP_AND_DEBUG(bool & value)
 {
-	this->SETUP_AND_DEBUG_MODE = value;
+	this->setupAndDebug=value;
 }
-bool DEFINITION::get_SETUP_AND_DEBUG_MODE()
+bool DEFINITION::get_SETUP_AND_DEBUG()
 {
-	return this->SETUP_AND_DEBUG_MODE;
+	return this->setupAndDebug;
 }
+BATTERY::BATTERY_TYPE  DEFINITION::get_MY_BATTERY_TYPE()
+{
+return this->my_battery_type;
+
+}
+int DEFINITION::getBattyFullLevel()
+{return this->batteryFullLevel;}
+int DEFINITION::getBattyEmptyLevel()
+{return this->batteryEmptyLevel;}
+int DEFINITION::getBattyGoHomeLevel()
+{return batteryGoHomeLevel;}

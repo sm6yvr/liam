@@ -36,6 +36,13 @@
 #ifndef _DEFINITION_H_
 #define _DEFINITION_H_
 
+/* SETUP AND DEBUG MODE .
+   First time you start your mover the code is configured to run in debug mode.
+   In that mode you can send different commands to the mover to test different functions.
+   You can also see some values reported by the sensors. You need probably to tweek some
+   of the parameters in this file and when you are done remove or comment out this line to
+   run your mover in real mode. */
+
 
 /******************************************************************
   User specific settings depends on how you have built your mover.
@@ -49,13 +56,7 @@
                     NIDEC      2     (for NIDEC 24 or NIDEC 22 connected to morgan shield without any modifications) */
 const int MY_CUTTERMOTOR = 1;
 
-/* Configure which type of battery you have.
-   Types availible:
-                    LEADACID  0
-                    NIMH      1
-                    LIION	    2
-*/
-const int MY_BATTERY = 2;
+
 
 /* Number of BWF sensors can be 1-4 depending on shield */
 const int NUMBER_OF_SENSORS = 2;
@@ -112,7 +113,7 @@ const int NUMBER_OF_SENSORS = 2;
 /* Enable this if you need the mower to go backward until it's inside and then turn.
    Default behavior is to turn directly when mower is outside BWF, if definition below is enabled this might help mower not to get stuck in slopes.
    If mower is not inside within x seconds mower will stop. */
-#define GO_BACKWARD_UNTIL_INSIDE true
+#define GO_BACKWARD_UNTIL_INSIDE fals
 #define MAX_GO_BACKWARD_TIME 5
 // The amount of times to check and sum angle, sum will be divided by this value to get avrage angle of slopereadings number of time read.
 #define SLOPEREADINGS 1
@@ -157,11 +158,13 @@ if you have no angle-sensor and still want mower to go backwards until it's insi
 #define BRUSHED 1
 #define NIDEC 2
 
+
 /* Battery */
+/*
 #define LEADACID 0
 #define NIMH 1
 #define LIION	2
-
+*/
 /* Wheel motor */
 #define WHEELMOTOR_OVERLOAD		130
 #define WHEELMOTOR_SMOOTHNESS	300
@@ -179,7 +182,7 @@ const int MOWING = 0;
 const int LAUNCHING = 1;
 const int DOCKING = 2;
 const int CHARGING = 3;
-
+const int TESTING = 4;
 /* Turning details */
 #define TURN_INTERVAL 15000
 #define REVERSE_DELAY 2
@@ -197,28 +200,28 @@ const int CHARGING = 3;
 /* Software version */
 #define MAJOR_VERSION 5
 #define MINOR_VERSION_1	2
-#define MINOR_VERSION_2	0
+#define MINOR_VERSION_2	2
 
 class DEFINITION {
     public:
         void definePinsInputOutput();
         void setDefaultLevels(BATTERY* battery, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cutter);
-        void set_SETUP_AND_DEBUG_MODE(bool & value);
-        bool get_SETUP_AND_DEBUG_MODE();
+        void set_SETUP_AND_DEBUG(bool & value);
+        bool get_SETUP_AND_DEBUG();
+
+        void set_MYBATTERY(BATTERY::BATTERY_TYPE type,int minvalue, int maxvalue, int gohomeValue);
+        BATTERY get_MYBATTERY();
+        bool APITEST = true;
+        BATTERY::BATTERY_TYPE get_MY_BATTERY_TYPE();
+        int getBattyFullLevel();
+        int getBattyEmptyLevel();
+        int getBattyGoHomeLevel();
     private:
-/*Ola Palm..
-
-Mitt förslag.
-Vi behåller namnen så som de är definerade idag, man kan ju ta bort __ framför och bakom.
-Initierar värdet av variable till samma som står som define idag.. */
-      /* SETUP AND DEBUG MODE .
-         First time you start your mover the code is configured to run in debug mode.
-         In that mode you can send different commands to the mover to test different functions.
-         You can also see some values reported by the sensors. You need probably to tweek some
-         of the parameters in this file and when you are done remove or comment out this line to
-         run your mover in real mode. */
-      bool SETUP_AND_DEBUG_MODE= false;
-
-};
+      bool setupAndDebug=false;
+      BATTERY::BATTERY_TYPE my_battery_type = BATTERY::BATTERY_TYPE::LIION;
+      int batteryFullLevel=1700;
+      int batteryEmptyLevel=1040;
+      int batteryGoHomeLevel=1110;
+      };
 
 #endif /* _DEFINITION_H_ */

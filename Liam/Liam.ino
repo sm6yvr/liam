@@ -1,5 +1,3 @@
-#include <Arduino.h>
-
 /*
    Welcome to the Liam5_1 program
    This program will control your mower and relies on a two coil
@@ -76,22 +74,14 @@
 #include "SensAdxl345.h"
 #include "MMA_7455.h"
 #include "SetupDebug.h"
-#include "SerialCommand.h"
+#include "API.h"
 
 // Global variables
-int state;
+int state = TESTING;
 long time_at_turning = millis();
 int turn_direction = 1;
 int LCDi = 0;
 
-// This is to check if setup debug has been executed
-bool setupDebugIsInitialized = false;
-
-// This is to check if liam has been initialized
-bool liamIsInitialized = false;
-
-// SerialCommand to connect command to a method
-SerialCommand SCmd;
 
 // Set up all the defaults (check the Definition.h file for all default values)
 DEFINITION Defaults;
@@ -103,7 +93,9 @@ WHEELMOTOR rightMotor(WHEEL_MOTOR_A_PWM_PIN, WHEEL_MOTOR_A_DIRECTION_PIN, WHEEL_
 WHEELMOTOR leftMotor(WHEEL_MOTOR_B_PWM_PIN, WHEEL_MOTOR_B_DIRECTION_PIN, WHEEL_MOTOR_B_CURRENT_PIN, WHEELMOTOR_SMOOTHNESS);
 
 // Battery
-BATTERY Battery(MY_BATTERY, SOC_PIN, DOCK_PIN);
+BATTERY Battery(Defaults.get_MY_BATTERY_TYPE(), SOC_PIN, DOCK_PIN);
+
+
 
 // BWF Sensors
 BWFSENSOR Sensor(BWF_SELECT_B_PIN, BWF_SELECT_A_PIN);
@@ -138,77 +130,58 @@ CLOCK myClock;
 
 // Error handler
 ERROR Error(&Display, LED_PIN, &Mower);
-/* alla klasser kommer behöva buyggas för att kunna använda dem utan att behöva kompiler om hela prg */
-//#if __SETUP_AND_DEBUG_MODE__
-  SETUPDEBUG SetupDebug(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery);
-//#endif
+
+
+SETUPDEBUG SetupDebug(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery);
+
+
+//API
+API api(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery, &Defaults);
+
+
+/*
+  SerialEvent occurs whenever a new data comes in the hardware serial RX. This
+  routine is run between each time loop() runs, so using delay inside loop can
+  delay response. Multiple bytes of data may be available.
+*/
+void APIEvent() {
+  // /// as for now only one command is stored and handled, might be a bigger buffer that could hold Multiple commands later on, but not for now.
+  // if(api.inputComplete)
+  // {
+  //   Serial.println("Har redan ett kommando");
+  //   return;
+  // }
+    while (Serial.available()) {
+    // get the new byte:
+    char c = Serial.read();
+    api.inputComplete = api.addByteToBuffer(c);
+    // leave for now and let loop continue; Might be call to CheckSyncValue from here later.
+    }
+
+} // serialEvent
+
 
 // This function calls the sensor object every time there is a new signal pulse on pin2
+
 void updateBWF() {
   Sensor.readSensor();
 }
 
-// Added to test serialCommand
-boolean getSetupDebug() {
-  Serial.print("getSetupDebug is");
-  Serial.println(Defaults.get_SETUP_AND_DEBUG_MODE());
-
-  return Defaults.get_SETUP_AND_DEBUG_MODE();
-
-
-}
-void setSetupDebug() {
-  Serial.println("In setSetupDebug");
-  bool aValue;
-  char *arg;
-  arg = SCmd.next();
-
-  if (arg != NULL) {
-    aValue=atoi(arg);
-    Serial.println(aValue);
-    Defaults.set_SETUP_AND_DEBUG_MODE(aValue);
-  } else {
-    Serial.println("Argument is null");
-  }
-}
-
-enum API_COMMAND {
-  apiSetSetupDebug, // =0;
-  apiGetSetupDebug,
-  apiToggleLed
-};
-
-// This gets set as the default handler, and gets called when no other command matches.
-void unrecognized()
-{
-  Serial.println("What?");
-}
-
-void toggleLed() {
-  Serial.println("ToggleLed");
-  SetupDebug.toggleLed();
-  // pinMode(13,OUTPUT);
-  // digitalWrite(13,LOW);
-  // delay(1000);
-  // digitalWrite(13,HIGH);
-
-}
 // ****************** Setup **************************************
 void setup()
 {
-  Serial.begin(115200); 						// Fast communication on the serial port for all terminal messages
+  Serial.begin(115200); 						// Fast communication on the serial port
   Defaults.definePinsInputOutput();			// Configure all the pins for input or output
   Defaults.setDefaultLevels(&Battery, &leftMotor, &rightMotor, &CutterMotor); // Set default levels (defined in Definition.h) for your mower
 
   Display.initialize();							// Start up the display
   CutterMotor.initialize();
+  Battery.setGoHomeLevel(Defaults.getBattyGoHomeLevel());
+  Battery.setFullyChargedLevel(Defaults.getBattyFullLevel());
+  Battery.setDepletedLevel(Defaults.getBattyEmptyLevel());
+
   Battery.resetSOC();// Set the SOC to current value
   Compass.initialize();
-  char buf[4];
-  SCmd.addCommand(itoa(apiSetSetupDebug, buf, 10) ,setSetupDebug);  // Converts two arguments to integers and echos them back
-  SCmd.addCommand(itoa(apiGetSetupDebug, buf, 10) ,getSetupDebug);  // Converts two arguments to integers and echos them back
-  SCmd.addCommand(itoa(apiToggleLed, buf, 10), toggleLed);
-  SCmd.addDefaultHandler(unrecognized);
 
 #if __RTC_CLOCK__
   myClock.initialize();
@@ -216,28 +189,14 @@ void setup()
   myClock.setGoHomeTime(GO_HOME_TIME);
 #endif
 
-  attachInterrupt(0, updateBWF, RISING);		// Run the updateBWF function every time there is a pulse on digital pin2
-  Sensor.select(0);
+  //attachInterrupt(0, updateBWF, RISING);		// Run the updateBWF function every time there is a pulse on digital pin2
+//  Sensor.select(0);
 
-  // bool v = true;
-  // Defaults.set_SETUP_AND_DEBUG_MODE(v);
-/* denna check kommer då bli såhär.
-*/
-// if(!Defaults.get_SETUP_AND_DEBUG_MODE())
-// {
-//   if (Battery.isBeingCharged())	{			// If Liam is in docking station then
-//     state = CHARGING;						// continue charging
-//     Mower.stopCutter();
-//   } else {										// otherwise
-//     state = MOWING;
-//     Mower.startCutter();					// Start up the cutter motor
-//     Mower.runForward(FULLSPEED);
-//   }
-// }
-/*#if __SETUP_AND_DEBUG_MODE__
-  Serial.println("LIAM is running in setup debug mode!!!!");
-  SetupDebug.initialize(&Serial);
-#else
+// #if __SETUP_AND_DEBUG_MODE__
+//   Serial.println("LIAM is running in setup debug mode!!!!");
+//   SetupDebug.initialize(&Serial);
+if(!state==TESTING)
+{
   if (Battery.isBeingCharged())	{			// If Liam is in docking station then
     state = CHARGING;						// continue charging
     Mower.stopCutter();
@@ -246,144 +205,124 @@ void setup()
     Mower.startCutter();					// Start up the cutter motor
     Mower.runForward(FULLSPEED);
   }
-#endif */
-
 }
 
 
+}
 
 // ***************** Main loop ***********************************
 void loop() {
 
-  // Process serial API commands
-  Serial.println("Read Serial" );
-  SCmd.readSerial();
+  if(api.inputComplete)
+    api.ValidateCommand();
+  else
+    APIEvent();
 
-/* om värdet på denna variable sätt till false via något så kommer vi inte längre att köra setup.. så man skulle kunna ha den till true, eller sätta den till true vid kompilering och köra en setup, från setup skriva ner de värden som är intressanta, inne/ute, SOC, osv osv.. sedan sätta SETUP_AND_DEBUG_MODE
-till false, vilket skulle tvinga oss till else satsen här nedan vid nästa körning..
+  /* MAIN PROGRAM */
+  boolean in_contact;
+  boolean mower_is_outside;
+  int err = 0;
+if(state!=TESTING)
+{
+  LCDi++;  //Loops 0-10
+  if (LCDi % 25 == 0 ) {
+    Display.update();
+  }
+}
+  // Security check Mower is flipped/lifted.
+#if __MS9150__ || __MS5883L__ || __ADXL345__ || __MMA7455__
+  if (Mower.hasFlipped()) {
+    Serial.print("Mower has flipped ");
+    Mower.stopCutter();
+    Mower.stop();
+    Error.flag(9);
+  }
+#endif
 
-I setup ovan skulle jag vilja ha en method som kolla av eeprom och läser värden från den om de finns.
-*/
-  if (Defaults.get_SETUP_AND_DEBUG_MODE()) {
-    Serial.println("debug");
+#if __Lift_Sensor__
+  if (Mower.isLifted())
+  {
+    Serial.println("Mower is lifted");
+    Mower.stopCutter();
+    Mower.stop();
+    delay(500);
+    Mower.runBackward(FULLSPEED);
     delay(2000);
-    //Mower.stopCutter();
-    if (!setupDebugIsInitialized) {
-      setupDebugIsInitialized = true;
-      Serial.println("LIAM is now running in setup debug mode!");
-      SetupDebug.initialize(&Serial);
-    }
-    //SetupDebug.startListeningOnSerial();
-
-  } else if (!liamIsInitialized) {
-
-     Serial.println("LIAM is now running in standard mode!");
-
-     // Do what is needed the first time when the mode has been changed from setupDebug
-     if (Battery.isBeingCharged())	{			// If Liam is in docking station then
-       state = CHARGING;						// continue charging
-       Mower.stopCutter();
-     } else {										// otherwise
-       state = MOWING;
-       Mower.startCutter();					// Start up the cutter motor
-       Mower.runForward(FULLSPEED);
-     }
-     liamIsInitialized = true;
-
-  } else {
-    /* MAIN PROGRAM */
-    boolean in_contact;
-    boolean mower_is_outside;
-    int err = 0;
-    LCDi++;  //Loops 0-10
-    if (LCDi % 25 == 0 ) {
-      Display.update();
-    }
-    Serial.println("");
-    // Security check Mower is flipped/lifted.
-  #if __MS9150__ || __MS5883L__ || __ADXL345__ || __MMA7455__
-    if (Mower.hasFlipped()) {
-      Serial.print("Mower has flipped ");
-      Mower.stopCutter();
-      Mower.stop();
-      Error.flag(9);
-    }
-  #endif
-
-  #if __Lift_Sensor__
     if (Mower.isLifted())
+      Error.flag(4);
+    Mower.turnRight(90);
+    //Mover.startCutter();
+    Mower.runForward(FULLSPEED);
+  }
+#endif
+if(!state==TESTING)
+{
+  // Check if stuck and trigger action
+  Mower.updateBalance();
+
+  if (abs(Mower.getBalance()) > BALANCE_TRIGGER_LEVEL) {
+    Mower.storeState();
+    Mower.runBackward(FULLSPEED);
+    delay(1000);
+    Mower.stop();
+    Mower.restoreState();
+    Mower.resetBalance();
+  }
+}
+  switch (state) {
+    case TESTING:
+LCDi++;
+    if(LCDi <=1)
     {
-      Serial.println("Mower is lifted");
-      Mower.stopCutter();
-      Mower.stop();
-      delay(500);
-      Mower.runBackward(FULLSPEED);
-      delay(2000);
-      if (Mower.isLifted())
-        Error.flag(4);
-      Mower.turnRight(90);
-      //Mover.startCutter();
-      Mower.runForward(FULLSPEED);
-    }
-  #endif
+      Serial.print("TESTMODE\n");
+      }
 
-    // Check if stuck and trigger action
-    Mower.updateBalance();
+    delay(500);
+      break;
+    //------------------------- MOWING ---------------------------
+    case MOWING:
+      Battery.updateSOC();
 
-    if (abs(Mower.getBalance()) > BALANCE_TRIGGER_LEVEL) {
-      Mower.storeState();
-      Mower.runBackward(FULLSPEED);
-      delay(1000);
-      Mower.stop();
-      Mower.restoreState();
-      Mower.resetBalance();
-    }
+      for(int i = 0; i < NUMBER_OF_SENSORS; i++) {
+      Sensor.select(i);
 
-    switch (state) {
+      if (BWF_DETECTION_ALWAYS)
+        mower_is_outside = !Sensor.isInside();
+      else
+        mower_is_outside = Sensor.isOutside();
 
-      //------------------------- MOWING ---------------------------
-      case MOWING:
-        Battery.updateSOC();
-        Display.update();
-        for(int i = 0; i < NUMBER_OF_SENSORS; i++) {
-        Sensor.select(i);
+      // Check left sensor (i) and turn right if needed
+      if (mower_is_outside) {
+        if(i==0)
+          Serial.println("Left outside");
+        else if(i==1)
+          Serial.println("Right outside");
 
-        if (BWF_DETECTION_ALWAYS)
-          mower_is_outside = !Sensor.isInside();
-        else
-          mower_is_outside = Sensor.isOutside();
+        Serial.println(Battery.getSOC());
+        Mower.stop();
+        if (Battery.mustCharge()) {
+          Mower.stopCutter();
+          /*
+          There might be reasons, but why should the mower run fullspeed forward when it finds out that it has to charge battery??
 
-        // Check left sensor (i) and turn right if needed
-        if (mower_is_outside) {
-          if(i==0)
-            Serial.println("Left outside");
-          else if(i==1)
-            Serial.println("Right outside");
-
-          Serial.println(Battery.getSOC());
+          Ola Palm.
+          */
+          Mower.runForward(FULLSPEED);
+          delay(1000);
           Mower.stop();
-  #if GO_BACKWARD_UNTIL_INSIDE
-          /* function will return 0 if inside else none zero value */
+          // change this value to 1 if you would like the mower to go home counter clock wise.
+          Sensor.select(0);
+          state = DOCKING;
+          break;
+        }
+
+        #if GO_BACKWARD_UNTIL_INSIDE
           Mower.GoBackwardUntilInside (&Sensor);
-          /* if value is zero both sensors are inside and we can return*/
-  #endif
-          if (Battery.mustCharge()) {
-            Mower.stopCutter();
-            /*
-            There might be reasons, but why should the mower run fullspeed forward when it finds out that it has to charge battery??
+        #endif
 
-            Ola Palm.
-            */
-            Mower.runForward(FULLSPEED);
-            delay(1000);
-            Mower.stop();
-            // change this value to 1 if you would like the mower to go home counter clock wise.
-            Sensor.select(0);
-            state = DOCKING;
-            break;
-          }
-
-          // Tries to turn, but if timeout then reverse and try again
+        if(i==0)
+        {
+        // Tries to turn, but if timeout then reverse and try again
           if ((err = Mower.turnToReleaseRight(30) > 0)) {
             Mower.runBackward(FULLSPEED);
             delay(1000);
@@ -391,248 +330,208 @@ I setup ovan skulle jag vilja ha en method som kolla av eeprom och läser värde
             if ((err = Mower.turnToReleaseRight(30) > 0))
               Error.flag(err);
           }
-
-          Compass.setNewTargetHeading();
-
-          if (Mower.allSensorsAreOutside()) {
-            Mower.runBackward(FULLSPEED);
-            delay(1000);
-            Mower.stop();
-            if (Mower.allSensorsAreOutside())
-              Error.flag(4);
-          }
+        }
+      else
+      {
+        if ((err = Mower.turnToReleaseLeft(30) > 0)) {
+        Mower.runBackward(FULLSPEED);
+        delay(1000);
+        Mower.stop();
+        if ((err = Mower.turnToReleaseLeft(30) > 0))
+          Error.flag(err);
         }
       }
 
-
-     /* This should be ok to remove from now.
-
-     Ola Palm 2017-06-23
-     */
-
-    /*
-        Sensor.select(1);
-
-        if (BWF_DETECTION_ALWAYS)
-          mower_is_outside = !Sensor.isInside();
-        else
-          mower_is_outside = Sensor.isOutside();
-
-        // Check right sensor (1) and turn left if needed
-        if (mower_is_outside) {
-          Serial.println("Right Outside");
-          Serial.println(Battery.getSOC());
-          Mower.stop();
-
-  #if GO_BACKWARD_UNTIL_INSIDE
-          err = Mower.GoBackwardUntilInside(&Sensor);
-  #endif
-
-          // Tries to turn, but if timeout then reverse and try again
-          if ((err = Mower.turnToReleaseLeft(30) > 0)) {
-            Mower.runBackward(FULLSPEED);
-            delay(1000);
-            Mower.stop();
-            if ((err = Mower.turnToReleaseLeft(30) > 0))
-              Error.flag(err);
-          }
-
-          Compass.setNewTargetHeading();
-
-          if (Mower.allSensorsAreOutside()) {
-            Mower.runBackward(FULLSPEED);
-            delay(1000);
-            Mower.stop();
-            if (Mower.allSensorsAreOutside())
-              Error.flag(4);
-          }
-        }
-
-  */
-        Mower.runForward(FULLSPEED);
-
-        // Adjust the speed of the mower to the grass thickness
-        Mower.compensateSpeedToCutterLoad();
-
-        // Adjust the speed of the mower to the compass heading
-        Compass.updateHeading();
-        Mower.compensateSpeedToCompassHeading();
-
-
-        // Check if mower has hit something
-        if (Mower.wheelsAreOverloaded())
-        {
-          Serial.print("Wheel overload ");
-          Mower.runBackward(FULLSPEED);
-          if (Mower.waitWhileInside(2000) == 0);
-          Mower.turnRight(90);
-          Compass.setNewTargetHeading();
-          Mower.runForward(FULLSPEED);
-        }
-
-        // Check if bumper has triggered (providing you have one enabled)
-  #if  __Bumper__
-        if (Mower.hasBumped())
-        {
-          Serial.print("Mower has bumped ");
-          Mower.runBackward(FULLSPEED);
-          delay(2000);
-          Mower.turnRight(90);
-          Mower.runForward(FULLSPEED);
-        }
-  #endif
-
-  #if  __Lift_Sensor__
-        if (Mower.isLifted())
-        {
-          Serial.println("Mower is lifted");
-          Mower.stopCutter();
-          Mower.runBackward(FULLSPEED);
-          delay(2000);
-          if (Mower.isLifted())
-            Error.flag(4);
-          Mower.turnRight(90);
-          Mower.startCutter();
-          Mower.runForward(FULLSPEED);
-        }
-  #endif
-
-        // Check if mower has tilted (providing you have one enabled)
-  #if  __MS9150__ ||  __MS5883L__ ||  __ADXL345__ || __MMA7455__
-        if (Mower.hasFlipped()) {
-          Serial.print("Mower has flipped ");
-          Mower.stopCutter();
-          Mower.stop();
-          Error.flag(9);
-        } else if (Mower.hasTilted()) {
-          Serial.print("Mower has tilted ");
-          Mower.runBackward(FULLSPEED);
-          delay(2000);
-          Mower.turnRight(90);
-          Mower.runForward(FULLSPEED);
-          delay(200);
-        }
-  #endif
-
-        break;
-
-
-      //----------------------- LAUNCHING ---------------------------
-      case LAUNCHING:
-
-        Mower.runBackward(FULLSPEED);
-
-        delay(7000);
-        Mower.stop();
-
-        // Turn right in random degree
-        Mower.turnRight(random(30, 60));
-        Mower.startCutter();
-        Mower.waitWhileChecking(5000);
-
         Compass.setNewTargetHeading();
 
-        Mower.runForward(FULLSPEED);
-
-        state = MOWING;
-
-        // Reset the running average
-        Battery.resetSOC();
-
-        break;
-
-      //----------------------- DOCKING -----------------------------
-      case DOCKING:
-        Battery.updateSOC();
-        Display.update();
-        //Make the wheel motors extra responsive
-        leftMotor.setSmoothness(10);
-        rightMotor.setSmoothness(10);
-
-        // If the mower hits something, reverse and try again
-        if (Mower.wheelsAreOverloaded()) {
+        if (Mower.allSensorsAreOutside()) {
           Mower.runBackward(FULLSPEED);
           delay(1000);
-        }
-
-        // See if mower has repeated overload
-        // If so, turn away from the BWF and try to hook on somewhere else
-        if (Mower.hasReachedAStop()) {
-          Mower.runBackward(FULLSPEED);
-          delay(1000);
-          Mower.turnRight(90);
-          Mower.runForward(FULLSPEED);
-          delay(1000);
-          Mower.startCutter();
-          state = MOWING;
-          break;
-        }
-
-
-        // Track the BWF by compensating the wheel motor speeds
-        Mower.adjustMotorSpeeds();
-
-        // Clear signal to allow the mower to track the wire closely
-        Sensor.clearSignal();
-
-        // Wait a little to avoid current spikes
-        delay(100);
-
-        // Stop the mower as soon as the charge plates come in contact
-        if (Battery.isBeingCharged()) {
-          // Stop
           Mower.stop();
-          Mower.resetBalance();
-          state = CHARGING;
-          break;
+          if (Mower.allSensorsAreOutside())
+            Error.flag(4);
         }
-
-
-        break;
-
-      //----------------------- CHARGING ----------------------------
-      case CHARGING:
-        Battery.updateSOC();
-        Display.update();
-        // restore wheelmotor smoothness
-        leftMotor.setSmoothness(WHEELMOTOR_SMOOTHNESS);
-        rightMotor.setSmoothness(WHEELMOTOR_SMOOTHNESS);
-
-        // Just remain in this state until battery is full
-  #if  __RTC_CLOCK__
-        if (Battery.isFullyCharged() && myClock.timeToCut())
-          state = LAUNCHING;
-  #else
-        if (Battery.isFullyCharged())
-          state = LAUNCHING;
-  #endif
-
-        in_contact = false;
-
-        // Spend 20 seconds collecting status if being charged
-        for (int i = 0; i < 20; i++) {
-          if (Battery.isBeingCharged())
-            in_contact = true;
-          delay(1000);
-        }
-
-        // If the mower is not being charged, jiggle it a bit
-        if (!in_contact) {
-          Mower.runBackward(20); 	// Back away slow speed
-          delay(500);
-          Mower.runForward(20);	// Dock again at slow speed
-          delay(1000);
-          Mower.stop();
-        }
-
-        Serial.print("SOC:");
-        Serial.println(Battery.getSOC());
-
-        break;
-
+      }
     }
-//  #endif
 
+      Mower.runForward(FULLSPEED);
+
+      // Adjust the speed of the mower to the grass thickness
+      Mower.compensateSpeedToCutterLoad();
+
+      // Adjust the speed of the mower to the compass heading
+      Compass.updateHeading();
+      Mower.compensateSpeedToCompassHeading();
+
+
+      // Check if mower has hit something
+      if (Mower.wheelsAreOverloaded())
+      {
+        Serial.print("Wheel overload ");
+        Mower.runBackward(FULLSPEED);
+        if (Mower.waitWhileInside(2000) == 0);
+        Mower.turnRight(90);
+        Compass.setNewTargetHeading();
+        Mower.runForward(FULLSPEED);
+      }
+
+      // Check if bumper has triggered (providing you have one enabled)
+#if  __Bumper__
+      if (Mower.hasBumped())
+      {
+        Serial.print("Mower has bumped ");
+        Mower.runBackward(FULLSPEED);
+        delay(2000);
+        Mower.turnRight(90);
+        Mower.runForward(FULLSPEED);
+      }
+#endif
+
+#if  __Lift_Sensor__
+      if (Mower.isLifted())
+      {
+        Serial.println("Mower is lifted");
+        Mower.stopCutter();
+        Mower.runBackward(FULLSPEED);
+        delay(2000);
+        if (Mower.isLifted())
+          Error.flag(4);
+        Mower.turnRight(90);
+        Mower.startCutter();
+        Mower.runForward(FULLSPEED);
+      }
+#endif
+
+      // Check if mower has tilted (providing you have one enabled)
+#if  __MS9150__ ||  __MS5883L__ ||  __ADXL345__ || __MMA7455__
+      if (Mower.hasFlipped()) {
+        Serial.print("Mower has flipped ");
+        Mower.stopCutter();
+        Mower.stop();
+        Error.flag(9);
+      } else if (Mower.hasTilted()) {
+        Serial.print("Mower has tilted ");
+        Mower.runBackward(FULLSPEED);
+        delay(2000);
+        Mower.turnRight(90);
+        Mower.runForward(FULLSPEED);
+        delay(200);
+      }
+#endif
+
+      break;
+
+
+    //----------------------- LAUNCHING ---------------------------
+    case LAUNCHING:
+
+      Mower.runBackward(FULLSPEED);
+
+      delay(7000);
+      Mower.stop();
+
+      // Turn right in random degree
+      Mower.turnRight(random(30, 60));
+      Mower.startCutter();
+      Mower.waitWhileChecking(5000);
+
+      Compass.setNewTargetHeading();
+
+      Mower.runForward(FULLSPEED);
+
+      state = MOWING;
+
+      // Reset the running average
+      Battery.resetSOC();
+
+      break;
+
+    //----------------------- DOCKING -----------------------------
+    case DOCKING:
+      Battery.updateSOC();
+
+      //Make the wheel motors extra responsive
+      leftMotor.setSmoothness(10);
+      rightMotor.setSmoothness(10);
+
+      // If the mower hits something, reverse and try again
+      if (Mower.wheelsAreOverloaded()) {
+        Mower.runBackward(FULLSPEED);
+        delay(1000);
+      }
+
+      // See if mower has repeated overload
+      // If so, turn away from the BWF and try to hook on somewhere else
+/*
+      if (Mower.hasReachedAStop()) {
+        Mower.runBackward(FULLSPEED);
+        delay(1000);
+        Mower.turnRight(90);
+        Mower.runForward(FULLSPEED);
+        delay(1000);
+        Mower.startCutter();
+        state = MOWING;
+        break;
+      }
+//NOTE : This needs a setting in DEFINITION;
+*/
+
+      // Track the BWF by compensating the wheel motor speeds
+      Mower.adjustMotorSpeeds();
+
+      // Clear signal to allow the mower to track the wire closely
+      Sensor.clearSignal();
+
+      // Wait a little to avoid current spikes
+      delay(100);
+
+      // Stop the mower as soon as the charge plates come in contact
+      if (Battery.isBeingCharged()) {
+        // Stop
+        Mower.stop();
+        Mower.resetBalance();
+        state = CHARGING;
+        break;
+      }
+
+
+      break;
+
+    //----------------------- CHARGING ----------------------------
+    case CHARGING:
+      Battery.updateSOC();
+          // restore wheelmotor smoothness
+      leftMotor.setSmoothness(WHEELMOTOR_SMOOTHNESS);
+      rightMotor.setSmoothness(WHEELMOTOR_SMOOTHNESS);
+
+      // Just remain in this state until battery is full
+#if  __RTC_CLOCK__
+      if (Battery.isFullyCharged() && myClock.timeToCut())
+        state = LAUNCHING;
+#else
+      if (Battery.isFullyCharged())
+        state = LAUNCHING;
+#endif
+
+      in_contact = false;
+
+      // Spend 20 seconds collecting status if being charged
+      for (int i = 0; i < 20; i++) {
+        if (Battery.isBeingCharged())
+          in_contact = true;
+        delay(1000);
+      }
+
+      // If the mower is not being charged, jiggle it a bit
+      if (!in_contact) {
+        Mower.runBackward(20); 	// Back away slow speed
+        delay(500);
+        Mower.runForward(20);	// Dock again at slow speed
+        delay(1000);
+        Mower.stop();
+      }
+break;
 
   }
-}
+
+}//VOID loop
