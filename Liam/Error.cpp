@@ -95,9 +95,8 @@ void ERROR::flag(int error_number_) {
   }
 
   // blink LED forever
-  // REMOVE LATER
-  //while (true)
-	// blink_led(error_number_);
+  while (true)
+	blink_led(error_number_);
 }
 
 

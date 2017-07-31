@@ -2,14 +2,14 @@
 //
 /* Changelog:
     2014-12-12 - Initial version by Jonas
-    
+
 	2015-06-10 - Morgan M
 		- new function , readBatteryAndCalcValue
 		- update for resetSOC
 		- update for updateSOC
 		- update for isFullyCharged
-		
-		
+
+
 ============================================
 Placed under the GNU license
 
@@ -20,26 +20,11 @@ Placed under the GNU license
 
 /** Specific constructor.
  */
-BATTERY::BATTERY(int type, int socpin, int dockpin) {
+BATTERY::BATTERY(BATTERY_TYPE type, int socpin, int dockpin) {
     batType = type;
     batSocpin = socpin;
     batDockpin = dockpin;
-    
-	if (batType == LIION) {
-		fullyChargedLevel = LIIONFULL;
-		depletedLevel = LIIONEMPTY;
-	}
 
-	if (batType == NIMH) {
-		fullyChargedLevel = NIMHFULL;
-		depletedLevel = NIMHEMPTY;
-	}
-
-	if (batType == LEAD_ACID) {
-		fullyChargedLevel = LEADACIDFULL;
-		depletedLevel = LEADACIDEMPTY;
-	}
-    
 }
 
 
@@ -48,6 +33,10 @@ void BATTERY::setFullyChargedLevel(int level) {
    fullyChargedLevel = level;
    }
 
+void BATTERY::setBatterType(BATTERY::BATTERY_TYPE type)
+{
+  this->batType = type;
+}
 int BATTERY::getBatteryType() {
 	return batType;
 }
@@ -86,11 +75,11 @@ void BATTERY::updateSOC() {
 
 
 word BATTERY::readBatteryAndCalcValue(){
-    unsigned long newReading = analogRead(batSocpin);	
+    unsigned long newReading = analogRead(batSocpin);
     newReading = newReading * 488  * VOLTDIVATOR;
     newReading /= 10000;
     //return newReading;
-  	return word(newReading);  
+  	return word(newReading);
 }
 
 bool BATTERY::isBeingCharged() {
@@ -100,4 +89,11 @@ bool BATTERY::isBeingCharged() {
 bool BATTERY::isFullyCharged() {
 	return (readBatteryAndCalcValue() > fullyChargedLevel);
 }
-
+void BATTERY::setGoHomeLevel(int level)
+{
+  this->gohomeLevel=level;
+}
+int BATTERY::getGoHomeLevel()
+{
+  return this->gohomeLevel;
+}

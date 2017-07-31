@@ -36,12 +36,12 @@ boolean MYDISPLAY::initialize() {
 
 	setCursor(0, 0);
 	print("SW version:");
-	setCursor(0, 1);
-  	sprintf (buffer, "%d.%d.%d", MAJOR_VERSION, MINOR_VERSION_1, MINOR_VERSION_2);
+
+  	sprintf (buffer, "%d.%d.%d ", MAJOR_VERSION, MINOR_VERSION_1, MINOR_VERSION_2);
   	print(buffer);
-	setCursor(0, 2);
+
 	print(__DATE__);
-	setCursor(0, 3);
+
 	print(__TIME__);
   // Removed in order to get faster start, I donät know if something could be out of sync because of this..
   //delay(3000);
