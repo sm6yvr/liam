@@ -27,25 +27,15 @@ MYDISPLAY::MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERM
 boolean MYDISPLAY::initialize() {
 	char buffer [9]; //Format 09.00.00
 
-	current_row = 0;
-	current_col = 0;
-
-  // Removed this so that Liam can start with SerialCommand..
-	//for (int i=0; i<3; i++)
-		//blink();
-
-	setCursor(0, 0);
 	print("SW version:");
-	setCursor(0, 1);
-  	sprintf (buffer, "%d.%d.%d", MAJOR_VERSION, MINOR_VERSION_1, MINOR_VERSION_2);
+
+  	sprintf (buffer, "%d.%d.%d ", MAJOR_VERSION, MINOR_VERSION_1, MINOR_VERSION_2);
   	print(buffer);
-	setCursor(0, 2);
+
 	print(__DATE__);
-	setCursor(0, 3);
+
 	print(__TIME__);
-  // Removed in order to get faster start, I donät know if something could be out of sync because of this..
-  //delay(3000);
-	clear();
+
 }
 
 // Do NOT override. Implement basic commands here

@@ -1,3 +1,4 @@
+
 #include "SetupDebug.h"
 #include "Definition.h"
 
@@ -269,9 +270,9 @@ void SETUPDEBUG::getMotionValues() {
 void SETUPDEBUG::toggleLed() {
 
   if (led_is_on)
-    digitalWrite(LED_PIN,LOW);
+    digitalWrite(10,LOW);
   else
-    digitalWrite(LED_PIN,HIGH);
+    digitalWrite(10,HIGH);
 
   led_is_on = (led_is_on?false:true);
 }
