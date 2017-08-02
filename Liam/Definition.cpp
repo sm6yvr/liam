@@ -78,6 +78,11 @@ void DEFINITION::setDefaultLevels(BATTERY* battery, WHEELMOTOR* left, WHEELMOTOR
 	left->setOverloadLevel(WHEELMOTOR_OVERLOAD);
 	right->setOverloadLevel(WHEELMOTOR_OVERLOAD);
 	cutter->setOverloadLevel(CUTTER_OVERLOAD);
+	battery->setBatterType(this->get_MY_BATTERY_TYPE());
+	battery->setFullyChargedLevel(this->batteryFullLevel);
+	battery->setDepletedLevel(this->batteryEmptyLevel);
+	battery->setGoHomeLevel(this->batteryGoHomeLevel);
+
 }
 
 void DEFINITION::set_SETUP_AND_DEBUG(bool & value)
@@ -99,3 +104,19 @@ int DEFINITION::getBattyEmptyLevel()
 {return this->batteryEmptyLevel;}
 int DEFINITION::getBattyGoHomeLevel()
 {return batteryGoHomeLevel;}
+void DEFINITION::setBatteryType(BATTERY::BATTERY_TYPE type)
+{
+	this->my_battery_type=type;
+}
+void DEFINITION::setBatteryFullLevel(int & value)
+{
+	this->batteryFullLevel = value;
+}
+void DEFINITION::setBatteryEmptyLevel(int & value)
+{
+	this->batteryEmptyLevel = value;
+}
+void DEFINITION::setBatteryGoHomeLevel(int & value)
+{
+	this->batteryGoHomeLevel = value;
+}

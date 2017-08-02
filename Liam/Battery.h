@@ -38,7 +38,7 @@ class BATTERY {
         BATTERY(BATTERY_TYPE type, int socpin, int dockpin);
 
         //
-        void setBatterType(BATTERY_TYPE type);
+        void setBatterType(BATTERY::BATTERY_TYPE type);
         int getBatteryType();
 
         void setFullyChargedLevel(int level);
@@ -67,7 +67,7 @@ class BATTERY {
       int LEADACIDFULL=1330;
       int LEADACIDEMPTY=1200;
 */
-    	BATTERY_TYPE batType;
+    	BATTERY_TYPE batType=BATTERY_TYPE::LIION;
     	int batSocpin;
     	int batDockpin;
     	int fullyChargedLevel;

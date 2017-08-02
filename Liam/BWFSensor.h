@@ -1,5 +1,5 @@
 /* This is the library for a BWFSensor
-// 
+//
 // Changelog:
 //     2014-12-14 - Initial version by Jonas
 
@@ -33,20 +33,21 @@ Placed under the GNU license
 class BWFSENSOR {
     public:
         BWFSENSOR(int selA, int selB);
-        
+
         void select(int sensornumber);
-        
+
         void attach(int intpin);
     	void readSensor();
-    	
+
         bool isTimedOut();
         bool isInside();
         bool isOutside();
         bool hasNoSignal();
-        
+
+        int getSignal(int value);
         void printSignal();
         void clearSignal();
-        
+
 
     private:
     // BWF Code for inside and outside the fence

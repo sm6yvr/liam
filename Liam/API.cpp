@@ -2,13 +2,27 @@
 #include "Arduino.h"
 #include "Definition.h"
 API::API(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt, DEFINITION *definition) {
-    leftMotor = left;
-    rightMotor = right;
-    cutter = cut;
-    sensor = bwf;
-    compass = comp;
-    battery = batt;
-    definitionDefaults =definition;
+  leftMotor = left;
+  rightMotor = right;
+  cutter = cut;
+  sensor = bwf;
+  compass = comp;
+  battery = batt;
+  definitionDefaults =definition;
+}
+bool API::IsWrittenToEEPROM()
+{
+  bool written = eeprom_read_byte(0);
+  return written;
+}
+void API::EEPROM_READ()
+{
+  eeprom_read_block((void*)definitionDefaults, (void*)1, sizeof(*definitionDefaults));
+}
+void API::EEPROM_WRITE()
+{
+  eeprom_write_block((const void*)definitionDefaults, (void*)1, sizeof(*definitionDefaults));
+  eeprom_write_byte(0,true);
 }
 
 int API::SearchForChar(char *c)
@@ -17,7 +31,7 @@ int API::SearchForChar(char *c)
   const char *ptr = strchr(buffer, *c);
   if(ptr) {
     pos = ptr - buffer;
-   return pos;
+    return pos;
   }
   return -1;
 
@@ -26,8 +40,8 @@ int API::SearchForChar(char *c)
 void API::ValidateCommand()
 {
   #ifdef SERIALCOMMANDDEBUG
-    Serial.print(buffer);
-    Serial.println(" is incomming buffer");
+  Serial.print(buffer);
+  Serial.println(" is incomming buffer");
   #endif
   inputComplete=CheckSyncValue(); // start with check if buger contains syncValue
   if(inputComplete) // if syncValue
@@ -60,7 +74,7 @@ void API::ValidateCommand()
   else // if invalid args
   Response_Invalid_Command();
 
-leave();
+  leave();
 }
 void API::printIndex()
 {
@@ -72,7 +86,7 @@ void API::printIndex()
 }
 bool API::CheckSyncValue()
 {
-    // we now have a buffer that is terminated with '\r'
+  // we now have a buffer that is terminated with '\r'
   //Check for syncValue;
   index = SearchForChar(&syncValue);
   if(index!=-1)
@@ -90,7 +104,7 @@ bool API::setCommand()
 {
   commandIndex=(API::API_COMMAND)atoi(temp);
   if(commandIndex==API_COMMAND::INVALID)
-    return false;
+  return false;
   return true;
 }
 bool API::CheckCommand()
@@ -103,15 +117,15 @@ bool API::CheckCommand()
   {
     this->c = &buffer[i];
     #ifdef SERIALCOMMANDDEBUG
-      Serial.print("CheckCommand, value that will be checked ");
-      Serial.print(*c);
-      Serial.print('\n');
-      #endif
+    Serial.print("CheckCommand, value that will be checked ");
+    Serial.print(*c);
+    Serial.print('\n');
+    #endif
 
     if (isalpha(*c))
     {
       #ifdef SERIALCOMMANDDEBUG
-        Serial.print("LETTER FOUND IN COMMAND");
+      Serial.print("LETTER FOUND IN COMMAND");
       #endif
       return false;
       // char is a letter.. not acceptable as command;
@@ -124,10 +138,10 @@ bool API::CheckCommand()
     }
     else
     {
-       if(*c == '\0' || *c== delimit) // Some Get_Commands is syncValue and Commandnumber then \0 since we dont save term in buffer
+      if(*c == '\0' || *c== delimit) // Some Get_Commands is syncValue and Commandnumber then \0 since we dont save term in buffer
       {
         #ifdef SERIALCOMMANDDEBUG
-          Serial.print("Will set us done\n");
+        Serial.print("Will set us done\n");
         #endif
         index = index + counter;
         return setCommand();
@@ -190,13 +204,13 @@ bool API::CheckArgs()
         argument[argscounter] = atoi(temp);
 
         #ifdef SERIALCOMMANDDEBUG
-          Serial.print("Value of temp: ");
-          Serial.print(atoi(temp));
-          Serial.print('\n');
-          Serial.print("Value of arg: ");
-          Serial.print(argument[argscounter], DEC);
-          Serial.print('\n');
-          #endif
+        Serial.print("Value of temp: ");
+        Serial.print(atoi(temp));
+        Serial.print('\n');
+        Serial.print("Value of arg: ");
+        Serial.print(argument[argscounter], DEC);
+        Serial.print('\n');
+        #endif
         argscounter++;
         clearTemp();
         counter=0;
@@ -206,7 +220,7 @@ bool API::CheckArgs()
       {
         if(*c == '\r' || *c == '\0') // if value is carrier return or 0 terminator we are considerd done.. store arg and continue
         {
-        argument[argscounter] = atoi(temp);
+          argument[argscounter] = atoi(temp);
           #ifdef SERIALCOMMANDDEBUG
           Serial.print("End of command found\n");
           Serial.print("and this value was just added\n");
@@ -222,56 +236,56 @@ bool API::CheckArgs()
           Serial.println(*c);
           Serial.print("That one..\n");
           #endif
-        return false;
+          return false;
         }
       }
     }
   }
-#ifdef SERIALCOMMANDDEBUG
-    Serial.println("Args == ");
-    for (int i = 0; i < argslength; i++) {
-      if(argument[i]=='\0')
-        break;
-      Serial.print(argument[i], DEC);
-      Serial.print(" : ");
-    }
+  #ifdef SERIALCOMMANDDEBUG
+  Serial.println("Args == ");
+  for (int i = 0; i < argslength; i++) {
+    if(argument[i]=='\0')
+    break;
+    Serial.print(argument[i], DEC);
+    Serial.print(" : ");
+  }
   Serial.print('\n');
-#endif
-WeAreDone();
+  #endif
+  WeAreDone();
 } // check args...
 
 void API::WeAreDone()
 {
   #ifdef SERIALCOMMANDDEBUG
-    Serial.print("Commad: ");
-    Serial.print(API_COMMAND_PRINT_NAME(commandIndex));
-    Serial.print('\n');
-    Serial.print("Aguments");
-    for (size_t i = 0; i < argslength; i++) {
-      if(argument[i] == '\0')
-        break;
-      Serial.print(" : ");
-      Serial.print(argument[i],DEC);
-    }
-    Serial.print('\n');
-#endif
+  Serial.print("Commad: ");
+  Serial.print(API_COMMAND_PRINT_NAME(commandIndex));
+  Serial.print('\n');
+  Serial.print("Aguments");
+  for (size_t i = 0; i < argslength; i++) {
+    if(argument[i] == '\0')
+    break;
+    Serial.print(" : ");
+    Serial.print(argument[i],DEC);
+  }
+  Serial.print('\n');
+  #endif
 }
 void API::Response_Invalid_Command()
 {
   inputComplete = false;
   clearBuffer();
   #ifdef SERIALCOMMANDDEBUG
-    Serial.println(API_COMMAND_PRINT_NAME(API_COMMAND::INVALID));
+  Serial.println(API_COMMAND_PRINT_NAME(API_COMMAND::INVALID));
   #else
-    sprintf (buffer, ";%i:%s",commandIndex," IS INVALID");
-    Serial.println(buffer);
+  sprintf (buffer, ";%i:%s",commandIndex," IS INVALID");
+  Serial.println(buffer);
   #endif
 }
 
 bool API::addByteToBuffer(char c)
 {
   if (c == '\r' || c == '\n') // Check for terminator (default '\r') = end of command
-    return true; // No need to save term to buffer.
+  return true; // No need to save term to buffer.
 
   if (isprint(c))   // Only printable characters into the buffer
   {
@@ -295,12 +309,12 @@ bool API::CheckArgNumber(const short &number)
 }
 void API::clearBuffer()
 {
-  	for (int i=0; i<=bufferlenght; i++)
-  	{
-  		buffer[i]='\0';
-  	}
-  	bufPos=0;
-    inputComplete=false;
+  for (int i=0; i<=bufferlenght; i++)
+  {
+    buffer[i]='\0';
+  }
+  bufPos=0;
+  inputComplete=false;
 } // clearBuffer
 
 void API::RespondGetSetUpDebug()
@@ -309,88 +323,124 @@ void API::RespondGetSetUpDebug()
   sprintf (buffer, ";%i:%i", commandIndex, definitionDefaults->get_SETUP_AND_DEBUG());
   Serial.println(buffer);
 }
-void API::ACT_SetUpDebug()
+bool API::ACT_SetUpDebug()
 {
-//  Serial.print("IN ACT_SetUpDebug\n");
-
-if(CheckArgNumber(1))
-{
-Response_Invalid_Command();
-clearBuffer();
-return;
-}
-bool temp;
+  if(CheckArgNumber(1)) /* Check if therer are more arguments 1 and .....
+  if so, set this command invalid. */
+  {
+    Response_Invalid_Command();
+    clearBuffer();
+    return false;
+  }
+  bool temp;
 
   if(argument[0]==1)
-    temp = true;
-    else
-    temp = false;
+  temp = true;
+  else
+  temp = false;
 
-    definitionDefaults->set_SETUP_AND_DEBUG(temp);
-    RespondGetSetUpDebug();
+  definitionDefaults->set_SETUP_AND_DEBUG(temp);
+  RespondGetSetUpDebug();
+  return true;
 }
 void API::Response_GetBattery()
 {
-  /// TYPE MIN MAX GOHOME
+  /* Return sync, kommand, TYPE, MIN, MAX, GOHOME */
   sprintf (buffer,
-     ";%i:%i:%i:%i:%i",
-      commandIndex,
-      battery->getBatteryType(),
-      battery->getDepletedLevel(),
-      battery->getFullyChargedLevel(),
-      battery->getSOC());
-
-
+    ";%i:%i:%i:%i:%i",
+    commandIndex,
+    battery->getBatteryType(),
+    battery->getDepletedLevel(),
+    battery->getFullyChargedLevel(),
+    battery->getGoHomeLevel()
+  );
   Serial.println(buffer);
 }
 void API::ACT_SetBattery()
 {
-  this->battery->setBatterType(argument[0]);
+  this->battery->setBatterType((BATTERY::BATTERY_TYPE)argument[0]);
   this->battery->setDepletedLevel(argument[1]);
   this->battery->setFullyChargedLevel(argument[2]);
   this->battery->setGoHomeLevel(argument[3]);
+  this->definitionDefaults->setBatteryType((BATTERY::BATTERY_TYPE)argument[0]);
+  this->definitionDefaults->setBatteryFullLevel(argument[2]);
+  this->definitionDefaults->setBatteryEmptyLevel(argument[1]);
+  this->definitionDefaults->setBatteryGoHomeLevel(argument[3]);
 }
-void API::ACT_GetLSensor()
-{
-  
+void API::ACT_GetSensor()
+{ /* return sync, command, value */
+  Serial.print("\n Get sensor\n");
+  for (size_t i = 0; i < 10; i++) {
+    sprintf (buffer,
+      ";%i:%i",
+      commandIndex,
+      sensor->getSignal(i));
+      delay(86); /* signal is every 86 ms, so we need at least this delay for BWF signal to be registered */
+    }
 }
-void API::ACT_GetRSensor()
-{
 
-}
 void API::ActRespond()
 {
+  bool valueChanged=false;
+  #ifdef SERIALCOMMANDDEBUG
   Serial.print("IN ActRespond\n");
+  #endif
   switch (commandIndex) {
     case API_COMMAND::GetSetUpDebug:
-      RespondGetSetUpDebug();
-      break;
-      case API_COMMAND::SetSetUpDebug:
-      ACT_SetUpDebug();
-      break;
-      case API_COMMAND::GetBattery:
-      Response_GetBattery();
-      break;
-      case API_COMMAND::SetBattery:
-      ACT_SetBattery();
-      break;
-      default:
-      Serial.print("\nDefault value from AtcReponse\n");
-      Response_Invalid_Command();
-      break;
-    }
-//Serial.print("Done\n");
+    RespondGetSetUpDebug();
+    break;
+    case API_COMMAND::SetSetUpDebug:
+    valueChanged=ACT_SetUpDebug();
+    break;
+    case API_COMMAND::GetBattery:
+    Response_GetBattery();
+    break;
+    case API_COMMAND::SetBattery:
+    ACT_SetBattery();
+    valueChanged=true;
+    Response_GetBattery();
+    break;
+    case API_COMMAND::GetLeftSensor:
+    sensor->select(0);
+    ACT_GetSensor();
+    break;
+    case API_COMMAND::GetRightSensor:
+    sensor->select(1);
+    ACT_GetSensor();
+    break;
+    case API_COMMAND::SetFirstByteToFalse:
+    SetFirstByteFalse();
+    break;
+    default:
+    #ifdef SERIALCOMMANDDEBUG
+    Serial.print("\nDefault value from AtcReponse\n");
+    #endif
+    Response_Invalid_Command();
+    break;
+  }
+  if(valueChanged)
+  {
+    Serial.print("Detta tog: ");
+    long nu=millis();
+    EEPROM_WRITE();
+    Serial.print(millis()-nu);
+    Serial.println(" millisekunder");
+  }
+  //Serial.print("Done\n");
 
 }
 
 void API::leave()
 {
+  #ifdef SERIALCOMMANDDEBUG
   Serial.println("Clearing");
-clearTemp();
-clear_args();
-clearBuffer();
-commandIndex=API_COMMAND::INVALID;
-inputComplete=false;
+  #endif
+
+  clearTemp();
+  clear_args();
+  clearBuffer();
+  commandIndex=API_COMMAND::INVALID;
+  inputComplete=false;
 }
 
 void API::clearTemp()
@@ -398,4 +448,9 @@ void API::clearTemp()
   for (size_t i = 0; i < templenght; i++) {
     temp[i]='\0';
   }
+}
+void API::SetFirstByteFalse()
+{
+  Serial.println("Sätter byte till false");
+  eeprom_write_byte(0, false);
 }

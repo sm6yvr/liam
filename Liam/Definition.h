@@ -113,7 +113,7 @@ const int NUMBER_OF_SENSORS = 2;
 /* Enable this if you need the mower to go backward until it's inside and then turn.
    Default behavior is to turn directly when mower is outside BWF, if definition below is enabled this might help mower not to get stuck in slopes.
    If mower is not inside within x seconds mower will stop. */
-#define GO_BACKWARD_UNTIL_INSIDE fals
+#define GO_BACKWARD_UNTIL_INSIDE false
 #define MAX_GO_BACKWARD_TIME 5
 // The amount of times to check and sum angle, sum will be divided by this value to get avrage angle of slopereadings number of time read.
 #define SLOPEREADINGS 1
@@ -209,19 +209,21 @@ class DEFINITION {
         void set_SETUP_AND_DEBUG(bool & value);
         bool get_SETUP_AND_DEBUG();
 
-        void set_MYBATTERY(BATTERY::BATTERY_TYPE type,int minvalue, int maxvalue, int gohomeValue);
-        BATTERY get_MYBATTERY();
-        bool APITEST = true;
         BATTERY::BATTERY_TYPE get_MY_BATTERY_TYPE();
+        void setBatteryType(BATTERY::BATTERY_TYPE type);
+        void setBatteryFullLevel(int & value);
         int getBattyFullLevel();
+        void setBatteryEmptyLevel(int & value);
         int getBattyEmptyLevel();
+        void setBatteryGoHomeLevel(int & value);
         int getBattyGoHomeLevel();
+
     private:
       bool setupAndDebug=false;
       BATTERY::BATTERY_TYPE my_battery_type = BATTERY::BATTERY_TYPE::LIION;
-      int batteryFullLevel=1700;
+      int batteryFullLevel=1256;
       int batteryEmptyLevel=1040;
-      int batteryGoHomeLevel=1110;
+      int batteryGoHomeLevel=1100;
       };
 
 #endif /* _DEFINITION_H_ */

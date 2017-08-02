@@ -167,19 +167,20 @@ void updateBWF() {
   Sensor.readSensor();
 }
 
-void toggleLed() {
-  Serial.println("ToggleLed");
-  SetupDebug.toggleLed();
-  // pinMode(13,OUTPUT);
-  // digitalWrite(13,LOW);
-  // delay(1000);
-  // digitalWrite(13,HIGH);
-
-}
 // ****************** Setup **************************************
 void setup()
 {
+
   Serial.begin(115200); 						// Fast communication on the serial port
+  if(api.IsWrittenToEEPROM())
+  {
+    api.EEPROM_READ();
+    Serial.println("Läste från eeprom");
+}
+else
+  Serial.println("Läste inte från eeprom");
+    /*API har en pekare mot Defaults, så Defaults kommer få nya värden om raden ovan körs. */
+
   Defaults.definePinsInputOutput();			// Configure all the pins for input or output
   Defaults.setDefaultLevels(&Battery, &leftMotor, &rightMotor, &CutterMotor); // Set default levels (defined in Definition.h) for your mower
 
@@ -215,8 +216,6 @@ if(!state==TESTING)
     Mower.runForward(FULLSPEED);
   }
 }
-
-
 }
 
 // ***************** Main loop ***********************************
@@ -284,6 +283,7 @@ LCDi++;
     if(LCDi <=1)
     {
       Serial.print("TESTMODE\n");
+
       }
 
     delay(500);

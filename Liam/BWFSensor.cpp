@@ -12,7 +12,7 @@ Placed under the GNU license
 #include "BWFSensor.h"
 
 int BWFSENSOR::outside_code[] = {OUTSIDE_BWF};
-int BWFSENSOR::inside_code[] = {INSIDE_BWF};	
+int BWFSENSOR::inside_code[] = {INSIDE_BWF};
 
 /** Specific constructor.
  */
@@ -60,10 +60,10 @@ bool BWFSENSOR::hasNoSignal() {
 // This routine is run at every timer interrupt and updates the sensor status
 void BWFSENSOR::readSensor() {
   volatile int pulse_unit = 0;
-  
+
   // Calculate the time since last pulse
   pulse_length = int(micros() - pulse_time);
-  pulse_time = micros(); 
+  pulse_time = micros();
   pulse_unit = (pulse_length+half_unit_length) / pulse_unit_length;
 
 
@@ -97,9 +97,12 @@ void BWFSENSOR::readSensor() {
     pulse_count_outside=0;
 
 }
-
+int BWFSENSOR::getSignal(int value)
+{
+	return arr[value];
+}
 void BWFSENSOR::printSignal() {
-	
+
 	for (int i=0; i<arr_length; i++) {
 		Serial.print(arr[i]);
 		Serial.print(" ");
