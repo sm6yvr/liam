@@ -1,7 +1,7 @@
 #include "API.h"
 #include "Arduino.h"
 #include "Definition.h"
-API::API(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt, DEFINITION *definition) {
+API::API(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt, DEFINITION *definition, int *state) {
   leftMotor = left;
   rightMotor = right;
   cutter = cut;
@@ -9,6 +9,7 @@ API::API(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, 
   compass = comp;
   battery = batt;
   definitionDefaults =definition;
+  mainState = state;
 }
 bool API::IsWrittenToEEPROM()
 {
@@ -43,7 +44,7 @@ void API::ValidateCommand()
   Serial.print(buffer);
   Serial.println(" is incomming buffer");
   #endif
-  inputComplete=CheckSyncValue(); // start with check if buger contains syncValue
+  inputComplete=CheckSyncValue(); // start with check if buffer contains syncValue
   if(inputComplete) // if syncValue
   {
     inputComplete=CheckCommand();
@@ -73,7 +74,6 @@ void API::ValidateCommand()
   }
   else // if invalid args
   Response_Invalid_Command();
-
   leave();
 }
 void API::printIndex()
@@ -159,8 +159,8 @@ bool API::CheckCommand()
 
 void API::clear_args()
 {
-  for (size_t i = 0; i < argslength; i++) {
-    argument[i] ='\0';
+  for (short i = 0; i < argslength; i++) {
+    argument[i] =-1;
   }
 }
 
@@ -186,7 +186,7 @@ bool API::CheckArgs()
       Serial.print("char is a letter");
       #endif
       return false;
-    }
+    } // if alpha
     else if (isdigit(*c))
     {
       temp[counter]=buffer[i]; // add bufforposition to out temp.. might come more digits;
@@ -196,13 +196,10 @@ bool API::CheckArgs()
       Serial.print(temp);
       Serial.print('\n');
       #endif
-    }
-    else
+    } // if digit
+    else if (*c == this->delimit)
     {
-      if(*c == this->delimit)
-      {
         argument[argscounter] = atoi(temp);
-
         #ifdef SERIALCOMMANDDEBUG
         Serial.print("Value of temp: ");
         Serial.print(atoi(temp));
@@ -214,12 +211,9 @@ bool API::CheckArgs()
         argscounter++;
         clearTemp();
         counter=0;
-
       }
-      else
-      {
-        if(*c == '\r' || *c == '\0') // if value is carrier return or 0 terminator we are considerd done.. store arg and continue
-        {
+      else if (*c == '\r' || *c == '\0')
+      {// if value is carrier return or 0 terminator we are considerd done.. store arg and continue
           argument[argscounter] = atoi(temp);
           #ifdef SERIALCOMMANDDEBUG
           Serial.print("End of command found\n");
@@ -227,20 +221,18 @@ bool API::CheckArgs()
           Serial.print(temp);
           Serial.print('\n');
           #endif
-          return true;
-        }
-        else
-        {
-          #ifdef SERIALCOMMANDDEBUG
+
+      }
+      else
+      {
+        #ifdef SERIALCOMMANDDEBUG
           Serial.print("This value will fail... line 114");
           Serial.println(*c);
           Serial.print("That one..\n");
           #endif
           return false;
         }
-      }
-    }
-  }
+} // For loop
   #ifdef SERIALCOMMANDDEBUG
   Serial.println("Args == ");
   for (int i = 0; i < argslength; i++) {
@@ -252,6 +244,7 @@ bool API::CheckArgs()
   Serial.print('\n');
   #endif
   WeAreDone();
+  return true;
 } // check args...
 
 void API::WeAreDone()
@@ -272,8 +265,6 @@ void API::WeAreDone()
 }
 void API::Response_Invalid_Command()
 {
-  inputComplete = false;
-  clearBuffer();
   #ifdef SERIALCOMMANDDEBUG
   Serial.println(API_COMMAND_PRINT_NAME(API_COMMAND::INVALID));
   #else
@@ -302,7 +293,7 @@ bool API::addByteToBuffer(char c)
 bool API::CheckArgNumber(const short &number)
 {
   int i = argument[number];
-  if(i)
+  if(i != -1)
   return true;
   else
   return false;
@@ -329,7 +320,7 @@ bool API::ACT_SetUpDebug()
   if so, set this command invalid. */
   {
     Response_Invalid_Command();
-    clearBuffer();
+    leave();
     return false;
   }
   bool temp;
@@ -345,14 +336,15 @@ bool API::ACT_SetUpDebug()
 }
 void API::Response_GetBattery()
 {
-  /* Return sync, kommand, TYPE, MIN, MAX, GOHOME */
+  /* Return sync, kommand, TYPE, MIN, MAX, GOHOME SOC */
   sprintf (buffer,
-    ";%i:%i:%i:%i:%i",
+    ";%i:%i:%i:%i:%i:%i",
     commandIndex,
     battery->getBatteryType(),
     battery->getDepletedLevel(),
     battery->getFullyChargedLevel(),
-    battery->getGoHomeLevel()
+    battery->getGoHomeLevel(),
+    battery->getSOC()
   );
   Serial.println(buffer);
 }
@@ -362,6 +354,7 @@ void API::ACT_SetBattery()
   this->battery->setDepletedLevel(argument[1]);
   this->battery->setFullyChargedLevel(argument[2]);
   this->battery->setGoHomeLevel(argument[3]);
+
   this->definitionDefaults->setBatteryType((BATTERY::BATTERY_TYPE)argument[0]);
   this->definitionDefaults->setBatteryFullLevel(argument[2]);
   this->definitionDefaults->setBatteryEmptyLevel(argument[1]);
@@ -369,14 +362,27 @@ void API::ACT_SetBattery()
 }
 void API::ACT_GetSensor()
 { /* return sync, command, value */
-  Serial.print("\n Get sensor\n");
-  for (size_t i = 0; i < 10; i++) {
-    sprintf (buffer,
-      ";%i:%i",
-      commandIndex,
-      sensor->getSignal(i));
-      delay(86); /* signal is every 86 ms, so we need at least this delay for BWF signal to be registered */
-    }
+
+if(argument[0]==-1)
+{
+  Response_Invalid_Command();
+  leave();
+return;
+}
+
+sensor->select(argument[0]);
+Serial.print(";");
+Serial.print(commandIndex);
+Serial.print(':');
+Serial.print(argument[0]);
+for (int i = 0; i < 10; i++)
+{
+Serial.print(':');
+  Serial.print(sensor->getSignal(i));
+
+  //delay(86); /* signal is every 86 ms, so we need at least this delay for BWF signal to be registered */
+}
+Serial.println("");
 }
 
 void API::ActRespond()
@@ -386,36 +392,47 @@ void API::ActRespond()
   Serial.print("IN ActRespond\n");
   #endif
   switch (commandIndex) {
+    case API_COMMAND::SetState:
+    ACT_SetState();
+    valueChanged = true;
+    break;
+
+    case API_COMMAND::GetState:
+    Response_GetState();
+    break;
+
     case API_COMMAND::GetSetUpDebug:
     RespondGetSetUpDebug();
     break;
+
     case API_COMMAND::SetSetUpDebug:
     valueChanged=ACT_SetUpDebug();
     break;
+
     case API_COMMAND::GetBattery:
     Response_GetBattery();
     break;
+
     case API_COMMAND::SetBattery:
     ACT_SetBattery();
     valueChanged=true;
     Response_GetBattery();
     break;
-    case API_COMMAND::GetLeftSensor:
-    sensor->select(0);
+
+    case API_COMMAND::GetSensor:
     ACT_GetSensor();
     break;
-    case API_COMMAND::GetRightSensor:
-    sensor->select(1);
-    ACT_GetSensor();
-    break;
+
     case API_COMMAND::SetFirstByteToFalse:
     SetFirstByteFalse();
     break;
+
     default:
     #ifdef SERIALCOMMANDDEBUG
     Serial.print("\nDefault value from AtcReponse\n");
     #endif
     Response_Invalid_Command();
+    leave();
     break;
   }
   if(valueChanged)
@@ -427,7 +444,7 @@ void API::ActRespond()
     Serial.println(" millisekunder");
   }
   //Serial.print("Done\n");
-
+leave();
 }
 
 void API::leave()
@@ -453,4 +470,14 @@ void API::SetFirstByteFalse()
 {
   Serial.println("Sätter byte till false");
   eeprom_write_byte(0, false);
+}
+void API::Response_GetState()
+{
+  Serial.print("state == ");
+  Serial.print(*mainState);
+}
+void API::ACT_SetState()
+{
+if(argument[0]>=0 && argument[0]<=1)
+  *mainState=argument[0];
 }

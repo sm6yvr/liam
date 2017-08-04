@@ -17,21 +17,30 @@ public:
 
   enum API_COMMAND {
     OK=0,
+    GetState=10,
+    SetState=11,
     GetSetUpDebug=100,
     SetSetUpDebug=101,
     GetBattery=102,
     SetBattery=103,
-    GetLeftSensor=104,
-    GetRightSensor=105,
+    GetSensor=104,
+    SetMotorOn=105,
+    SetMotorOff=106,
+    GetWheelMotor=107,
+    GetCutterStatus=108,
     SetFirstByteToFalse=998,
     INVALID = 999
   };
-
+/*Vet inte om man skulle kunna använda denna enum för att ge rätt kommandon till den som lyssnar på seriesnöret */
   const char* API_COMMAND_PRINT_NAME(API_COMMAND command)
   {
     switch (command) {
       case OK:
       return "OK";
+      case SetState:
+      return "SetState";
+      case GetState:
+      return "GetState";
       case GetSetUpDebug:
       return "Get setup and debug";
       case SetSetUpDebug:
@@ -40,6 +49,16 @@ public:
       return "Get Battery";
       case SetBattery:
       return "Set Battery";
+      case SetMotorOn:
+      return "Motor On";
+      case SetMotorOff:
+      return "Motor off";
+      case GetSensor:
+      return "Get sensor";
+      case GetWheelMotor:
+      return "Wheel informartion";
+      case GetCutterStatus:
+      return "Cutter informartion";
       case INVALID:
       return "INVALID";
       default:
@@ -47,7 +66,7 @@ public:
     }
   }
 
-  API(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt, DEFINITION *definition);
+  API(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt, DEFINITION *definition, int *state);
 
   void SetFirstByteFalse();
   void ValidateCommand(); // entrypoint
@@ -70,12 +89,15 @@ private:
   static const short bufferlenght = 40;
   static const short argslength = 4;
   static const short templenght = 4;
-  char buffer[bufferlenght];         // Char to hold incoming data
+  char buffer[bufferlenght]; // Char to hold incoming data
   char term = '\r'; // every command ends with carrier return
   char syncValue = ';'; // every command must start with syncValue
   char delimit = ':';   // string must be delimited by this value.
 
   char temp[templenght];
+  int argument[argslength]={-1};
+  short argscounter=0;
+
   bool CheckSyncValue();
   bool CheckArgs();
   bool CheckCommand();
@@ -100,17 +122,22 @@ private:
   void Response_GetBattery();
   void ACT_SetBattery();
 
+  void ACT_SetMotorOn();
+  void ACT_SetMotorOff();
+
+  void Response_GetState();
+  void ACT_SetState();
+
   void ACT_GetSensor();
   bool RespondSetSetUpDebug(bool &value);
 
   int SearchForChar(char *c);
   short bufPos =0;
   API_COMMAND commandIndex=INVALID;
-  int argument[argslength];
-  short argscounter=0;
 
   int index;
   char *c;
+  int *mainState;
 };
 #endif
 // Skapa en enum Response ok, INVALID, Badly formatted

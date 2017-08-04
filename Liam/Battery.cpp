@@ -57,7 +57,8 @@ int BATTERY::getDepletedLevel() {
 }
 
 int BATTERY::getSOC() {
-	return averageSOC;
+  averageSOC=readBatteryAndCalcValue();
+  return averageSOC;
 }
 
 void BATTERY::resetSOC() {

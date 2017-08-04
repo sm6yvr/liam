@@ -136,7 +136,7 @@ SETUPDEBUG SetupDebug(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, 
 
 
 //API
-API api(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery, &Defaults);
+API api(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery, &Defaults, &state); // add state to be able to set state from api.
 
 
 /*
@@ -199,8 +199,8 @@ else
   myClock.setGoHomeTime(GO_HOME_TIME);
 #endif
 
-  //attachInterrupt(0, updateBWF, RISING);		// Run the updateBWF function every time there is a pulse on digital pin2
-//  Sensor.select(0);
+  attachInterrupt(0, updateBWF, RISING);		// Run the updateBWF function every time there is a pulse on digital pin2
+  Sensor.select(0);
 
 // #if __SETUP_AND_DEBUG_MODE__
 //   Serial.println("LIAM is running in setup debug mode!!!!");
