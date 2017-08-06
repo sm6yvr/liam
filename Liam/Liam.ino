@@ -77,10 +77,11 @@
 #include "API.h"
 
 // Global variables
-int state = TESTING;
+int state = IDLE;
 long time_at_turning = millis();
 int turn_direction = 1;
 int LCDi = 0;
+long templong=millis();
 
 
 // Set up all the defaults (check the Definition.h file for all default values)
@@ -205,22 +206,19 @@ else
 // #if __SETUP_AND_DEBUG_MODE__
 //   Serial.println("LIAM is running in setup debug mode!!!!");
 //   SetupDebug.initialize(&Serial);
-if(!state==TESTING)
-{
   if (Battery.isBeingCharged())	{			// If Liam is in docking station then
     state = CHARGING;						// continue charging
     Mower.stopCutter();
-  } else {										// otherwise
+  }
+  else {										// otherwise
     state = MOWING;
     Mower.startCutter();					// Start up the cutter motor
     Mower.runForward(FULLSPEED);
   }
 }
-}
 
 // ***************** Main loop ***********************************
 void loop() {
-
   if(api.inputComplete)
     api.ValidateCommand();
   else
@@ -230,17 +228,23 @@ void loop() {
   boolean in_contact;
   boolean mower_is_outside;
   int err = 0;
-if(state!=TESTING)
-{
-  LCDi++;  //Loops 0-10
-  if (LCDi % 25 == 0 ) {
-    Display.update();
-  }
-}
+    LCDi++;  //Loops 0-10
+    if (LCDi % 25 == 0 )
+    {
+      if(Defaults.GetUseAPI())
+      //TODO API::NOTIFY
+      api.update(millis()-templong);
+      else
+      {
+        Display.update();
+      }
+    }
+    templong=millis();
   // Security check Mower is flipped/lifted.
 #if __MS9150__ || __MS5883L__ || __ADXL345__ || __MMA7455__
   if (Mower.hasFlipped()) {
-    Serial.print("Mower has flipped ");
+    if(!Defaults.GetUseAPI())
+      Serial.print("Mower has flipped ");
     Mower.stopCutter();
     Mower.stop();
     Error.flag(9);
@@ -250,7 +254,8 @@ if(state!=TESTING)
 #if __Lift_Sensor__
   if (Mower.isLifted())
   {
-    Serial.println("Mower is lifted");
+    if(!Defaults.GetUseAPI())
+      Serial.println("Mower is lifted");
     Mower.stopCutter();
     Mower.stop();
     delay(500);
@@ -263,8 +268,6 @@ if(state!=TESTING)
     Mower.runForward(FULLSPEED);
   }
 #endif
-if(!state==TESTING)
-{
   // Check if stuck and trigger action
   Mower.updateBalance();
 
@@ -276,17 +279,14 @@ if(!state==TESTING)
     Mower.restoreState();
     Mower.resetBalance();
   }
-}
+
   switch (state) {
-    case TESTING:
-LCDi++;
-    if(LCDi <=1)
-    {
-      Serial.print("TESTMODE\n");
-
-      }
-
-    delay(500);
+    case IDLE:
+    LCDi++;
+    //------------------------- IDLE ---------------------------
+      Mower.stopCutter();
+      Mower.stop();
+      delay(2000);
       break;
     //------------------------- MOWING ---------------------------
     case MOWING:
@@ -302,12 +302,19 @@ LCDi++;
 
       // Check left sensor (i) and turn right if needed
       if (mower_is_outside) {
+        if(!Defaults.GetUseAPI())
+        {
         if(i==0)
           Serial.println("Left outside");
         else if(i==1)
           Serial.println("Right outside");
 
         Serial.println(Battery.getSOC());
+      }
+      else
+      {
+        //TODO:: API NOTITY
+      }
         Mower.stop();
         if (Battery.mustCharge()) {
           Mower.stopCutter();
@@ -376,7 +383,8 @@ LCDi++;
       // Check if mower has hit something
       if (Mower.wheelsAreOverloaded())
       {
-        Serial.print("Wheel overload ");
+        if(!Defaults.GetUseAPI())
+          Serial.print("Wheel overload ");
         Mower.runBackward(FULLSPEED);
         if (Mower.waitWhileInside(2000) == 0);
         Mower.turnRight(90);
@@ -388,7 +396,8 @@ LCDi++;
 #if  __Bumper__
       if (Mower.hasBumped())
       {
-        Serial.print("Mower has bumped ");
+        if(!Defaults.GetUseAPI())
+          Serial.print("Mower has bumped ");
         Mower.runBackward(FULLSPEED);
         delay(2000);
         Mower.turnRight(90);
@@ -399,7 +408,8 @@ LCDi++;
 #if  __Lift_Sensor__
       if (Mower.isLifted())
       {
-        Serial.println("Mower is lifted");
+        if(!Defaults.GetUseAPI())
+          Serial.println("Mower is lifted");
         Mower.stopCutter();
         Mower.runBackward(FULLSPEED);
         delay(2000);
@@ -414,12 +424,14 @@ LCDi++;
       // Check if mower has tilted (providing you have one enabled)
 #if  __MS9150__ ||  __MS5883L__ ||  __ADXL345__ || __MMA7455__
       if (Mower.hasFlipped()) {
-        Serial.print("Mower has flipped ");
+        if(!Defaults.GetUseAPI())
+          Serial.print("Mower has flipped ");
         Mower.stopCutter();
         Mower.stop();
         Error.flag(9);
       } else if (Mower.hasTilted()) {
-        Serial.print("Mower has tilted ");
+        if(!Defaults.GetUseAPI())
+          Serial.print("Mower has tilted ");
         Mower.runBackward(FULLSPEED);
         delay(2000);
         Mower.turnRight(90);
@@ -492,7 +504,7 @@ LCDi++;
       Sensor.clearSignal();
 
       // Wait a little to avoid current spikes
-      delay(100);
+      delay(20);
 
       // Stop the mower as soon as the charge plates come in contact
       if (Battery.isBeingCharged()) {

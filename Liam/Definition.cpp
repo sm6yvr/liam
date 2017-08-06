@@ -120,3 +120,7 @@ void DEFINITION::setBatteryGoHomeLevel(int & value)
 {
 	this->batteryGoHomeLevel = value;
 }
+bool DEFINITION::GetUseAPI()
+{
+	return this->useapi;
+}

@@ -27,7 +27,7 @@ void BWFSENSOR::select(int sensornumber) {
    digitalWrite(selpin_A, (sensornumber & 1) > 0 ? HIGH : LOW);
    digitalWrite(selpin_B, (sensornumber & 2) > 0 ? HIGH : LOW);
    clearSignal();
-   delay(200);			// Wait a little to collect signal
+   delay(60);	 //Used to be 200		// Wait a little to collect signal
    }
 
 
@@ -65,9 +65,7 @@ void BWFSENSOR::readSensor() {
   pulse_length = int(micros() - pulse_time);
   pulse_time = micros();
   pulse_unit = (pulse_length+half_unit_length) / pulse_unit_length;
-
-
-  // Store the numbers for debug printout
+// Store the numbers for debug printout
   arr[arr_count++] = pulse_unit;
   	if (arr_count>arr_length) arr_count=0;
 
@@ -98,8 +96,8 @@ void BWFSENSOR::readSensor() {
 
 }
 int BWFSENSOR::getSignal(int value)
-{
-	return arr[value];
+{ int i = arr[value];
+	return i;
 }
 void BWFSENSOR::printSignal() {
 
@@ -108,4 +106,8 @@ void BWFSENSOR::printSignal() {
 		Serial.print(" ");
 	}
 
+}
+int BWFSENSOR::getArrLength()
+{
+		return this->arr_length;
 }

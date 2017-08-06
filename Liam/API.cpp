@@ -375,11 +375,10 @@ Serial.print(";");
 Serial.print(commandIndex);
 Serial.print(':');
 Serial.print(argument[0]);
-for (int i = 0; i < 10; i++)
+for (int i = 0; i < sensor->getArrLength(); i++)
 {
-Serial.print(':');
+  Serial.print(':');
   Serial.print(sensor->getSignal(i));
-
   //delay(86); /* signal is every 86 ms, so we need at least this delay for BWF signal to be registered */
 }
 Serial.println("");
@@ -475,9 +474,25 @@ void API::Response_GetState()
 {
   Serial.print("state == ");
   Serial.print(*mainState);
+  Serial.print(" dockstate == ");
+  Serial.println(battery->isBeingCharged());
 }
 void API::ACT_SetState()
 {
-if(argument[0]>=0 && argument[0]<=1)
+if(argument[0]>=0 && argument[0]<=4)
   *mainState=argument[0];
+}
+void API::update(int looptime)
+{
+  /*Denna körs var 25 loop
+  STATE SOC So far.... */
+Serial.print(';');
+Serial.print(NOTIFY,DEC);
+Serial.print(delimit);
+Serial.print(*mainState);
+Serial.print(delimit);
+Serial.print(battery->getSOC());
+Serial.print(delimit);
+Serial.println(looptime);
+
 }

@@ -17,6 +17,7 @@ public:
 
   enum API_COMMAND {
     OK=0,
+    NOTIFY=1,
     GetState=10,
     SetState=11,
     GetSetUpDebug=100,
@@ -76,6 +77,7 @@ public:
   void EEPROM_READ();
   void EEPROM_WRITE();
   bool IsWrittenToEEPROM();
+  void update(int looptime);
 private:
 
   WHEELMOTOR* leftMotor;

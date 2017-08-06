@@ -182,7 +182,7 @@ const int MOWING = 0;
 const int LAUNCHING = 1;
 const int DOCKING = 2;
 const int CHARGING = 3;
-const int TESTING = 4;
+const int IDLE = 4;
 /* Turning details */
 #define TURN_INTERVAL 15000
 #define REVERSE_DELAY 2
@@ -199,8 +199,8 @@ const int TESTING = 4;
 
 /* Software version */
 #define MAJOR_VERSION 5
-#define MINOR_VERSION_1	2
-#define MINOR_VERSION_2	2
+#define MINOR_VERSION_1	3
+#define MINOR_VERSION_2	3
 
 class DEFINITION {
     public:
@@ -217,9 +217,11 @@ class DEFINITION {
         int getBattyEmptyLevel();
         void setBatteryGoHomeLevel(int & value);
         int getBattyGoHomeLevel();
+        bool GetUseAPI();
 
     private:
       bool setupAndDebug=false;
+      bool useapi = true;
       BATTERY::BATTERY_TYPE my_battery_type = BATTERY::BATTERY_TYPE::LIION;
       int batteryFullLevel=1256;
       int batteryEmptyLevel=1040;
