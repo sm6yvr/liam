@@ -117,6 +117,7 @@ void updateBWF() {
 void setup()
 {
 	char buffer [9]; //Format 09.00.00
+  digitalWrite(10,HIGH);
 
 	Serial.begin(115200); 						// Fast communication on the serial port for all terminal messages
 
@@ -147,6 +148,7 @@ void setup()
 		Mower.runForward(FULLSPEED);	
 	}
 
+digitalWrite(10,LOW);
 }
 
 
