@@ -1,1 +1,8 @@
 .DS_Store
+*.cpp.o
+*.cpp.d
+Liam/__vm/*.*
+Liam/Debug/*
+Liam/.vs/*
+Liam/Liam.sln
+Liam/Liam.vcxproj*
