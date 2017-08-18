@@ -157,31 +157,7 @@ digitalWrite(10,LOW);
 void loop()
 {
 
-	if (Serial.available()) {
-		char inChar;
-		
-		inChar = (char)Serial.read();	// get the new byte:
-
-		switch (inChar) {
-		case 'c':
-		case 'C':
-			look_for_charge = !look_for_charge;
-			Serial.print("Toggled look_for_charge. Value is now: ");
-			Serial.println(look_for_charge);
-			break;
-		
-		case 'm':
-		case 'M':
-			Serial.println("State manually set to MOWING");
-			state = MOWING; EnterMowingState();
-			break;
-		case 'l':
-		case 'L':
-			Serial.println("State manually set to LAUNCHING");
-			state = LAUNCHING;
-			break;
-		}
-}
+  ReadAndSetManualState();
 
 	boolean in_contact;
 	boolean mower_is_outside;
@@ -542,16 +518,53 @@ void EnterDockingState() {
 	There might be reasons, but why should the mower run fullspeed forward when it finds out that it has to charge battery??
 
 	Ola Palm.
+
+	I think the reason was to make sure the front was outside the BWF just enough to make the following turn reach the BWF.
+	
+	Replaced the 1 second run with a one second run with 2 seconds of running while checking for front beeing outside. /Martin Lithell
 	*/
-	Mower.runForward(FULLSPEED);
-	for (int i = 0; i < 10; i++)
+
+	for (int i = 0; i < 20; i++)
 	{
 		if (Mower.allFrontSensorsAreOutside()) {
 			break;
 		}
+		Mower.runForward(FULLSPEED);
 		delay(100);
 	}
 	//delay(1000);
 	Mower.stop();
+	Sensor.select(0);
 	state = DOCKING;
+}
+
+void ReadAndSetManualState() {
+
+	if (!Serial.available()) {
+		return;
+	}
+
+	char inChar;
+
+	inChar = (char)Serial.read();	// get the new byte:
+
+	switch (inChar) {
+	case 'c':
+	case 'C':
+		look_for_charge = !look_for_charge;
+		Serial.print("Toggled look_for_charge. Value is now: ");
+		Serial.println(look_for_charge);
+		break;
+
+	case 'm':
+	case 'M':
+		Serial.println("State manually set to MOWING");
+		state = MOWING; EnterMowingState();
+		break;
+	case 'l':
+	case 'L':
+		Serial.println("State manually set to LAUNCHING");
+		state = LAUNCHING;
+		break;
+	}
 }
