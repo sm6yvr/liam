@@ -99,6 +99,10 @@ const int EVADE_FOR_DOCKING = 4;
 //#define __MS5883L__
 //#define __MS9150__
 
+#define Z_ANGLE_NORMAL 276 //false
+#define Y_ANGLE_NORMAL 30 // false
+#define X_ANGLE_NORMAL -20 // false
+
 // Do you have a Display? If so, uncomment one of these lines
 //#define __OLED__
 //#define __LCD__
