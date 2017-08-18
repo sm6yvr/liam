@@ -24,9 +24,7 @@ boolean MS9150::initialize() {
 	return test;						// true = connection OK
 }
 
-int MS9150::getZAngle(){return 0;}
-int MS9150::getYAngle(){return 0;}
-int MS9150::getXAngle(){return 0;}
+
 void MS9150::updateHeading() {
     current_heading = getHeading();
 }

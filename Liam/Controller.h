@@ -34,14 +34,14 @@ class CONTROLLER {
         void runBackward(int speed);
         void stop();
         
-        boolean allSensorsAreOutside();
+		boolean allSensorsAreOutside();
         
         void startCutter();
         void stopCutter();
         
         void setDefaultDirectionForward(bool fwd);
 
-        void adjustMotorSpeeds();
+        void adjustMotorSpeeds(float turnRatio);
         int compensateSpeedToCutterLoad();
         int compensateSpeedToCompassHeading();
         
@@ -63,7 +63,7 @@ class CONTROLLER {
         
         int turnLeft(int degrees);
         int turnRight(int degrees);
-        
+		
     private:
     	WHEELMOTOR* leftMotor;
     	WHEELMOTOR* rightMotor;
@@ -82,6 +82,7 @@ class CONTROLLER {
 
     unsigned long overloadTime;
     unsigned long overloadInterval;
+
 
 };
 

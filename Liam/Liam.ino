@@ -59,6 +59,10 @@ int state;
 long time_at_turning = millis();
 int turn_direction = 1;
 int LCDi = 0;
+bool look_for_charge = false;
+int dock_tries = 0;
+bool wasInside = false;
+float adjustMotorSpeedTurnRatio = 0;
 
 
 // Set up all the defaults (check the Definition.h file for all default values)
@@ -117,6 +121,7 @@ void updateBWF() {
 void setup()
 {
 	char buffer [9]; //Format 09.00.00
+  digitalWrite(10,HIGH);
 
 	Serial.begin(115200); 						// Fast communication on the serial port for all terminal messages
 
@@ -142,11 +147,10 @@ void setup()
 		state = CHARGING;						// continue charging
 		Mower.stopCutter();
 	} else {										// otherwise
-		state = MOWING;
-		Mower.startCutter();					// Start up the cutter motor
-		Mower.runForward(FULLSPEED);	
+	  EnterMowingState();
 	}
 
+digitalWrite(10,LOW);
 }
 
 
@@ -154,6 +158,9 @@ void setup()
 // ***************** Main loop ***********************************
 void loop()
 {
+
+  ReadAndSetManualState();
+
 	boolean in_contact;
 	boolean mower_is_outside;
 	int err=0;
@@ -221,20 +228,19 @@ void loop()
 			Serial.println("Left outside");
     		Serial.println(Battery.getSOC());
     		Mower.stop();
+		if (Battery.mustCharge() || look_for_charge) {
+
+			EnterDockingState();
+
+			return;
+		}
 		#ifdef GO_BACKWARD_UNTIL_INSIDE
 			err=Mower.GoBackwardUntilInside (&Sensor);
 			if(err)
 				Error.flag(err);
+
 		#endif
-    		if (Battery.mustCharge()) {
-	      		Mower.stopCutter();
-	      		Mower.runForward(FULLSPEED);
-	      		delay(1000);
-	      		Mower.stop();
-	      		Sensor.select(0);
-       			state = DOCKING;
-       			break;
-    		}
+
     		
     		// Tries to turn, but if timeout then reverse and try again
 		if (err = Mower.turnToReleaseRight(30) > 0) {
@@ -385,15 +391,38 @@ void loop()
 
       	Compass.setNewTargetHeading();
 
-    	Mower.runForward(FULLSPEED);
-
-    	state = MOWING;
+	  EnterMowingState();	
 
     	// Reset the running average
     	Battery.resetSOC();  
 
 		break;
 
+	case EVADE_FOR_DOCKING:
+		leftMotor.setSpeed(FULLSPEED*0.6);
+		rightMotor.setSpeed(FULLSPEED);
+		//Mower.runForward(FULLSPEED);
+		
+		if (Mower.wheelsAreOverloaded())
+		{
+			Serial.print("Wheel overload ");
+			Mower.runBackward(FULLSPEED);
+			if (Mower.waitWhileInside(2000) == 0);
+			Mower.turnRight(90);
+			Compass.setNewTargetHeading();
+			EnterMowingState();
+		}
+		
+		Sensor.clearSignal();
+		Sensor.select(0);
+		if (Sensor.isOutside()) {
+			Mower.stop();
+			Mower.runBackward(FULLSPEED);
+			delay(500);
+			EnterDockingState();
+		}
+
+		break;
 		//----------------------- DOCKING -----------------------------
 		case DOCKING:
 
@@ -405,10 +434,22 @@ void loop()
 			if (Mower.wheelsAreOverloaded()){
 				Mower.runBackward(FULLSPEED);
 				delay(1000);
+				dock_tries++;
+				Serial.print("Dock tries::");
+				Serial.println(dock_tries);
+				if (dock_tries > 2) {
+					Mower.turnRight(90);
+					state = EVADE_FOR_DOCKING;
+					break;
+				}
 			}
 
+        //Mower.turnRight(90);
+
 			// Track the BWF by compensating the wheel motor speeds
-			Mower.adjustMotorSpeeds();
+	   wasInside = Sensor.isInside();
+       Mower.adjustMotorSpeeds(adjustMotorSpeedTurnRatio);
+
 			
 			// Clear signal to allow the mower to track the wire closely
 			Sensor.clearSignal();
@@ -416,6 +457,12 @@ void loop()
 			// Wait a little to avoid current spikes
 			delay(100);
 			
+	  if (wasInside != Sensor.isInside()) {
+		  adjustMotorSpeedTurnRatio = 0.5;
+	  }
+	  else if (adjustMotorSpeedTurnRatio > 0) {
+		  adjustMotorSpeedTurnRatio = adjustMotorSpeedTurnRatio - 0.06;
+	  }
 			// Stop the mower as soon as the charge plates come in contact
 			if (Battery.isBeingCharged()) {
 				// Stop
@@ -464,8 +511,75 @@ void loop()
 	 	Serial.print("SOC:");
 		Serial.println(Battery.getSOC());
 
+	  look_for_charge = false;
 		break;
 
 	}
 }
 
+void EnterMowingState() {
+	state = MOWING;
+	Mower.startCutter();					// Start up the cutter motor
+	Mower.runForward(FULLSPEED);
+}
+void EnterDockingState() {
+	look_for_charge = true;
+	dock_tries = 0;
+	Mower.stopCutter();
+	/*
+	There might be reasons, but why should the mower run fullspeed forward when it finds out that it has to charge battery??
+
+	Ola Palm.
+
+	I think the reason was to make sure the front was outside the BWF just enough to make the following turn reach the BWF.
+	
+	Replaced the 1 second run with a one second run with 2 seconds of running while checking for front beeing outside. /Martin Lithell
+	*/
+
+	Sensor.select(0);
+	Sensor.clearSignal();
+	for (int i = 0; i < 20; i++)
+	{
+		if (Sensor.isOutside()) {
+			continue;
+		}
+		Mower.runForward(FULLSPEED);
+		delay(100);
+	}
+	//delay(1000);
+	Mower.stop();
+	adjustMotorSpeedTurnRatio = 0;
+
+	state = DOCKING;
+}
+
+void ReadAndSetManualState() {
+
+	if (!Serial.available()) {
+		return;
+	}
+
+	char inChar;
+
+	inChar = (char)Serial.read();	// get the new byte:
+
+	switch (inChar) {
+	case 'c':
+	case 'C':
+		look_for_charge = !look_for_charge;
+		Serial.print("Toggled look_for_charge. Value is now: ");
+		Serial.println(look_for_charge);
+		break;
+
+	case 'm':
+	case 'M':
+		Serial.println("State manually set to MOWING");
+		state = MOWING; EnterMowingState();
+		break;
+	case 'l':
+	case 'L':
+		Serial.println("State manually set to LAUNCHING");
+		state = LAUNCHING;
+		break;
+	}
+}

@@ -137,16 +137,16 @@ void SETUPDEBUG::startListeningOnSerial() {
 
             tilt_angle = compass->getTiltAngle();
 
-            x = compass->getXAngle();
-            y = compass->getYAngle();
-            z = compass->getZAngle();
+            //x = compass->getXAngle();
+            //y = compass->getYAngle();
+            //z = compass->getZAngle();
 
-            Serial.print("Z = ");
-            Serial.println(z);
-            Serial.print("Y = ");
-            Serial.println(y);
-            Serial.print("X = ");
-            Serial.println(x);
+            //Serial.print("Z = ");
+            //Serial.println(z);
+            //Serial.print("Y = ");
+            //Serial.println(y);
+            //Serial.print("X = ");
+            //Serial.println(x);
 
             Serial.print("Tilt angle = ");
             Serial.println(tilt_angle);

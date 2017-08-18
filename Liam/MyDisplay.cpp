@@ -102,6 +102,9 @@ void MYDISPLAY::update() {
     case CHARGING:
       print("CHARGING");
       break;
+	case EVADE_FOR_DOCKING:
+	  print("EVADE");
+	  break;
     }
 }
 

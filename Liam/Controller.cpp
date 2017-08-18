@@ -191,30 +191,38 @@ void CONTROLLER::setDefaultDirectionForward(bool fwd) {
 		default_dir_fwd = -1;
 };
 
-void CONTROLLER::adjustMotorSpeeds() {
+void CONTROLLER::adjustMotorSpeeds(float turnRatio) {
   int  lms = abs(leftMotor->getSpeed());
   int  rms = abs(rightMotor->getSpeed());
 
-  if (!sensor->isInside()) {
-  	lms = 100;
-  	rms = 10;
-  }
-  else 
+  const int outerSpeed = 100;
+
+	  if (!sensor->isInside()) {
+		  lms = outerSpeed;
+		  rms = outerSpeed * turnRatio;
+	  }
+	  else if (sensor->isInside())
   if (sensor->isInside())
-  {
-	lms = 10;
-	rms = 100;
-  }
-  else {
-    rms += 80;
-    lms += 80;
-  }
+	  {
+		  lms = outerSpeed * turnRatio;
+		  rms = outerSpeed;
+	  }
+	  else {
+		  rms += 80;
+		  lms += 80;
+	  }
+  
+
+
 
   if (rms > 100) rms = 100;
   if (lms > 100) lms = 100;
   if (rms < -50) rms = -50;
   if (lms < -50) lms = -50;
-
+  //Serial.print("LMS:");
+  //Serial.println(lms);
+  //Serial.print(", RMS:");
+  //Serial.println(rms);
   leftMotor->setSpeed(default_dir_fwd*lms);
   rightMotor->setSpeed(default_dir_fwd*rms);
 }
