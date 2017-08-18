@@ -34,7 +34,8 @@ class CONTROLLER {
         void runBackward(int speed);
         void stop();
         
-        boolean allSensorsAreOutside();
+		boolean allSensorsAreOutside();
+		boolean allFrontSensorsAreOutside();
         
         void startCutter();
         void stopCutter();

@@ -36,6 +36,20 @@ boolean CONTROLLER::allSensorsAreOutside() {
 	return true;	
 }
 
+boolean CONTROLLER::allFrontSensorsAreOutside() {
+
+	int max_index = NUMBER_OF_SENSORS;
+	if (max_index > 2) {
+		max_index = 2;
+	}
+	for (int i = 0; i < max_index; i++) {
+		sensor->select(i);
+		if (!sensor->isOutside())
+			return false;
+	}
+
+	return true;
+}
 int CONTROLLER::turnToReleaseLeft(int angle) {
 	turnLeft(angle);
 	

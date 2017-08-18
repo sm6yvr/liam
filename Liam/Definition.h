@@ -16,6 +16,7 @@ Placed under the GNU license
 
 const int NUMBER_OF_SENSORS = 3;	// Number of BWF sensors can be 1-4 depending on shield
 
+
 // Pin setup following Morgan 1.5 shield and up
 #define WHEEL_MOTOR_A_CURRENT_PIN		0
 #define WHEEL_MOTOR_B_CURRENT_PIN		1
@@ -61,6 +62,7 @@ const int MOWING = 0;
 const int LAUNCHING = 1;
 const int DOCKING = 2;
 const int CHARGING = 3;
+const int EVADE_FOR_DOCKING = 4;
 
 // Turning details
 #define TURN_INTERVAL					15000
