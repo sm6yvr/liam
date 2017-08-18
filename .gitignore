@@ -5,3 +5,10 @@
 .gcc-flags.json
 .travis.yml
 lib/readme.txt
+*.cpp.o
+*.cpp.d
+Liam/__vm/*.*
+Liam/Debug/*
+Liam/.vs/*
+Liam/Liam.sln
+Liam/Liam.vcxproj*
