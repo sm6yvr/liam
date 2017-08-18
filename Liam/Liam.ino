@@ -434,18 +434,18 @@ void loop()
 			if (Mower.wheelsAreOverloaded()){
 				Mower.runBackward(FULLSPEED);
 				delay(1000);
-		
+				dock_tries++;
+				Serial.print("Dock tries::");
+				Serial.println(dock_tries);
+				if (dock_tries > 2) {
+					Mower.turnRight(90);
+					state = EVADE_FOR_DOCKING;
+					break;
+				}
 			}
 
         //Mower.turnRight(90);
-		dock_tries++;
-		Serial.print("Dock retries:");
-		Serial.println(dock_tries);
-		if (dock_tries > 2) {
-			Mower.turnRight(90);
-			state = EVADE_FOR_DOCKING;
-		}
-	    break;
+
 			// Track the BWF by compensating the wheel motor speeds
 	   wasInside = Sensor.isInside();
        Mower.adjustMotorSpeeds(adjustMotorSpeedTurnRatio);
