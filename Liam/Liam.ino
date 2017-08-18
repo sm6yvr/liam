@@ -61,6 +61,8 @@ int turn_direction = 1;
 int LCDi = 0;
 bool look_for_charge = false;
 int dock_tries = 0;
+bool wasInside = false;
+float adjustMotorSpeedTurnRatio = 0;
 
 
 // Set up all the defaults (check the Definition.h file for all default values)
@@ -226,17 +228,19 @@ void loop()
 			Serial.println("Left outside");
     		Serial.println(Battery.getSOC());
     		Mower.stop();
+		if (Battery.mustCharge() || look_for_charge) {
+
+			EnterDockingState();
+
+			return;
+		}
 		#ifdef GO_BACKWARD_UNTIL_INSIDE
 			err=Mower.GoBackwardUntilInside (&Sensor);
 			if(err)
 				Error.flag(err);
-		#endif
-        if (Battery.mustCharge() || look_for_charge) {
 
-			EnterDockingState();
-          
-       			break;
-    		}
+		#endif
+
     		
     		// Tries to turn, but if timeout then reverse and try again
 		if (err = Mower.turnToReleaseRight(30) > 0) {
@@ -443,7 +447,9 @@ void loop()
 		}
 	    break;
 			// Track the BWF by compensating the wheel motor speeds
-			Mower.adjustMotorSpeeds();
+	   wasInside = Sensor.isInside();
+       Mower.adjustMotorSpeeds(adjustMotorSpeedTurnRatio);
+
 			
 			// Clear signal to allow the mower to track the wire closely
 			Sensor.clearSignal();
@@ -451,6 +457,12 @@ void loop()
 			// Wait a little to avoid current spikes
 			delay(100);
 			
+	  if (wasInside != Sensor.isInside()) {
+		  adjustMotorSpeedTurnRatio = 0.5;
+	  }
+	  else if (adjustMotorSpeedTurnRatio > 0) {
+		  adjustMotorSpeedTurnRatio = adjustMotorSpeedTurnRatio - 0.06;
+	  }
 			// Stop the mower as soon as the charge plates come in contact
 			if (Battery.isBeingCharged()) {
 				// Stop
@@ -524,17 +536,20 @@ void EnterDockingState() {
 	Replaced the 1 second run with a one second run with 2 seconds of running while checking for front beeing outside. /Martin Lithell
 	*/
 
+	Sensor.select(0);
+	Sensor.clearSignal();
 	for (int i = 0; i < 20; i++)
 	{
-		if (Mower.allFrontSensorsAreOutside()) {
-			break;
+		if (Sensor.isOutside()) {
+			continue;
 		}
 		Mower.runForward(FULLSPEED);
 		delay(100);
 	}
 	//delay(1000);
 	Mower.stop();
-	Sensor.select(0);
+	adjustMotorSpeedTurnRatio = 0;
+
 	state = DOCKING;
 }
 
