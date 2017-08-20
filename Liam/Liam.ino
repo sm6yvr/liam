@@ -139,7 +139,36 @@ SETUPDEBUG SetupDebug(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, 
 //API
 API api(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery, &Defaults, &state); // add state to be able to set state from api.
 
+short SetState(short In_state)
+{
+  switch (In_state) {
+    case MOWING:
+    Mower.startCutter();
+    Mower.runForward(FULLSPEED);
+    return MOWING;
 
+    case LAUNCHING:
+    return LAUNCHING;
+
+    case CHARGING:
+    Mower.stopCutter();
+    Mower.stop();
+    return CHARGING;
+
+    case DOCKING:
+    Mower.stopCutter();
+    Sensor.select(0);
+    //Make the wheel motors extra responsive
+    leftMotor.setSmoothness(10);
+    rightMotor.setSmoothness(10);
+    return DOCKING;
+
+    case IDLE:
+    Mower.stopCutter();
+    Mower.stop();
+    return IDLE;
+  }
+}
 /*
   SerialEvent occurs whenever a new data comes in the hardware serial RX. This
   routine is run between each time loop() runs, so using delay inside loop can
@@ -207,14 +236,14 @@ else
 //   Serial.println("LIAM is running in setup debug mode!!!!");
 //   SetupDebug.initialize(&Serial);
   if (Battery.isBeingCharged())	{			// If Liam is in docking station then
-    state = CHARGING;						// continue charging
-    Mower.stopCutter();
+    state = SetState(CHARGING);						// continue charging
+
   }
   else {										// otherwise
-    state = MOWING;
-    Mower.startCutter();					// Start up the cutter motor
-    Mower.runForward(FULLSPEED);
+    state = SetState(MOWING);
+
   }
+  state = SetState(IDLE);
 }
 
 // ***************** Main loop ***********************************
@@ -223,17 +252,22 @@ void loop() {
     api.ValidateCommand();
   else
     APIEvent();
+    if(api.get_StateHasBeenChanged())
+    {
+      state=SetState(state); // API kan ändra denna utan att det märks i detta scope.
+      api.ResetStateHasBeenChanged();
+    }
 
   /* MAIN PROGRAM */
   boolean in_contact;
   boolean mower_is_outside;
   int err = 0;
+  Battery.updateSOC();
     LCDi++;  //Loops 0-10
     if (LCDi % 25 == 0 )
     {
       if(Defaults.GetUseAPI())
-      //TODO API::NOTIFY
-      api.update(millis()-templong);
+        api.update(millis()-templong);
       else
       {
         Display.update();
@@ -284,14 +318,10 @@ void loop() {
     case IDLE:
     LCDi++;
     //------------------------- IDLE ---------------------------
-      Mower.stopCutter();
-      Mower.stop();
-      delay(2000);
+      delay(200);
       break;
     //------------------------- MOWING ---------------------------
     case MOWING:
-      Battery.updateSOC();
-
       for(int i = 0; i < NUMBER_OF_SENSORS; i++) {
       Sensor.select(i);
 
@@ -313,22 +343,28 @@ void loop() {
       }
       else
       {
-        //TODO:: API NOTITY
+        if(api.get_ApiDebug())
+        {
+          if(i==0)
+          api.Debug("Left Outside");
+          else
+          api.Debug("Right Outside");
+        }
       }
         Mower.stop();
         if (Battery.mustCharge()) {
-          Mower.stopCutter();
+
           /*
           There might be reasons, but why should the mower run fullspeed forward when it finds out that it has to charge battery??
 
           Ola Palm.
           */
-          Mower.runForward(FULLSPEED);
-          delay(1000);
-          Mower.stop();
+          //Denna löser vi snyggare senare
+        //  Mower.runForward(FULLSPEED);
+        //  delay(1000);
+        //  Mower.stop();
           // change this value to 1 if you would like the mower to go home counter clock wise.
-          Sensor.select(0);
-          state = DOCKING;
+          state = SetState(DOCKING);
           break;
         }
 
@@ -368,7 +404,7 @@ void loop() {
             Error.flag(4);
         }
       }
-    }
+    }//case Mowing
 
       Mower.runForward(FULLSPEED);
 
@@ -453,14 +489,12 @@ void loop() {
 
       // Turn right in random degree
       Mower.turnRight(random(30, 60));
-      Mower.startCutter();
+
       Mower.waitWhileChecking(5000);
 
       Compass.setNewTargetHeading();
 
-      Mower.runForward(FULLSPEED);
-
-      state = MOWING;
+      state = SetState(MOWING);
 
       // Reset the running average
       Battery.resetSOC();
@@ -469,12 +503,6 @@ void loop() {
 
     //----------------------- DOCKING -----------------------------
     case DOCKING:
-      Battery.updateSOC();
-
-      //Make the wheel motors extra responsive
-      leftMotor.setSmoothness(10);
-      rightMotor.setSmoothness(10);
-
       // If the mower hits something, reverse and try again
       if (Mower.wheelsAreOverloaded()) {
         Mower.runBackward(FULLSPEED);
@@ -491,15 +519,14 @@ void loop() {
         Mower.runForward(FULLSPEED);
         delay(1000);
         Mower.startCutter();
-        state = MOWING;
+        state = SetState(MOWING);
         break;
       }
 //NOTE : This needs a setting in DEFINITION;
 */
 
       // Track the BWF by compensating the wheel motor speeds
-      Mower.adjustMotorSpeeds();
-
+      Mower.adjustMotorSpeeds(Defaults.GetSlowWheelWhenDocking());
       // Clear signal to allow the mower to track the wire closely
       Sensor.clearSignal();
 
@@ -511,7 +538,7 @@ void loop() {
         // Stop
         Mower.stop();
         Mower.resetBalance();
-        state = CHARGING;
+        state = SetState(CHARGING);
         break;
       }
 
@@ -520,7 +547,6 @@ void loop() {
 
     //----------------------- CHARGING ----------------------------
     case CHARGING:
-      Battery.updateSOC();
           // restore wheelmotor smoothness
       leftMotor.setSmoothness(WHEELMOTOR_SMOOTHNESS);
       rightMotor.setSmoothness(WHEELMOTOR_SMOOTHNESS);
@@ -528,31 +554,26 @@ void loop() {
       // Just remain in this state until battery is full
 #if  __RTC_CLOCK__
       if (Battery.isFullyCharged() && myClock.timeToCut())
-        state = LAUNCHING;
+        state = SetState(LAUNCHING);
 #else
       if (Battery.isFullyCharged())
-        state = LAUNCHING;
+        state = SetState(LAUNCHING);
 #endif
 
-      in_contact = false;
-
-      // Spend 20 seconds collecting status if being charged
-      for (int i = 0; i < 20; i++) {
-        if (Battery.isBeingCharged())
-          in_contact = true;
-        delay(1000);
-      }
+      in_contact = Battery.isBeingCharged();
+        delay(50);
 
       // If the mower is not being charged, jiggle it a bit
       if (!in_contact) {
         Mower.runBackward(20); 	// Back away slow speed
-        delay(500);
+        delay(200);
+        Mower.stop();
+        delay(50);
         Mower.runForward(20);	// Dock again at slow speed
-        delay(1000);
+        delay(400);
         Mower.stop();
       }
 break;
 
-  }
-
+  }// switch state
 }//VOID loop

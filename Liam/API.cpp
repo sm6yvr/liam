@@ -423,7 +423,17 @@ void API::ActRespond()
     break;
 
     case API_COMMAND::SetFirstByteToFalse:
-    SetFirstByteFalse();
+    SetFirstByteFalse(); // denna är lite special... tror jag.
+    break;
+
+    case API_COMMAND::GetSlowWheelWhenDocking:
+    Respond_GetSlowWheelWhenDocking();
+    break;
+
+    case API_COMMAND::SetSlowWheelWhenDocking:
+    ACT_SetSlowWheelWhenDocking();
+    valueChanged=true;
+    Respond_GetSlowWheelWhenDocking();
     break;
 
     default:
@@ -479,8 +489,11 @@ void API::Response_GetState()
 }
 void API::ACT_SetState()
 {
-if(argument[0]>=0 && argument[0]<=4)
+if(argument[0]>=0 && argument[0]<=7)
+{
   *mainState=argument[0];
+  this->stateChanged=true; // prepare for Lian.ino to detect changes.
+}
 }
 void API::update(int looptime)
 {
@@ -494,5 +507,43 @@ Serial.print(delimit);
 Serial.print(battery->getSOC());
 Serial.print(delimit);
 Serial.println(looptime);
+
+}
+void API::Debug(char *value)
+{
+  Serial.print(';');
+  Serial.print(DEBUG,DEC);
+  Serial.print(delimit);
+  Serial.println(value);
+
+}
+
+bool API::get_StateHasBeenChanged()
+{
+return this->stateChanged;
+}
+void API::ResetStateHasBeenChanged()
+{
+this->stateChanged = false;
+}
+
+bool API::get_ApiDebug()
+{
+  return this->apidebug;
+}
+void API::set_ApiDebug(bool value)
+{
+  this->apidebug = value;
+}
+void API::ACT_SetSlowWheelWhenDocking()
+{
+  definitionDefaults->SetSlowWheelWhenDocking(argument[0]);
+}
+void API::Respond_GetSlowWheelWhenDocking()
+{
+  Serial.print(";");
+  Serial.print(API_COMMAND::GetSlowWheelWhenDocking);
+  Serial.print(this->delimit);
+  Serial.println(definitionDefaults->GetSlowWheelWhenDocking());
 
 }

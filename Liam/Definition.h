@@ -218,7 +218,8 @@ class DEFINITION {
         void setBatteryGoHomeLevel(int & value);
         int getBattyGoHomeLevel();
         bool GetUseAPI();
-
+        short GetSlowWheelWhenDocking();
+        void SetSlowWheelWhenDocking(short value);
     private:
       bool setupAndDebug=false;
       bool useapi = true;
@@ -226,6 +227,7 @@ class DEFINITION {
       int batteryFullLevel=1256;
       int batteryEmptyLevel=1040;
       int batteryGoHomeLevel=1100;
+      short turnpercentWhenDocking=60; // Denna sätter släphjulets hastighet vid dockning
       };
 
 #endif /* _DEFINITION_H_ */

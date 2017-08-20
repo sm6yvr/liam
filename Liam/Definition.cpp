@@ -124,3 +124,11 @@ bool DEFINITION::GetUseAPI()
 {
 	return this->useapi;
 }
+short DEFINITION::GetSlowWheelWhenDocking()
+{
+	return this->turnpercentWhenDocking;
+}
+void DEFINITION::SetSlowWheelWhenDocking(short value)
+{
+	this->turnpercentWhenDocking = value;
+}

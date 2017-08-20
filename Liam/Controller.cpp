@@ -205,7 +205,43 @@ void CONTROLLER::setDefaultDirectionForward(bool fwd) {
     default_dir_fwd = -1;
 };
 
+void CONTROLLER::adjustMotorSpeeds(short percent)
+{
+  if(this->lastloopsensorwasoutside != sensor->isInside())
+    {
+      counter=0;
+    }
+    this->lastloopsensorwasoutside=sensor->isInside();
+
+    int  lms = abs(leftMotor->getSpeed());
+    int  rms = abs(rightMotor->getSpeed());
+	  if (!sensor->isInside()) {
+      lms = FULLSPEED;
+		  rms = percent - counter;
+    }
+	  else if (sensor->isInside())
+	  {
+      lms = percent - counter;
+		  rms = FULLSPEED;
+	  }
+	  else {
+		  rms += 80;
+		  lms += 80;
+	  }
+
+    if (rms > 100) rms = 100;
+    if (lms > 100) lms = 100;
+    if (rms < -50) rms = -50;
+    if (lms < -50) lms = -50;
+    counter ++;
+    Serial.print(";2:");
+    Serial.println(counter,DEC);
+    leftMotor->setSpeed(default_dir_fwd*lms);
+    rightMotor->setSpeed(default_dir_fwd*rms);
+}
+
 void CONTROLLER::adjustMotorSpeeds() {
+
   int  lms = abs(leftMotor->getSpeed());
   int  rms = abs(rightMotor->getSpeed());
 

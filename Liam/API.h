@@ -18,6 +18,7 @@ public:
   enum API_COMMAND {
     OK=0,
     NOTIFY=1,
+    DEBUG=2,
     GetState=10,
     SetState=11,
     GetSetUpDebug=100,
@@ -28,7 +29,9 @@ public:
     SetMotorOn=105,
     SetMotorOff=106,
     GetWheelMotor=107,
-    GetCutterStatus=108,
+    GetSlowWheelWhenDocking=108,
+    SetSlowWheelWhenDocking=109,
+    GetCutterStatus=110,
     SetFirstByteToFalse=998,
     INVALID = 999
   };
@@ -60,6 +63,10 @@ public:
       return "Wheel informartion";
       case GetCutterStatus:
       return "Cutter informartion";
+      case GetSlowWheelWhenDocking:
+      return "Get slow wheel when docking";
+      case SetSlowWheelWhenDocking:
+      return "Set slow wheel when docking (%)";
       case INVALID:
       return "INVALID";
       default:
@@ -78,6 +85,12 @@ public:
   void EEPROM_WRITE();
   bool IsWrittenToEEPROM();
   void update(int looptime);
+  void Debug(char *value);
+  bool get_StateHasBeenChanged();
+  void ResetStateHasBeenChanged();
+  bool get_ApiDebug();
+  void set_ApiDebug(bool value);
+
 private:
 
   WHEELMOTOR* leftMotor;
@@ -133,6 +146,10 @@ private:
   void ACT_GetSensor();
   bool RespondSetSetUpDebug(bool &value);
 
+  void ACT_SetSlowWheelWhenDocking();
+  void Respond_GetSlowWheelWhenDocking();
+
+
   int SearchForChar(char *c);
   short bufPos =0;
   API_COMMAND commandIndex=INVALID;
@@ -140,6 +157,8 @@ private:
   int index;
   char *c;
   int *mainState;
+  bool stateChanged=false;
+  bool apidebug=true;
 };
 #endif
 // Skapa en enum Response ok, INVALID, Badly formatted
