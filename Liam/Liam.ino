@@ -257,9 +257,20 @@ void loop() {
         if (Battery.mustCharge()) {
           Mower.stopCutter();
           /*
-          There might be reasons, but why should the mower run fullspeed forward when it finds out that it has to charge battery??
+          There might be reasons, but why should the mower run
+          fullspeed forward when it finds out that it has to charge
+          battery??
 
           Ola Palm.
+
+	  By default, GO_BACKWARD_UNTIL_INSIDE is true. This means
+	  that we now have backed from the outside of the BWF fence to
+	  the inside by an amount of 1000 ms. Now we want to start
+	  following the fence and we start out by going forward over
+	  the fence again. But shouldn't the two run forward lines
+	  below be conditional on GO_BACKWARD_UNTIL_INSIDE?
+
+	  Mikael Djurfeldt.
           */
           Mower.runForward(FULLSPEED);
           delay(1000);
