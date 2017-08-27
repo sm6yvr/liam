@@ -172,6 +172,7 @@ if you have no angle-sensor and still want mower to go backwards until it's insi
 /* Wheel motor */
 #define WHEELMOTOR_OVERLOAD		130
 #define WHEELMOTOR_SMOOTHNESS	300
+#define WHEELMOTOR_DISTANCE_FACTOR	100 // larger => longer distances
 
 /* If the mower has repeated overload within the interval below (in milliseconds),
    it will flag as having reached a bump. It will then do some action as stated

@@ -129,7 +129,8 @@ int CONTROLLER::waitWhileChecking(int duration) {
 
 
 
-int CONTROLLER::waitWhileInside(int duration) {
+int CONTROLLER::runWhileInside(int speed, int distance) {
+  int duration = durationFromDistance(speed, distance);
 
   for (int k = 0; k < duration / (NUMBER_OF_SENSORS * 200); k++)
     for (int i = 0; i < NUMBER_OF_SENSORS; i++) {
@@ -157,8 +158,7 @@ int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
   
   while (Sensor->isInside() == false)
   {
-    runBackward(FULLSPEED);
-    delay(1000);
+    runBackward(FULLSPEED, 1000);
     counter--;
     if (counter <= 0)
       return 1;
@@ -193,9 +193,19 @@ void CONTROLLER::runForward(int speed) {
   rightMotor->setSpeed(default_dir_fwd * speed);
 }
 
+void CONTROLLER::runForward(int speed, int distance) {
+  runForward(speed);
+  delay(durationFromDistance(speed, distance));
+}
+
 void CONTROLLER::runBackward(int speed) {
   leftMotor->setSpeed(default_dir_fwd * -speed);
   rightMotor->setSpeed(default_dir_fwd * -speed);
+}
+
+void CONTROLLER::runBackward(int speed, int distance) {
+  runBackward(speed);
+  delay(durationFromDistance(speed, distance));
 }
 
 void CONTROLLER::setDefaultDirectionForward(bool fwd) {

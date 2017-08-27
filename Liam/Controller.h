@@ -28,10 +28,12 @@ class CONTROLLER {
         int turnToReleaseLeft(int degrees);
         int turnToReleaseRight(int degrees);
         int waitWhileChecking(int duration);
-        int waitWhileInside(int duration);
+        int runWhileInside(int speed, int distance);
 	int GoBackwardUntilInside(BWFSENSOR *Sensor);
         void runForward(int speed);
+        void runForward(int speed, int distance);
         void runBackward(int speed);
+        void runBackward(int speed, int distance);
         void stop();
         
         boolean allSensorsAreOutside();
@@ -82,6 +84,11 @@ class CONTROLLER {
 
     unsigned long overloadTime;
     unsigned long overloadInterval;
+
+    int durationFromDistance (int speed, int distance) {
+      long rescaledDistance = WHEELMOTOR_DISTANCE_FACTOR * distance;
+      return rescaledDistance / speed;
+    }
 
 };
 

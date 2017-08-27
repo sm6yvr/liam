@@ -204,8 +204,7 @@ void loop() {
     Mower.stopCutter();
     Mower.stop();
     delay(500);
-    Mower.runBackward(FULLSPEED);
-    delay(2000);
+    Mower.runBackward(FULLSPEED, 2000);
     if (Mower.isLifted())
       Error.flag(4);
     Mower.turnRight(90);
@@ -219,8 +218,7 @@ void loop() {
 
   if (abs(Mower.getBalance()) > BALANCE_TRIGGER_LEVEL) {
     Mower.storeState();
-    Mower.runBackward(FULLSPEED);
-    delay(1000);
+    Mower.runBackward(FULLSPEED, 1000);
     Mower.stop();
     Mower.restoreState();
     Mower.resetBalance();
@@ -261,8 +259,7 @@ void loop() {
 
           Ola Palm.
           */
-          Mower.runForward(FULLSPEED);
-          delay(1000);
+          Mower.runForward(FULLSPEED, 1000);
           Mower.stop();
           // change this value to 1 if you would like the mower to go home counter clock wise.
           Sensor.select(0);
@@ -272,8 +269,7 @@ void loop() {
         
         // Tries to turn, but if timeout then reverse and try again
         if ((err = Mower.turnToReleaseRight(30) > 0)) {
-          Mower.runBackward(FULLSPEED);
-          delay(1000);
+          Mower.runBackward(FULLSPEED, 1000);
           Mower.stop();
           if ((err = Mower.turnToReleaseRight(30) > 0))
             Error.flag(err);
@@ -282,8 +278,7 @@ void loop() {
         Compass.setNewTargetHeading();
 
         if (Mower.allSensorsAreOutside()) {
-          Mower.runBackward(FULLSPEED);
-          delay(1000);
+          Mower.runBackward(FULLSPEED, 1000);
           Mower.stop();
           if (Mower.allSensorsAreOutside())
             Error.flag(4);
@@ -351,7 +346,7 @@ void loop() {
       {
         Serial.print("Wheel overload ");
         Mower.runBackward(FULLSPEED);
-        if (Mower.waitWhileInside(2000) == 0);
+        if (Mower.runWhileInside(FULLSPEED, 2000) == 0);
         Mower.turnRight(90);
         Compass.setNewTargetHeading();
         Mower.runForward(FULLSPEED);
@@ -362,8 +357,7 @@ void loop() {
       if (Mower.hasBumped())
       {
         Serial.print("Mower has bumped ");
-        Mower.runBackward(FULLSPEED);
-        delay(2000);
+        Mower.runBackward(FULLSPEED, 2000);
         Mower.turnRight(90);
         Mower.runForward(FULLSPEED);
       }
@@ -374,8 +368,7 @@ void loop() {
       {
         Serial.println("Mower is lifted");
         Mower.stopCutter();
-        Mower.runBackward(FULLSPEED);
-        delay(2000);
+        Mower.runBackward(FULLSPEED, 2000);
         if (Mower.isLifted())
           Error.flag(4);
         Mower.turnRight(90);
@@ -393,11 +386,9 @@ void loop() {
         Error.flag(9);
       } else if (Mower.hasTilted()) {
         Serial.print("Mower has tilted ");
-        Mower.runBackward(FULLSPEED);
-        delay(2000);
+        Mower.runBackward(FULLSPEED, 2000);
         Mower.turnRight(90);
-        Mower.runForward(FULLSPEED);
-        delay(200);
+        Mower.runForward(FULLSPEED, 200);
       }
 #endif
 
@@ -407,9 +398,8 @@ void loop() {
     //----------------------- LAUNCHING ---------------------------
     case LAUNCHING:
 
-      Mower.runBackward(FULLSPEED);
+      Mower.runBackward(FULLSPEED, 7000);
 
-      delay(7000);
       Mower.stop();
 
       // Turn right in random degree
@@ -438,18 +428,15 @@ void loop() {
 
       // If the mower hits something, reverse and try again
       if (Mower.wheelsAreOverloaded()) {
-        Mower.runBackward(FULLSPEED);
-        delay(1000);
+        Mower.runBackward(FULLSPEED, 1000);
       }
 
       // See if mower has repeated overload
       // If so, turn away from the BWF and try to hook on somewhere else
       if (Mower.hasReachedAStop()) {
-        Mower.runBackward(FULLSPEED);
-        delay(1000);
+        Mower.runBackward(FULLSPEED, 1000);
         Mower.turnRight(90);
-        Mower.runForward(FULLSPEED);
-        delay(1000);
+        Mower.runForward(FULLSPEED, 1000);
         Mower.startCutter();
         state = MOWING;
         break;
@@ -505,10 +492,8 @@ void loop() {
 
       // If the mower is not being charged, jiggle it a bit
       if (!in_contact) {
-        Mower.runBackward(20); 	// Back away slow speed
-        delay(500);
-        Mower.runForward(20);	// Dock again at slow speed
-        delay(1000);
+        Mower.runBackward(20, 500); 	// Back away slow speed
+        Mower.runForward(20, 1000);	// Dock again at slow speed
         Mower.stop();
       }
 
