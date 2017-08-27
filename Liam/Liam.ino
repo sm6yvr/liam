@@ -520,3 +520,9 @@ void loop() {
   }
 #endif
 }
+
+// The following sets C++ mode in Emacs
+//
+// Local Variables:
+// mode:c++
+// End:
