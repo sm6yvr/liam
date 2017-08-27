@@ -132,3 +132,15 @@ void DEFINITION::SetSlowWheelWhenDocking(short value)
 {
 	this->turnpercentWhenDocking = value;
 }
+int DEFINITION::get_FULL_SPEED()
+{return this->FULLSPEED;}
+void DEFINITION::set_FULL_SPEED(int value)
+{this->FULLSPEED = value;}
+int DEFINITION::get_SLOW_SPEED()
+{return this->SLOWSPEED;}
+void DEFINITION::set_SLOW_SPEED(int value)
+{this->SLOWSPEED = value;}
+int DEFINITION::get_CUTTER_SPEED()
+{return this->CUTTERSPEED;}
+void DEFINITION::set_CUTTER_SPEED(int value)
+{this->CUTTERSPEED = value;}

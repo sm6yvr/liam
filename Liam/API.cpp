@@ -104,7 +104,7 @@ bool API::setCommand()
 {
   commandIndex=(API::API_COMMAND)atoi(temp);
   if(commandIndex==API_COMMAND::INVALID)
-  return false;
+    return false;
   return true;
 }
 bool API::CheckCommand()
@@ -138,7 +138,7 @@ bool API::CheckCommand()
     }
     else
     {
-      if(*c == '\0' || *c== delimit) // Some Get_Commands is syncValue and Commandnumber then \0 since we dont save term in buffer
+      if(*c == endcommand || *c== delimit) // Some Get_Commands is syncValue and Commandnumber then \0 since we dont save term in buffer
       {
         #ifdef SERIALCOMMANDDEBUG
         Serial.print("Will set us done\n");
@@ -369,7 +369,6 @@ if(argument[0]==-1)
   leave();
 return;
 }
-
 sensor->select(argument[0]);
 Serial.print(";");
 Serial.print(commandIndex);
@@ -379,7 +378,6 @@ for (int i = 0; i < sensor->getArrLength(); i++)
 {
   Serial.print(':');
   Serial.print(sensor->getSignal(i));
-  //delay(86); /* signal is every 86 ms, so we need at least this delay for BWF signal to be registered */
 }
 Serial.println("");
 }
@@ -495,6 +493,17 @@ if(argument[0]>=0 && argument[0]<=7)
   this->stateChanged=true; // prepare for Lian.ino to detect changes.
 }
 }
+
+void API::updatetwo(int nr,int looptime)
+{
+  Serial.print(';');
+Serial.print(7,DEC);
+Serial.print(delimit);
+Serial.print(nr);
+Serial.print(delimit);
+Serial.println(looptime);
+
+}
 void API::update(int looptime)
 {
   /*Denna körs var 25 loop
@@ -515,7 +524,6 @@ void API::Debug(char *value)
   Serial.print(DEBUG,DEC);
   Serial.print(delimit);
   Serial.println(value);
-
 }
 
 bool API::get_StateHasBeenChanged()

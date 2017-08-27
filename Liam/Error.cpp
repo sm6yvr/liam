@@ -13,10 +13,11 @@ Placed under the GNU license
 
 /** Specific constructor.
  */
-ERROR::ERROR(MYDISPLAY* display_, int led_pin_, CONTROLLER* Mower_) {
+ERROR::ERROR(MYDISPLAY* display_, int led_pin_, CONTROLLER* Mower_, API *api, bool UseApi) {
  mylcd = display_;
  led_pin = led_pin_;
  Mower = Mower_;
+ this->api = api;
 }
 
 void ERROR::flag(int error_number_) {

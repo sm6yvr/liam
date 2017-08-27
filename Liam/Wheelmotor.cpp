@@ -24,8 +24,8 @@ WHEELMOTOR::WHEELMOTOR(int pwmpin_, int dirpin_, int loadpin_, int smoothness) {
 	// Set up PWM frequency for pin 3 and 11 to 3921 Hz for smooth running
 	// At default pwm, the frequency of the motors will disturb the BWFsensors
 	// This is very evident if using chinese wheelmotors
-//  	TCCR2B = TCCR2B & 0b11111000 | 0x02;	
-  	
+//  	TCCR2B = TCCR2B & 0b11111000 | 0x02;
+
     pwmpin = pwmpin_;
     dirpin = dirpin_;
     loadpin = loadpin_;
@@ -48,7 +48,7 @@ void WHEELMOTOR::setSpeed(int setspeed) {
    		digitalWrite(dirpin, (speed > 0));
    		delayMicroseconds(smoothness_delay);					// Smooth ramping of motors
    	}
-  
+
   	speed = setspeed;
 }
 
@@ -60,12 +60,11 @@ int WHEELMOTOR::getSpeed() {
 
 int WHEELMOTOR::getLoad() {
 	load = 0;
-	
-	for (int i=0; i<10; i++) { 
+
+	for (int i=0; i<10; i++) {
 		load += analogRead(loadpin);
 		delay(1);
 	}
-
 	return load/10;
 }
 

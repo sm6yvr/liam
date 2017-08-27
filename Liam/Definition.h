@@ -92,10 +92,7 @@ const int NUMBER_OF_SENSORS = 2;
 #define GO_OUT_TIME 16, 00
 #define GO_HOME_TIME 22, 00
 
-/* Motor Speeds */
-#define FULLSPEED 100
-#define SLOWSPEED 30
-#define CUTTERSPEED 100
+
 
 /* Settings for ADXL345 and MMA_7455, what angle values the sensor reports when the mover is standing flat.
   IMPORTANT! You must calibrate those values for your setup.
@@ -166,8 +163,8 @@ if you have no angle-sensor and still want mower to go backwards until it's insi
 #define LIION	2
 */
 /* Wheel motor */
-#define WHEELMOTOR_OVERLOAD		130
-#define WHEELMOTOR_SMOOTHNESS	300
+#define WHEELMOTOR_OVERLOAD		350
+#define WHEELMOTOR_SMOOTHNESS	10
 
 /* If the mower has repeated overload within the interval below (in milliseconds),
    it will flag as having reached a bump. It will then do some action as stated
@@ -178,11 +175,12 @@ if you have no angle-sensor and still want mower to go backwards until it's insi
 #define CUTTER_OVERLOAD 100
 
 /* Cutter states */
-const int MOWING = 0;
+/*const int MOWING = 0;
 const int LAUNCHING = 1;
 const int DOCKING = 2;
 const int CHARGING = 3;
 const int IDLE = 4;
+*/
 /* Turning details */
 #define TURN_INTERVAL 15000
 #define REVERSE_DELAY 2
@@ -204,6 +202,40 @@ const int IDLE = 4;
 
 class DEFINITION {
     public:
+
+      enum CUTTERSTATES {
+        MOWING = 0,
+        LAUNCHING = 1,
+        DOCKING = 2,
+        CHARGING = 3,
+        IDLE = 4,
+        PREDOCK,
+        PRE_DOCK_RIGHT_OUT,
+        PRE_DOCK_LEFT_OUT,
+        ERROR // LEAVE THIS AS LAST ITEM.. ALWAYS!!!! Error is used from API as end indicator.
+        };
+
+        char* get_CutterStatesName(short number)
+        {
+          switch (number) {
+            case MOWING:
+            return "Mowing";
+            case LAUNCHING:
+            return "Launching";
+            case DOCKING:
+            return "Docking";
+            case CHARGING:
+            return "Charging";
+            case IDLE:
+            return "Idle";
+            case PREDOCK:
+            case PRE_DOCK_RIGHT_OUT:
+            case PRE_DOCK_LEFT_OUT:
+            case ERROR:// LEAVE THIS AS LAST ITEM.. ALWAYS!!!! Error is used from API as end indicator.
+            return "";
+          }
+
+        }
         void definePinsInputOutput();
         void setDefaultLevels(BATTERY* battery, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cutter);
         void set_SETUP_AND_DEBUG(bool & value);
@@ -220,6 +252,12 @@ class DEFINITION {
         bool GetUseAPI();
         short GetSlowWheelWhenDocking();
         void SetSlowWheelWhenDocking(short value);
+        int get_FULL_SPEED();
+        void set_FULL_SPEED(int value);
+        int get_SLOW_SPEED();
+        void set_SLOW_SPEED(int value);
+        int get_CUTTER_SPEED();
+        void set_CUTTER_SPEED(int value);
     private:
       bool setupAndDebug=false;
       bool useapi = true;
@@ -227,7 +265,12 @@ class DEFINITION {
       int batteryFullLevel=1256;
       int batteryEmptyLevel=1040;
       int batteryGoHomeLevel=1100;
-      short turnpercentWhenDocking=60; // Denna sätter släphjulets hastighet vid dockning
+      short turnpercentWhenDocking=40; // Denna sätter släphjulets hastighet vid dockning
+
+      /* Motor Speeds */
+      int FULLSPEED =100;
+      int SLOWSPEED = 30;
+      int CUTTERSPEED = 100;
       };
 
 #endif /* _DEFINITION_H_ */

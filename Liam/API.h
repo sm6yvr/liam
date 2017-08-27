@@ -16,7 +16,8 @@ class API
 public:
 
   enum API_COMMAND {
-    OK=0,
+    GetCommands=0,
+    GetCutterState=3,
     NOTIFY=1,
     DEBUG=2,
     GetState=10,
@@ -39,8 +40,8 @@ public:
   const char* API_COMMAND_PRINT_NAME(API_COMMAND command)
   {
     switch (command) {
-      case OK:
-      return "OK";
+      case GetCommands:
+      return "GET Commands";
       case SetState:
       return "SetState";
       case GetState:
@@ -84,12 +85,15 @@ public:
   void EEPROM_READ();
   void EEPROM_WRITE();
   bool IsWrittenToEEPROM();
+  void updatetwo(int nr,int looptime);
   void update(int looptime);
   void Debug(char *value);
   bool get_StateHasBeenChanged();
   void ResetStateHasBeenChanged();
   bool get_ApiDebug();
   void set_ApiDebug(bool value);
+
+  void get_CutterStates();
 
 private:
 
@@ -101,16 +105,17 @@ private:
   BATTERY* battery;
   DEFINITION *definitionDefaults;
 
-  static const short bufferlenght = 40;
+  static const short bufferlenght = 64;
   static const short argslength = 4;
   static const short templenght = 4;
   char buffer[bufferlenght]; // Char to hold incoming data
   char term = '\r'; // every command ends with carrier return
   char syncValue = ';'; // every command must start with syncValue
+  char endcommand = '#'; // Every Command Must end with this char.
   char delimit = ':';   // string must be delimited by this value.
 
   char temp[templenght];
-  int argument[argslength]={-1};
+  int argument[argslength]={-1}; // init args to -1
   short argscounter=0;
 
   bool CheckSyncValue();

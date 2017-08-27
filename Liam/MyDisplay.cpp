@@ -92,16 +92,16 @@ void MYDISPLAY::update() {
     setCursor(7,3);
 
     switch (*moverstate) {
-    case MOWING:
+    case DEFINITION::CUTTERSTATES::MOWING:
       print("MOWING");
       break;
-    case LAUNCHING:
+    case DEFINITION::CUTTERSTATES::LAUNCHING:
       print("LAUNCHING");
       break;
-    case DOCKING:
+    case DEFINITION::CUTTERSTATES::DOCKING:
       print("DOCKING");
       break;
-    case CHARGING:
+    case DEFINITION::CUTTERSTATES::CHARGING:
       print("CHARGING");
       break;
     }

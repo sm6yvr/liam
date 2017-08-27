@@ -12,21 +12,22 @@ Placed under the GNU license
 #include <Wire.h>  // For LCD
 #include "myLcd.h"
 #include "Controller.h"
-
+#include "API.h"
 #ifndef _ERROR_H_
 #define _ERROR_H_
 
 class ERROR {
     public:
-        ERROR(MYDISPLAY* display_, int led_pin_, CONTROLLER* Mower_);
-        
+        ERROR(MYDISPLAY* display_, int led_pin_, CONTROLLER* Mower_, API *api, bool UseApi);
+
         void flag(int error_number);
 
     private:
     MYDISPLAY* mylcd;
     CONTROLLER* Mower;
     int led_pin;
-    
+    API *api;
+
     void blink_led(int error_number);
 };
 

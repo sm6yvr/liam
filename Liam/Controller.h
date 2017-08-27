@@ -15,13 +15,14 @@ Placed under the GNU license
 #include "MotionSensor.h"
 #include "Definition.h"
 #include "MMA_7455.h"
+#include "Definition.h"
 
 #ifndef _CONTROLLER_H_
 #define _CONTROLLER_H_
 
 class CONTROLLER {
     public:
-        CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp);
+        CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, DEFINITION *def);
 
         //
         int turn(int degrees);
@@ -46,7 +47,7 @@ class CONTROLLER {
         int compensateSpeedToCutterLoad();
         int compensateSpeedToCompassHeading();
 
-        boolean wheelsAreOverloaded();
+        boolean wheelsAreOverloaded(int delaytime);
         boolean cutterIsOverloaded();
         boolean hasReachedAStop();
 
@@ -66,11 +67,12 @@ class CONTROLLER {
         int turnRight(int degrees);
 
     private:
-    	WHEELMOTOR* leftMotor;
-    	WHEELMOTOR* rightMotor;
+      WHEELMOTOR* leftMotor;
+      WHEELMOTOR* rightMotor;
     	CUTTERMOTOR* cutter;
     	BWFSENSOR* sensor;
     	MOTIONSENSOR* compass;
+      DEFINITION *definitiondefault;
     	const static int turnDelay = TURNDELAY;
     	const static int mowerTimeout = TIMEOUT;
 
@@ -83,6 +85,7 @@ class CONTROLLER {
     short counter=0;
 
     bool lastloopsensorwasoutside = false;
+    unsigned long dockingLeftSensorInside=millis();
     unsigned long overloadTime;
     unsigned long overloadInterval;
 

@@ -15,7 +15,7 @@
 
 /** Specific constructor.
 */
-CONTROLLER::CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp) {
+CONTROLLER::CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp,DEFINITION *def) {
   leftMotor = left;
   rightMotor = right;
   cutter = cut;
@@ -23,6 +23,7 @@ CONTROLLER::CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BW
   compass = comp;
   default_dir_fwd = 1;
   balance = 0;
+  this->definitiondefault = def;
 }
 
 
@@ -49,7 +50,7 @@ int CONTROLLER::turnToReleaseLeft(int angle) {
         return 0;				// OK
     }
 
-    if (wheelsAreOverloaded())
+    if (wheelsAreOverloaded(250))
       return 1;					// Overloaded
 
     turnLeft(10);
@@ -76,7 +77,7 @@ int CONTROLLER::turnToReleaseRight(int angle) {
         return 0; // OK
     }
 
-    if (wheelsAreOverloaded())
+    if (wheelsAreOverloaded(250))
       return 1;					// Overloaded
 
     turnRight(10);
@@ -150,14 +151,14 @@ int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
   for (int i = 0; i < SLOPEREADINGS; i++)
   {
     angle += compass->getTiltAngle();
-    delay(100);
+    delay(20);
   }
   if (abs(angle / SLOPEREADINGS) <= SLOPEANGLE)
     return 0;
-  
+    // go back for max go backward time
   while (Sensor->isInside() == false)
   {
-    runBackward(FULLSPEED);
+    runBackward(definitiondefault->get_FULL_SPEED());
     delay(1000);
     counter--;
     if (counter <= 0)
@@ -168,7 +169,7 @@ int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
 #endif
 
 void CONTROLLER::startCutter() {
-  for (int i = 0; i < CUTTERSPEED; i++)
+  for (int i = 0; i < definitiondefault->get_CUTTER_SPEED(); i++)
     cutter->setSpeed(i);
 }
 
@@ -216,13 +217,17 @@ void CONTROLLER::adjustMotorSpeeds(short percent)
     int  lms = abs(leftMotor->getSpeed());
     int  rms = abs(rightMotor->getSpeed());
 	  if (!sensor->isInside()) {
-      lms = FULLSPEED;
-		  rms = percent - counter;
+      // check right sensor ?? if out turn hard right.
+      lms = definitiondefault->get_FULL_SPEED();
+      if(percent - counter > -100)
+		    rms = percent - counter;
     }
 	  else if (sensor->isInside())
 	  {
-      lms = percent - counter;
-		  rms = FULLSPEED;
+      // sätt timer och om timer > 1000 sväng hårt vänster..
+      if(percent - counter > -100)
+        lms = percent - counter;
+		  rms = definitiondefault->get_FULL_SPEED();
 	  }
 	  else {
 		  rms += 80;
@@ -234,8 +239,6 @@ void CONTROLLER::adjustMotorSpeeds(short percent)
     if (rms < -50) rms = -50;
     if (lms < -50) lms = -50;
     counter ++;
-    Serial.print(";2:");
-    Serial.println(counter,DEC);
     leftMotor->setSpeed(default_dir_fwd*lms);
     rightMotor->setSpeed(default_dir_fwd*rms);
 }
@@ -304,9 +307,11 @@ int CONTROLLER::compensateSpeedToCompassHeading() {
   rightMotor->setSpeed(default_dir_fwd * rms);
 }
 
-boolean CONTROLLER::wheelsAreOverloaded()
+boolean CONTROLLER::wheelsAreOverloaded(int delaytime)
 {
-  delay(200);       // Settle current spikes
+  if(delaytime>5)
+    delay(delaytime);
+  //delay(200);       // Settle current spikes
   if (leftMotor->isOverloaded() | rightMotor->isOverloaded()) {
     overloadInterval = millis() - overloadTime;
     overloadTime = millis();

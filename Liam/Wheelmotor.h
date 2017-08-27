@@ -18,12 +18,12 @@ Placed under the GNU license
 class WHEELMOTOR {
     public:
         WHEELMOTOR(int pwmpin_, int dirpin_, int loadpin_, int smoothness);
-        
+
         void setSpeed(int setspeed);
         int getSpeed();
-        
-        int getLoad(); 
-        
+
+        int getLoad();
+
         bool isOverloaded();
 
 		void setOverloadLevel(int level);
