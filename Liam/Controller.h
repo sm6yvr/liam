@@ -86,7 +86,7 @@ class CONTROLLER {
     unsigned long overloadInterval;
 
     int durationFromDistance (int speed, int distance) {
-      long rescaledDistance = WHEELMOTOR_DISTANCE_FACTOR * distance;
+      long rescaledDistance = (long) WHEELMOTOR_DISTANCE_FACTOR * distance;
       return rescaledDistance / speed;
     }
 
