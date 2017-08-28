@@ -65,7 +65,7 @@ class CONTROLLER {
 
         int turnLeft(int degrees);
         int turnRight(int degrees);
-
+        
     private:
       WHEELMOTOR* leftMotor;
       WHEELMOTOR* rightMotor;
@@ -83,6 +83,7 @@ class CONTROLLER {
 		int rightMotorSpeed;
 		int cutterSpeed;
     short counter=0;
+
 
     bool lastloopsensorwasoutside = false;
     unsigned long dockingLeftSensorInside=millis();

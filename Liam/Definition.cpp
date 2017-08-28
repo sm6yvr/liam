@@ -144,3 +144,11 @@ int DEFINITION::get_CUTTER_SPEED()
 {return this->CUTTERSPEED;}
 void DEFINITION::set_CUTTER_SPEED(int value)
 {this->CUTTERSPEED = value;}
+int DEFINITION::get_HeartBeatTime()
+{
+	return this->heartBeatTime;
+}
+void DEFINITION::set_HeartBeatTime(int value)
+{
+	this->heartBeatTime = value;
+}

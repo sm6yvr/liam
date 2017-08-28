@@ -90,7 +90,7 @@ int RightwheelOverload=0;
 int WeHaveDocked=0; /* denna används för att kolla om vi dockat i laddstation.
 vid varje loop under dockning så räknas denna upp med 1 om dockning, avlusning var 300 ms */
 long timeToUpdate=millis();
-short UpdateIntervall=2000;
+
 
 int GenericCounter=0;
 
@@ -140,24 +140,21 @@ CLOCK myClock;
 SETUPDEBUG SetupDebug(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery);
 
 //API
-API api(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery, &Defaults, &state); // add state to be able to set state from api.
+API api(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery, &Defaults, &state, &Mower); // add state to be able to set state from api.
 // Error handler
 ERROR Error(&Display, LED_PIN, &Mower, &api, Defaults.GetUseAPI());
 short SetState(short In_state)
 {
   switch (In_state) {
     case DEFINITION::CUTTERSTATES::MOWING:
-    UpdateIntervall=4000;
     Mower.startCutter();
     Mower.runForward(Defaults.get_FULL_SPEED());
     return DEFINITION::CUTTERSTATES::MOWING;
 
     case DEFINITION::CUTTERSTATES::LAUNCHING:
-    UpdateIntervall=3000;
     return DEFINITION::CUTTERSTATES::LAUNCHING;
 
     case DEFINITION::CUTTERSTATES::CHARGING:
-    UpdateIntervall=5000;
     // restore wheelmotor smoothness
     leftMotor.setSmoothness(WHEELMOTOR_SMOOTHNESS);
     rightMotor.setSmoothness(WHEELMOTOR_SMOOTHNESS);
@@ -167,7 +164,6 @@ short SetState(short In_state)
     return DEFINITION::CUTTERSTATES::CHARGING;
 
     case DEFINITION::CUTTERSTATES::DOCKING:
-    UpdateIntervall=5000;
     Mower.stopCutter();
     Mower.stop();
     Sensor.select(0);
@@ -178,19 +174,16 @@ short SetState(short In_state)
     return DEFINITION::CUTTERSTATES::DOCKING;
 
     case DEFINITION::CUTTERSTATES::IDLE:
-    UpdateIntervall=10000;
     Mower.stopCutter();
     Mower.stop();
     return DEFINITION::CUTTERSTATES::IDLE;
 
     case DEFINITION::CUTTERSTATES::PREDOCK:
-    UpdateIntervall=5000;
     Mower.stopCutter();
     Mower.runForward(Defaults.get_FULL_SPEED());
     return DEFINITION::CUTTERSTATES::PREDOCK;
 
     case DEFINITION::CUTTERSTATES::PRE_DOCK_LEFT_OUT:
-    UpdateIntervall=5000;
     Mower.stop();
     Sensor.select(0);
     Serial.println(";2:V Spole över BWF");
@@ -198,7 +191,6 @@ short SetState(short In_state)
     return DEFINITION::CUTTERSTATES::PRE_DOCK_LEFT_OUT;
 
     case DEFINITION::CUTTERSTATES::PRE_DOCK_RIGHT_OUT:
-    UpdateIntervall=5000;
     Mower.stop();
     Sensor.select(0);
     return DEFINITION::CUTTERSTATES::PRE_DOCK_RIGHT_OUT;
@@ -279,9 +271,32 @@ else
 
   }
   state = SetState(DEFINITION::CUTTERSTATES::IDLE);
-
+Serial.print(";");
+Serial.print(API::API_RESPONSE::ONLINE);
+Serial.println('#');
 }
+void updateListeners()
+{
+  api.sendHeartBeat();
+  if(Defaults.GetUseAPI())
+  {
+    //api.update(millis()-templong);
 
+    if(leftMotor.getLoad() > WHEELMOTOR_OVERLOAD)
+    {
+    Serial.print(";2:LeftMotor == ");
+    Serial.println(leftMotor.getLoad());
+  }
+  else if (rightMotor.getLoad()> WHEELMOTOR_OVERLOAD)
+  {Serial.print(";2:rightMotor == ");
+    Serial.println(rightMotor.getLoad());
+  }
+}
+  else
+  {
+    Display.update();
+  }
+}
 // ***************** Main loop ***********************************
 void loop() {
   if(api.inputComplete)
@@ -300,25 +315,9 @@ void loop() {
   int err = 0;
     Battery.updateSOC();
     //LCDi++;  //Loops 0-10
-    if (millis()-timeToUpdate > UpdateIntervall)
+    if (millis()-timeToUpdate > Defaults.get_HeartBeatTime())
     {
-      if(Defaults.GetUseAPI())
-      {
-        api.update(millis()-templong);
-        if(leftMotor.getLoad() > WHEELMOTOR_OVERLOAD)
-        {
-        Serial.print(";2:LeftMotor == ");
-        Serial.println(leftMotor.getLoad());
-      }
-      else if (rightMotor.getLoad()> WHEELMOTOR_OVERLOAD)
-      {Serial.print(";2:rightMotor == ");
-        Serial.println(rightMotor.getLoad());
-      }
-    }
-      else
-      {
-        Display.update();
-      }
+      updateListeners();
       timeToUpdate=millis();
     }
     templong=millis();
@@ -732,3 +731,12 @@ if(millis()-time_at_turning > 300) // Kolla vart 300ms om vi ändrat status på 
 
   }// switch state
 }//VOID loop
+/*
+NOTE::
+1. Stänger av NOTIFY klart
+2. Adderar HeartBeat 1,2,3,4 eller vart 5:e sekund ??
+3. Alla  set svar är ;kommando:OK/NOK#
+4. alla kommandon måste avslutas med #
+5. Börja fundera på en subscribe funktion.
+ typ ;kommando:SUBSCRIBE
+*/

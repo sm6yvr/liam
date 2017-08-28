@@ -7,6 +7,7 @@
 #include "MotionSensor.h"
 #include "Definition.h"
 #include "EEPROM.h"
+#include "Controller.h"
 
 
 #define SERIALCOMMANDDEBUG
@@ -15,27 +16,36 @@ class API
 {
 public:
 
-  enum API_COMMAND {
-    GetCommands=0,
-    GetCutterState=3,
-    NOTIFY=1,
-    DEBUG=2,
-    GetState=10,
-    SetState=11,
-    GetSetUpDebug=100,
-    SetSetUpDebug=101,
-    GetBattery=102,
-    SetBattery=103,
-    GetSensor=104,
-    SetMotorOn=105,
-    SetMotorOff=106,
-    GetWheelMotor=107,
-    GetSlowWheelWhenDocking=108,
-    SetSlowWheelWhenDocking=109,
-    GetCutterStatus=110,
-    SetFirstByteToFalse=998,
-    INVALID = 999
-  };
+  /* API response mellan 300 och --> */
+enum API_RESPONSE {
+  OK=300,
+  INVALID=301,
+  HEARTBEAT=302,
+  NOTIFY=303,
+  SUBSCRIBE=304,
+  DEBUG=305,
+  ONLINE=306
+};
+/* get commands are even, set are odd */
+enum API_COMMAND {
+  GetCommands=0,
+  GetCutterState=2,
+  GetState=10,
+  GetSetUpDebug=100,
+  GetBattery=102,
+  GetSensor=104,
+  GetMotor=106, // ;106:MOTOR[0=left,1=Right,2=cutter]#
+  GetSlowWheelWhenDocking=108,
+  GetCutterStatus=110,
+
+  SetState=11,
+  SetSetUpDebug=101,
+  SetBattery=103,
+  SetMotor=105, //;105:MOTOR[0=left,1=Right,2=cutter]:SPEED# speed -100 --> 100
+  SetSlowWheelWhenDocking=109,
+
+  SetFirstByteToFalse=998
+};
 /*Vet inte om man skulle kunna använda denna enum för att ge rätt kommandon till den som lyssnar på seriesnöret */
   const char* API_COMMAND_PRINT_NAME(API_COMMAND command)
   {
@@ -43,9 +53,9 @@ public:
       case GetCommands:
       return "GET Commands";
       case SetState:
-      return "SetState";
+      return "Set State";
       case GetState:
-      return "GetState";
+      return "Get State";
       case GetSetUpDebug:
       return "Get setup and debug";
       case SetSetUpDebug:
@@ -54,28 +64,22 @@ public:
       return "Get Battery";
       case SetBattery:
       return "Set Battery";
-      case SetMotorOn:
-      return "Motor On";
-      case SetMotorOff:
-      return "Motor off";
+      case SetMotor:
+      return "Set Motor";
       case GetSensor:
       return "Get sensor";
-      case GetWheelMotor:
-      return "Wheel informartion";
       case GetCutterStatus:
       return "Cutter informartion";
       case GetSlowWheelWhenDocking:
       return "Get slow wheel when docking";
       case SetSlowWheelWhenDocking:
       return "Set slow wheel when docking (%)";
-      case INVALID:
-      return "INVALID";
       default:
       return "INVALID";
     }
   }
 
-  API(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt, DEFINITION *definition, int *state);
+  API(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt, DEFINITION *definition, int *state, CONTROLLER *controller);
 
   void SetFirstByteFalse();
   void ValidateCommand(); // entrypoint
@@ -94,6 +98,7 @@ public:
   void set_ApiDebug(bool value);
 
   void get_CutterStates();
+  void sendHeartBeat();
 
 private:
 
@@ -104,6 +109,7 @@ private:
   MOTIONSENSOR* compass;
   BATTERY* battery;
   DEFINITION *definitionDefaults;
+  CONTROLLER *ApiController;
 
   static const short bufferlenght = 64;
   static const short argslength = 4;
@@ -134,16 +140,15 @@ private:
   void leave();
   /* Response for commands */
 
-  void ActRespond();
+  int getArgument(int number);
+
+  void ActRespond(); // commando tolkning klar..
 
   void RespondGetSetUpDebug();
   bool ACT_SetUpDebug();
 
   void Response_GetBattery();
   void ACT_SetBattery();
-
-  void ACT_SetMotorOn();
-  void ACT_SetMotorOff();
 
   void Response_GetState();
   void ACT_SetState();
@@ -154,10 +159,14 @@ private:
   void ACT_SetSlowWheelWhenDocking();
   void Respond_GetSlowWheelWhenDocking();
 
+  void Response_get_MotorStatus();
+  void ACT_set_Motor();
 
+  void sendEndCommand();
+  void sendOkResponse();
   int SearchForChar(char *c);
   short bufPos =0;
-  API_COMMAND commandIndex=INVALID;
+  API_COMMAND commandIndex=API::API_COMMAND::SetMotor;
 
   int index;
   char *c;

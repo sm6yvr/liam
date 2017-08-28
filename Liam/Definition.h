@@ -258,6 +258,8 @@ class DEFINITION {
         void set_SLOW_SPEED(int value);
         int get_CUTTER_SPEED();
         void set_CUTTER_SPEED(int value);
+        int get_HeartBeatTime();
+        void set_HeartBeatTime(int value);
     private:
       bool setupAndDebug=false;
       bool useapi = true;
@@ -266,7 +268,7 @@ class DEFINITION {
       int batteryEmptyLevel=1040;
       int batteryGoHomeLevel=1100;
       short turnpercentWhenDocking=40; // Denna sätter släphjulets hastighet vid dockning
-
+      int heartBeatTime = 5000; //ms mellan heartbeat
       /* Motor Speeds */
       int FULLSPEED =100;
       int SLOWSPEED = 30;
