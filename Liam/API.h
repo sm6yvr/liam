@@ -29,20 +29,21 @@ enum API_RESPONSE {
 /* get commands are even, set are odd */
 enum API_COMMAND {
   GetCommands=0,
-  GetCutterState=2,
+  GetMowerStatus=2,
   GetState=10,
   GetSetUpDebug=100,
   GetBattery=102,
   GetSensor=104,
   GetMotor=106, // ;106:MOTOR[0=left,1=Right,2=cutter]#
   GetSlowWheelWhenDocking=108,
-  GetCutterStatus=110,
+  GetWheelOverloadLevel = 110,
 
   SetState=11,
   SetSetUpDebug=101,
   SetBattery=103,
   SetMotor=105, //;105:MOTOR[0=left,1=Right,2=cutter]:SPEED# speed -100 --> 100
   SetSlowWheelWhenDocking=109,
+  SetWheelOverloadLevel = 111,
 
   SetFirstByteToFalse=998
 };
@@ -68,12 +69,14 @@ enum API_COMMAND {
       return "Set Motor";
       case GetSensor:
       return "Get sensor";
-      case GetCutterStatus:
-      return "Cutter informartion";
       case GetSlowWheelWhenDocking:
       return "Get slow wheel when docking";
       case SetSlowWheelWhenDocking:
       return "Set slow wheel when docking (%)";
+      case SetWheelOverloadLevel:
+      return "Set Wheel overload level";
+      case GetWheelOverloadLevel:
+      return "Get Wheel overload level";
       default:
       return "INVALID";
     }
@@ -96,9 +99,10 @@ enum API_COMMAND {
   void ResetStateHasBeenChanged();
   bool get_ApiDebug();
   void set_ApiDebug(bool value);
-
+  int *errorNumber;
   void get_CutterStates();
   void sendHeartBeat();
+  int looptime;
 
 private:
 
@@ -164,6 +168,11 @@ private:
 
   void sendEndCommand();
   void sendOkResponse();
+
+  void Respond_get_MowerStatus();
+
+  void Response_get_WheelOverloadlevel();
+  void ACT_set_WheelOverloadlevel();
   int SearchForChar(char *c);
   short bufPos =0;
   API_COMMAND commandIndex=API::API_COMMAND::SetMotor;

@@ -81,7 +81,6 @@ int state = DEFINITION::CUTTERSTATES::IDLE;
 long time_at_turning = millis();
 int turn_direction = 1;
 //int LCDi = 0;
-long templong=millis();
 bool sensorwasout=false;
 int spikeTime=300;
 int LeftwheelOverload=0;
@@ -90,7 +89,7 @@ int RightwheelOverload=0;
 int WeHaveDocked=0; /* denna används för att kolla om vi dockat i laddstation.
 vid varje loop under dockning så räknas denna upp med 1 om dockning, avlusning var 300 ms */
 long timeToUpdate=millis();
-
+long looptime = millis();
 
 int GenericCounter=0;
 
@@ -147,11 +146,13 @@ short SetState(short In_state)
 {
   switch (In_state) {
     case DEFINITION::CUTTERSTATES::MOWING:
+    Serial.println("IN SET MOWING state");
     Mower.startCutter();
     Mower.runForward(Defaults.get_FULL_SPEED());
     return DEFINITION::CUTTERSTATES::MOWING;
 
     case DEFINITION::CUTTERSTATES::LAUNCHING:
+    time_at_turning = millis();
     return DEFINITION::CUTTERSTATES::LAUNCHING;
 
     case DEFINITION::CUTTERSTATES::CHARGING:
@@ -180,20 +181,25 @@ short SetState(short In_state)
 
     case DEFINITION::CUTTERSTATES::PREDOCK:
     Mower.stopCutter();
-    Mower.runForward(Defaults.get_FULL_SPEED());
+    Mower.stop();
     return DEFINITION::CUTTERSTATES::PREDOCK;
 
     case DEFINITION::CUTTERSTATES::PRE_DOCK_LEFT_OUT:
     Mower.stop();
     Sensor.select(0);
-    Serial.println(";2:V Spole över BWF");
-    delay(500);
     return DEFINITION::CUTTERSTATES::PRE_DOCK_LEFT_OUT;
 
     case DEFINITION::CUTTERSTATES::PRE_DOCK_RIGHT_OUT:
     Mower.stop();
     Sensor.select(0);
     return DEFINITION::CUTTERSTATES::PRE_DOCK_RIGHT_OUT;
+
+    case DEFINITION::CUTTERSTATES::ERROR:
+    Serial.println("IN SET ERROR state");
+    api.errorNumber=Error.ERRORCODE();
+    Mower.stopCutter();
+    Mower.stop();
+    return DEFINITION::CUTTERSTATES::ERROR;
   }
 }
 /*
@@ -280,17 +286,7 @@ void updateListeners()
   api.sendHeartBeat();
   if(Defaults.GetUseAPI())
   {
-    //api.update(millis()-templong);
 
-    if(leftMotor.getLoad() > WHEELMOTOR_OVERLOAD)
-    {
-    Serial.print(";2:LeftMotor == ");
-    Serial.println(leftMotor.getLoad());
-  }
-  else if (rightMotor.getLoad()> WHEELMOTOR_OVERLOAD)
-  {Serial.print(";2:rightMotor == ");
-    Serial.println(rightMotor.getLoad());
-  }
 }
   else
   {
@@ -299,11 +295,15 @@ void updateListeners()
 }
 // ***************** Main loop ***********************************
 void loop() {
+  api.looptime = int(millis() - looptime);
+    looptime = millis();
+
   if(api.inputComplete)
     api.ValidateCommand();
   else
     APIEvent();
-    if(api.get_StateHasBeenChanged())
+
+  if(api.get_StateHasBeenChanged())
     {
       state=SetState(state); // API kan ändra denna utan att det märks i detta scope.
       api.ResetStateHasBeenChanged();
@@ -320,7 +320,7 @@ void loop() {
       updateListeners();
       timeToUpdate=millis();
     }
-    templong=millis();
+
   // Security check Mower is flipped/lifted.
 #if __MS9150__ || __MS5883L__ || __ADXL345__ || __MMA7455__
   if (Mower.hasFlipped()) {
@@ -329,6 +329,8 @@ void loop() {
     Mower.stopCutter();
     Mower.stop();
     Error.flag(9);
+    SetState(DEFINITION::CUTTERSTATES::ERROR);
+    break;
   }
 #endif
 
@@ -343,18 +345,22 @@ void loop() {
     Mower.runBackward(Defaults.get_FULL_SPEED());
     delay(2000);
     if (Mower.isLifted())
-      Error.flag(4);
+    {  Error.flag(4);
+SetState(DEFINITION::CUTTERSTATES::ERROR);
+    }
     Mower.turnRight(90);
     //Mover.startCutter();
     Mower.runForward(Defaults.get_FULL_SPEED());
   }
 #endif
+
   // Check if stuck and trigger action
   Mower.updateBalance();
   // denna triggas vid hemgång.
   if(!DEFINITION::CUTTERSTATES::DOCKING)
   {
   if (abs(Mower.getBalance()) > BALANCE_TRIGGER_LEVEL) {
+Serial.println("LOOP 3");
     Mower.storeState();
     Mower.runBackward(Defaults.get_FULL_SPEED());
     delay(1000);
@@ -365,11 +371,12 @@ void loop() {
 }
 
   switch (state) {
-    case DEFINITION::CUTTERSTATES::IDLE:
     //LCDi++;
     //------------------------- IDLE ---------------------------
+    case DEFINITION::CUTTERSTATES::IDLE:
     delay(5);
       break;
+
     //------------------------- MOWING ---------------------------
     case DEFINITION::CUTTERSTATES::MOWING:
       for(int i = 0; i < NUMBER_OF_SENSORS; i++) {
@@ -409,48 +416,67 @@ void loop() {
           Mower.GoBackwardUntilInside (&Sensor);
         #endif
 
-        if(i==0)
-        {
-        // Tries to turn, but if timeout then reverse and try again
-          if ((err = Mower.turnToReleaseRight(30) > 0)) {
-            Mower.runBackward(Defaults.get_FULL_SPEED());
-            delay(1000);
-            Mower.stop();
-            if ((err = Mower.turnToReleaseRight(30) > 0))
-              Error.flag(err);
-          }
-        }
-      else
-      {
-        if ((err = Mower.turnToReleaseLeft(30) > 0)) {
-        Mower.runBackward(Defaults.get_FULL_SPEED());
-        delay(1000);
-        Mower.stop();
-        if ((err = Mower.turnToReleaseLeft(30) > 0))
-          Error.flag(err);
-        }
-      }
-
-      Compass.setNewTargetHeading();
-
+// test.. kolla om båda sensorerna är ute
         if (Mower.allSensorsAreOutside()) {
+          Serial.println("LOOP 5");
           Mower.runBackward(Defaults.get_FULL_SPEED());
           delay(1000);
           Mower.stop();
           if (Mower.allSensorsAreOutside())
-            Error.flag(4);
+          {
+            Serial.println("All sensors are outside");
+             Error.flag(4);
+            SetState(DEFINITION::CUTTERSTATES::ERROR);
+            break;
+          } // if
+        } // if
+
+        if(i==0)
+        {
+        // Tries to turn, but if timeout then reverse and try again
+          if ((err = Mower.turnToReleaseRight(30) > 0))
+          {
+            Serial.println("LOOP 6");
+            Mower.runBackward(Defaults.get_FULL_SPEED());
+            delay(1000);
+            Mower.stop();
+            if ((err = Mower.turnToReleaseRight(30) > 0))
+              {  Error.flag(err);
+                SetState(DEFINITION::CUTTERSTATES::ERROR);
+                Serial.print("Error ==");
+                Serial.println(err,DEC);
+
+                break;
+              }
+            }
         }
+      else if(i==1)
+      {
+        if ((err = Mower.turnToReleaseLeft(30) > 0)) {
+          Serial.println("LOOP 7");
+        Mower.runBackward(Defaults.get_FULL_SPEED());
+        delay(1000);
+        Mower.stop();
+        if ((err = Mower.turnToReleaseLeft(30) > 0))
+        {
+          Error.flag(err);
+
+          Serial.print("Error ==");
+          Serial.println(err,DEC);
+          SetState(DEFINITION::CUTTERSTATES::ERROR);
+          break;
+        }
+        }
+      }
+      Compass.setNewTargetHeading();
         sensorwasout = true;
       }// if (mower_is_outside)
     }//For loop
 
       Mower.runForward(Defaults.get_FULL_SPEED());
-
       // Adjust the speed of the mower to the grass thickness
       Mower.compensateSpeedToCutterLoad();
-
       // Adjust the speed of the mower to the compass heading
-
       Compass.updateHeading();
       Mower.compensateSpeedToCompassHeading();
 if(sensorwasout)
@@ -472,93 +498,49 @@ if(sensorwasout)
         Compass.setNewTargetHeading();
         Mower.runForward(Defaults.get_FULL_SPEED());
       }
-    // Check if bumper has triggered (providing you have one enabled)
-#if  __Bumper__
-      if (Mower.hasBumped())
-      {
-        if(!Defaults.GetUseAPI())
-          Serial.print("Mower has bumped ");
-        Mower.runBackward(Defaults.get_FULL_SPEED());
-        delay(2000);
-        Mower.turnRight(90);
-        Mower.runForward(Defaults.get_FULL_SPEED());
-      }
-#endif
-
-
-#if  __Lift_Sensor__
-      if (Mower.isLifted())
-      {
-        if(!Defaults.GetUseAPI())
-          Serial.println("Mower is lifted");
-        Mower.stopCutter();
-        Mower.runBackward(Defaults.get_FULL_SPEED());
-        delay(2000);
-        if (Mower.isLifted())
-          Error.flag(4);
-        Mower.turnRight(90);
-        Mower.startCutter();
-        Mower.runForward(Defaults.get_FULL_SPEED());
-      }
-#endif
-
-      // Check if mower has tilted (providing you have one enabled)
-#if  __MS9150__ ||  __MS5883L__ ||  __ADXL345__ || __MMA7455__
-      if (Mower.hasFlipped()) {
-        if(!Defaults.GetUseAPI())
-          Serial.print("Mower has flipped ");
-        Mower.stopCutter();
-        Mower.stop();
-        Error.flag(9);
-      } else if (Mower.hasTilted()) {
-        if(!Defaults.GetUseAPI())
-          Serial.print("Mower has tilted ");
-        Mower.runBackward(Defaults.get_FULL_SPEED());
-        delay(2000);
-        Mower.turnRight(90);
-        Mower.runForward(Defaults.get_FULL_SPEED());
-        delay(200);
-      }
-#endif
-
       break;
 
 
     //----------------------- LAUNCHING ---------------------------
     case DEFINITION::CUTTERSTATES::LAUNCHING:
 
-      Mower.runBackward(Defaults.get_FULL_SPEED());
-
-      delay(7000);
+    Mower.runBackward(Defaults.get_FULL_SPEED());
+    if(millis()-time_at_turning>7000)
+    {
       Mower.stop();
-
       // Turn right in random degree
       Mower.turnRight(random(30, 60));
-
       Mower.waitWhileChecking(5000);
-
       Compass.setNewTargetHeading();
-
       state = SetState(DEFINITION::CUTTERSTATES::MOWING);
-
-      // Reset the running average
-      Battery.resetSOC();
-
-      break;
+    }
+    // Reset the running average
+    Battery.resetSOC();
+    break;
 
     //----------------------- DOCKING -----------------------------
     case DEFINITION::CUTTERSTATES::DOCKING:
       // If the mower hits something, reverse and try again
 GenericCounter++;
     if(Battery.isBeingCharged())
-      WeHaveDocked++;
-
+    {
+       WeHaveDocked++;
+    }
 // kolla om hjulen går tugnt
 // använd motor.getload() == amp per motor..
 LeftwheelOverload += leftMotor.getLoad();
 RightwheelOverload += rightMotor.getLoad();
 if(millis()-time_at_turning > 300) // Kolla vart 300ms om vi ändrat status på dockpinnen
 {
+  LeftwheelOverload/=GenericCounter;
+  RightwheelOverload/=GenericCounter;
+  if(LeftwheelOverload > Defaults.get_WheelOverload() ||
+    RightwheelOverload > Defaults.get_WheelOverload())
+  {
+    Mower.runBackward(Defaults.get_FULL_SPEED());
+    delay(1500);
+    Mower.runForward(Defaults.get_FULL_SPEED());
+  }
   if(WeHaveDocked > 0) // if greater than 0 we have docked.
   {
       // Stop
@@ -568,61 +550,14 @@ if(millis()-time_at_turning > 300) // Kolla vart 300ms om vi ändrat status på 
       WeHaveDocked=0;
       break;
   }
-  LeftwheelOverload /= GenericCounter;
-  RightwheelOverload /= GenericCounter;
-  if (LeftwheelOverload >= 100) {
-    Serial.print(";2:VänsterHjul överlast =");
-    Serial.println(LeftwheelOverload);
-  }
-  if (RightwheelOverload >= 100) {
-    Serial.print(";2:HögerHjul överlast =");
-    Serial.println(RightwheelOverload);
-  }
-  LeftwheelOverload=0;
-  RightwheelOverload=0;
   GenericCounter = 0;
   WeHaveDocked=0;
   time_at_turning = millis();
 }
-// kolla om vi kommit in i laddaren
-      //if (Mower.wheelsAreOverloaded(0)) {
-      //  Mower.runBackward(Defaults.get_FULL_SPEED());
-      //  delay(1000);
-      //}
 
-      // See if mower has repeated overload
-      // If so, turn away from the BWF and try to hook on somewhere else
-/*
-      if (Mower.hasReachedAStop()) {
-        Mower.runBackward(Defaults.get_FULL_SPEED());
-        delay(1000);
-        Mower.turnRight(90);
-        Mower.runForward(Defaults.get_FULL_SPEED());
-        delay(1000);
-        Mower.startCutter();
-        state = SetState(MOWING);
-        break;
-      }
-//NOTE : This needs a setting in DEFINITION;
-*/
 
       // Track the BWF by compensating the wheel motor speeds
       Mower.adjustMotorSpeeds(Defaults.GetSlowWheelWhenDocking());
-      // Clear signal to allow the mower to track the wire closely
-      //Sensor.clearSignal(); // denna är överspelad. Buffert är FIFO och vi behöver inte tömma den.
-
-      // Wait a little to avoid current spikes
-      //delay(20);
-
-      // Stop the mower as soon as the charge plates come in contact
-
-    /*  if (Battery.isBeingCharged()) {
-        // Stop
-        Mower.stop();
-        Mower.resetBalance();
-        state = SetState(DEFINITION::CUTTERSTATES::CHARGING);
-        break;
-      } */
       break;
 
     //----------------------- CHARGING ----------------------------
@@ -631,7 +566,7 @@ if(millis()-time_at_turning > 300) // Kolla vart 300ms om vi ändrat status på 
       if(Battery.isBeingCharged())
       WeHaveDocked++;
 
-      if(millis()-time_at_turning > 300) // Om 300 ms har passerat kolla om hjulet gått tungt under den tiden.
+      if(millis()-time_at_turning > 300)
     {
       if(WeHaveDocked == 0) // if greater than 0 we are in charger.
       {
@@ -656,19 +591,6 @@ if(millis()-time_at_turning > 300) // Kolla vart 300ms om vi ändrat status på 
         state = SetState(DEFINITION::CUTTERSTATES::LAUNCHING);
 #endif
 
-    /*  in_contact = Battery.isBeingCharged();
-        delay(50);
-
-      // If the mower is not being charged, jiggle it a bit
-      if (!in_contact) {
-        Mower.runBackward(20); 	// Back away slow speed
-        delay(200);
-        Mower.stop();
-        delay(50);
-        Mower.runForward(20);	// Dock again at slow speed
-        delay(400);
-        Mower.stop();
-      } */
     break;
 
     case DEFINITION::CUTTERSTATES::PREDOCK:
@@ -687,7 +609,6 @@ if(millis()-time_at_turning > 300) // Kolla vart 300ms om vi ändrat status på 
       Mower.stop();
       if(i==0)
       {
-
       state = SetState(DEFINITION::CUTTERSTATES::DOCKING);
       break;
       }
@@ -697,6 +618,10 @@ if(millis()-time_at_turning > 300) // Kolla vart 300ms om vi ändrat status på 
       break;
       }
     }// if (mower_is_outside)
+    else
+    {
+      Mower.runForward(Defaults.get_FULL_SPEED());
+    }
   }//For loop
 
     break;
@@ -710,7 +635,7 @@ if(millis()-time_at_turning > 300) // Kolla vart 300ms om vi ändrat status på 
     else // vänster spole ute, sätt state docking
     {
       Mower.stop();
-      state = SetState(DEFINITION::CUTTERSTATES::DOCKING);
+      state = SetState(DEFINITION::CUTTERSTATES::PRE_DOCK_LEFT_OUT);
     }
     break;
 
@@ -718,25 +643,30 @@ if(millis()-time_at_turning > 300) // Kolla vart 300ms om vi ändrat status på 
     // Vänster spole är triggad. Kolla vart vi är och justera.
     if(Sensor.isInside()) // medans vänster spole är inne..
       {
-        Mower.stop();
-        delay(500);
         Mower.turnRight(2);
       }
     else // vänster spole ute, sätt state docking
     {
-    Mower.runBackward(Defaults.get_SLOW_SPEED());
+    state = SetState(DEFINITION::CUTTERSTATES::DOCKING);
     }
     break;
 
+    case DEFINITION::CUTTERSTATES::ERROR:
+    Serial.println("IN ERror Case");
+      Error.waitForReset();
+    break;
 
   }// switch state
 }//VOID loop
 /*
 NOTE::
 1. Stänger av NOTIFY klart
-2. Adderar HeartBeat 1,2,3,4 eller vart 5:e sekund ??
+2. Adderar HeartBeat 1,2,3,4 eller vart 5:e sekund ?? gör ställbart.
 3. Alla  set svar är ;kommando:OK/NOK#
-4. alla kommandon måste avslutas med #
+4. alla kommandon måste avslutas med # ok
 5. Börja fundera på en subscribe funktion.
+6. se till att om utanför BWF hamnar som eget state. Detta för att
+kunna räkna tid och inte använda delayer.
+7. ERROR funkar inte som tänkt.
  typ ;kommando:SUBSCRIBE
 */

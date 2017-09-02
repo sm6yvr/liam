@@ -258,16 +258,16 @@ void API::WeAreDone()
   for (size_t i = 0; i < argslength; i++) {
     if(argument[i] == '\0')
     break;
-    Serial.print(" : ");
+    Serial.print(delimit);
     Serial.print(argument[i],DEC);
   }
-  Serial.print('\n');
+  sendEndCommand();
   #endif
 }
 void API::Response_Invalid_Command()
 {
   #ifdef SERIALCOMMANDDEBUG
-  Serial.println(API_COMMAND_PRINT_NAME(API_RESPONSE::INVALID));
+  Serial.println("Något gick fel");
   #else
   Serial.print(syncValue);
   Serial.print(commandIndex);
@@ -314,7 +314,7 @@ void API::clearBuffer()
 
 void API::RespondGetSetUpDebug()
 {
-  Serial.print(";");
+  Serial.print(syncValue);
   Serial.print(commandIndex);
   Serial.print(delimit);
   Serial.print(definitionDefaults->get_SETUP_AND_DEBUG());
@@ -343,7 +343,7 @@ bool API::ACT_SetUpDebug()
 void API::Response_GetBattery()
 {
   /* Return sync, kommand, TYPE, MIN, MAX, GOHOME SOC */
-  Serial.print(";");
+  Serial.print(syncValue);
   Serial.print(commandIndex);
   Serial.print(delimit);
   Serial.print(battery->getBatteryType());
@@ -360,15 +360,27 @@ void API::Response_GetBattery()
 }
 void API::ACT_SetBattery()
 {
-  this->battery->setBatterType((BATTERY::BATTERY_TYPE)argument[0]);
-  this->battery->setDepletedLevel(argument[1]);
-  this->battery->setFullyChargedLevel(argument[2]);
-  this->battery->setGoHomeLevel(argument[3]);
+  bool err=false;
+  int battype,min,max,gohome = 0;
 
-  this->definitionDefaults->setBatteryType((BATTERY::BATTERY_TYPE)argument[0]);
-  this->definitionDefaults->setBatteryFullLevel(argument[2]);
-  this->definitionDefaults->setBatteryEmptyLevel(argument[1]);
-  this->definitionDefaults->setBatteryGoHomeLevel(argument[3]);
+    battype = getArgument(0);
+  min = getArgument(1);
+  max = getArgument(2);
+  gohome = getArgument(3);
+  this->battery->setBatterType((BATTERY::BATTERY_TYPE)battype);
+  this->battery->setDepletedLevel(min);
+  this->battery->setFullyChargedLevel(max);
+  this->battery->setGoHomeLevel(min);
+
+  this->definitionDefaults->setBatteryType((BATTERY::BATTERY_TYPE)battype);
+  this->definitionDefaults->setBatteryFullLevel(max);
+  this->definitionDefaults->setBatteryEmptyLevel(min);
+  this->definitionDefaults->setBatteryGoHomeLevel(min);
+  Serial.print("sätt-");
+  Serial.print(min);
+  Serial.print(max);
+  Serial.print(battype);
+  Serial.println("");
 }
 void API::ACT_GetSensor()
 { /* return sync, command, value */
@@ -399,6 +411,10 @@ void API::ActRespond()
   Serial.print("IN ActRespond\n");
   #endif
   switch (commandIndex) {
+    case API_COMMAND::GetMowerStatus:
+    Respond_get_MowerStatus();
+    break;
+
     case API_COMMAND::SetState:
     ACT_SetState();
     valueChanged = true;
@@ -447,6 +463,14 @@ void API::ActRespond()
     Response_get_MotorStatus();
     break;
 
+    case API_COMMAND::GetWheelOverloadLevel:
+    Response_get_WheelOverloadlevel();
+    break;
+    case API_COMMAND::SetWheelOverloadLevel:
+    ACT_set_WheelOverloadlevel();
+    valueChanged=true;
+    Response_get_WheelOverloadlevel();
+    break;
     default:
     #ifdef SERIALCOMMANDDEBUG
     Serial.print("\nDefault value from AtcReponse\n");
@@ -630,4 +654,78 @@ void API::sendOkResponse()
   Serial.print(delimit);
   Serial.print(API::API_RESPONSE::OK);
   sendEndCommand();
+}
+void API::Respond_get_MowerStatus()
+{/* syncValue
+  commandIndex
+  compass heading
+  isInside
+  motor load leftMotor
+  motor load rightMotor
+  state
+  SOC
+  errorNumber
+  cutterload
+  motorspeeds 1, 2 & 3
+  Looptime
+  */
+  Serial.print(this->syncValue);
+  Serial.print(commandIndex);
+  Serial.print(delimit);
+  Serial.print(compass->getHeading()); // compass
+  Serial.print(delimit);
+  Serial.print(sensor->isInside()); // in/out
+  Serial.print(delimit);
+  Serial.print(leftMotor->getLoad()); // LMoto
+  Serial.print(delimit);
+  Serial.print(rightMotor->getLoad()); // Rmoto
+  Serial.print(delimit);
+  Serial.print(*mainState); // state
+  Serial.print(delimit);
+  Serial.print(battery->getSOC()); // SOC
+  Serial.print(delimit);
+  Serial.print(*errorNumber); // errorcode
+  Serial.print(delimit);
+  Serial.print(cutter->getLoad()); // cutterload
+  Serial.print(delimit);
+  Serial.print(leftMotor->getSpeed()); // left motorspeeds
+  Serial.print(delimit);
+  Serial.print(rightMotor->getSpeed()); // right motorspeeds
+  Serial.print(delimit);
+  Serial.print(cutter->getSpeed()); // cutterSpeed
+  Serial.print(delimit);
+  Serial.print(this->looptime); // cutterSpeed
+  sendEndCommand();
+}
+
+void API::Response_get_WheelOverloadlevel()
+{
+  int wheel = this->getArgument(0);
+  Serial.print(syncValue);
+  Serial.print(commandIndex);
+  Serial.print(delimit);
+  Serial.print(definitionDefaults->get_WheelOverload());
+  sendEndCommand();
+}
+void API::ACT_set_WheelOverloadlevel()
+{
+  bool ok=false;
+  int value =-1;
+  ok = this->CheckArgNumber(0);
+  if(ok)
+{
+  value = this->getArgument(0);
+  this->definitionDefaults->set_WheelOverload(value);
+  Serial.print(syncValue);
+  Serial.print(commandIndex);
+  Serial.print(delimit);
+  Serial.print(API_RESPONSE::OK);
+  sendEndCommand();
+}
+else
+  {
+    Response_Invalid_Command();
+    leave();
+  }
+
 }

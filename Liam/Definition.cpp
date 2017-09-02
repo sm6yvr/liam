@@ -152,3 +152,11 @@ void DEFINITION::set_HeartBeatTime(int value)
 {
 	this->heartBeatTime = value;
 }
+int DEFINITION::get_WheelOverload()
+{
+	return this->WHEELMOTOR_OVERLOAD;
+}
+void DEFINITION::set_WheelOverload(int value)
+{
+	this->WHEELMOTOR_OVERLOAD = value;
+}

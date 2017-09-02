@@ -21,14 +21,13 @@ BWFSENSOR::BWFSENSOR(int selA, int selB) {
 	selpin_B = selB;
 }
 
-
 // select this sensor to be active
 void BWFSENSOR::select(int sensornumber) {
    digitalWrite(selpin_A, (sensornumber & 1) > 0 ? HIGH : LOW);
    digitalWrite(selpin_B, (sensornumber & 2) > 0 ? HIGH : LOW);
    clearSignal();
-   delay(60);	 //Used to be 200		// Wait a little to collect signal
-   }
+   delay(9 * arr_length);	 //Used to be 200		// Wait a little to collect signal
+	}
 
 
 void BWFSENSOR::clearSignal() {
@@ -67,8 +66,11 @@ void BWFSENSOR::readSensor() {
   pulse_unit = (pulse_length+half_unit_length) / pulse_unit_length;
 // Store the numbers for debug printout
   arr[arr_count++] = pulse_unit;
-  	if (arr_count>arr_length) arr_count=0;
-
+	if (arr_count>arr_length)
+	{
+		arr_count=0;
+	}
+	
   // Check if the latest pulse fits the code for inside
   if (abs(pulse_unit-inside_code[pulse_count_inside]) < 2) {
     pulse_count_inside++;

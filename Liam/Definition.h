@@ -163,7 +163,7 @@ if you have no angle-sensor and still want mower to go backwards until it's insi
 #define LIION	2
 */
 /* Wheel motor */
-#define WHEELMOTOR_OVERLOAD		350
+
 #define WHEELMOTOR_SMOOTHNESS	10
 
 /* If the mower has repeated overload within the interval below (in milliseconds),
@@ -260,6 +260,9 @@ class DEFINITION {
         void set_CUTTER_SPEED(int value);
         int get_HeartBeatTime();
         void set_HeartBeatTime(int value);
+        int get_WheelOverload();
+        void set_WheelOverload(int value);
+
     private:
       bool setupAndDebug=false;
       bool useapi = true;
@@ -273,6 +276,7 @@ class DEFINITION {
       int FULLSPEED =100;
       int SLOWSPEED = 30;
       int CUTTERSPEED = 100;
+      int WHEELMOTOR_OVERLOAD = 130;
       };
 
 #endif /* _DEFINITION_H_ */

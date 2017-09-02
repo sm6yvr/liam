@@ -38,7 +38,7 @@ class BWFSENSOR {
 
         void attach(int intpin);
     	  void readSensor();
-
+      
         bool isTimedOut();
         bool isInside();
         bool isOutside();
@@ -66,9 +66,11 @@ class BWFSENSOR {
     	int sensor_number;
     	const static int pulse_unit_length = 100;
     	const static int half_unit_length = 50;
-    	const static int arr_length=5;
+    	const static int arr_length=3;
     	int arr[arr_length];
     	int arr_count;
+
+
 
 };
 
