@@ -15,7 +15,6 @@
 class API
 {
 public:
-
   /* API response mellan 300 och --> */
 enum API_RESPONSE {
   OK=300,
@@ -177,11 +176,13 @@ private:
   short bufPos =0;
   API_COMMAND commandIndex=API::API_COMMAND::SetMotor;
 
+
   int index;
   char *c;
   int *mainState;
   bool stateChanged=false;
   bool apidebug=true;
+  bool endCommandFound=false;
 };
 #endif
 // Skapa en enum Response ok, INVALID, Badly formatted

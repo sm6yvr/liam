@@ -41,6 +41,7 @@ int API::SearchForChar(char *c)
 
 void API::ValidateCommand()
 {
+  endCommandFound=false;
   #ifdef SERIALCOMMANDDEBUG
   Serial.print(buffer);
   Serial.println(" is incomming buffer");
@@ -74,7 +75,9 @@ void API::ValidateCommand()
     ActRespond();
   }
   else // if invalid args
-  Response_Invalid_Command();
+  {
+    Response_Invalid_Command();
+  }
   leave();
 }
 void API::printIndex()
@@ -104,23 +107,23 @@ bool API::CheckSyncValue()
 bool API::setCommand()
 {
   commandIndex=(API::API_COMMAND)atoi(temp);
-  if(commandIndex==-1)
+  if(commandIndex== -1)
     return false;
   return true;
 }
 bool API::CheckCommand()
 {
+
   #ifdef SERIALCOMMANDDEBUG
   printIndex();
   #endif
   short counter=0;
-  for (size_t i = index; i < bufferlenght; i++)
+  for (int i = index; i < bufferlenght; i++)
   {
     this->c = &buffer[i];
     #ifdef SERIALCOMMANDDEBUG
     Serial.print("CheckCommand, value that will be checked ");
-    Serial.print(*c);
-    Serial.print('\n');
+    Serial.println(*c);
     #endif
 
     if (isalpha(*c))
@@ -139,17 +142,23 @@ bool API::CheckCommand()
     }
     else
     {
-      if(*c == endcommand || *c== delimit) // Some Get_Commands is syncValue and Commandnumber then \0 since we dont save term in buffer
+      if(*c == endcommand || *c== delimit) /* Command must have either endcommand <#> or delimit <:> as end. */
       {
+        if(*c == endcommand)
+          {
+            endCommandFound = true; // no args...
+          }
         #ifdef SERIALCOMMANDDEBUG
-        Serial.println("Will set us done");
+        Serial.println("Command done");
         #endif
-        index = index + counter;
+        index += counter;
         return setCommand();
       }
       else
       {
-        Serial.println("Hit borde man inte komma.." + *c);
+        Serial.print("Hit borde man inte komma..");
+        Serial.print(*c);
+        Serial.println("Kolla tecken ovan");
         // response Invalid command.
         return false;
       }
@@ -170,10 +179,12 @@ bool API::CheckArgs()
   #ifdef SERIALCOMMANDDEBUG
   printIndex();
   #endif
+  if(endCommandFound)
+    return true;
   clearTemp();
   //Next char (index + 1) will hold first api_args, these must be digits.
   short counter=0;
-  for (size_t i = index + 1; i < bufferlenght; i++)
+  for (int i = index + 1; i < bufferlenght; i++)
   {
     this->c = &buffer[i];
     #ifdef SERIALCOMMANDDEBUG
@@ -213,39 +224,24 @@ bool API::CheckArgs()
         clearTemp();
         counter=0;
       }
-      else if (*c == '\r' || *c == '\0' || *c == this->endcommand)
-      {// if value is carrier return, 0 terminator or endcommand we are considerd done.. store arg and continue
+      else if (*c == this->endcommand)
+      {/* all commmands must end with endcommand */
           argument[argscounter] = atoi(temp);
-          #ifdef SERIALCOMMANDDEBUG
-          Serial.print("End of command found\n");
-          Serial.print("and this value was just added\n");
-          Serial.print(temp);
-          Serial.print('\n');
-          #endif
 
+          #ifdef SERIALCOMMANDDEBUG
+            Serial.println("End of command found");
+          #endif
+          return true;
+          break;
       }
       else
       {
-        #ifdef SERIALCOMMANDDEBUG
-          Serial.print("This value will fail... line 114");
+        // Debbuing purpose
+          Serial.print("This value will fail");
           Serial.println(*c);
-          Serial.print("That one..\n");
-          #endif
           return false;
         }
-} // For loop
-  #ifdef SERIALCOMMANDDEBUG
-  Serial.println("Args == ");
-  for (int i = 0; i < argslength; i++) {
-    if(argument[i]=='\0')
-    break;
-    Serial.print(argument[i], DEC);
-    Serial.print(" : ");
-  }
-  Serial.print('\n');
-  #endif
-  WeAreDone();
-  return true;
+      } // For loop
 } // check args...
 
 void API::WeAreDone()
@@ -360,10 +356,9 @@ void API::Response_GetBattery()
 }
 void API::ACT_SetBattery()
 {
-  bool err=false;
-  int battype,min,max,gohome = 0;
 
-    battype = getArgument(0);
+  int battype,min,max,gohome = 0;
+  battype = getArgument(0);
   min = getArgument(1);
   max = getArgument(2);
   gohome = getArgument(3);
@@ -376,11 +371,7 @@ void API::ACT_SetBattery()
   this->definitionDefaults->setBatteryFullLevel(max);
   this->definitionDefaults->setBatteryEmptyLevel(min);
   this->definitionDefaults->setBatteryGoHomeLevel(min);
-  Serial.print("sätt-");
-  Serial.print(min);
-  Serial.print(max);
-  Serial.print(battype);
-  Serial.println("");
+
 }
 void API::ACT_GetSensor()
 { /* return sync, command, value */
@@ -503,7 +494,7 @@ void API::leave()
 
 void API::clearTemp()
 {
-  for (size_t i = 0; i < templenght; i++) {
+  for (int i = 0; i < templenght; i++) {
     temp[i]='\0';
   }
 }

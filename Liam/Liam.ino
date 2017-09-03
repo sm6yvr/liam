@@ -142,8 +142,10 @@ SETUPDEBUG SetupDebug(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, 
 API api(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery, &Defaults, &state, &Mower); // add state to be able to set state from api.
 // Error handler
 ERROR Error(&Display, LED_PIN, &Mower, &api, Defaults.GetUseAPI());
+
 short SetState(short In_state)
 {
+  time_at_turning = millis();
   switch (In_state) {
     case DEFINITION::CUTTERSTATES::MOWING:
     Serial.println("IN SET MOWING state");
@@ -152,7 +154,6 @@ short SetState(short In_state)
     return DEFINITION::CUTTERSTATES::MOWING;
 
     case DEFINITION::CUTTERSTATES::LAUNCHING:
-    time_at_turning = millis();
     return DEFINITION::CUTTERSTATES::LAUNCHING;
 
     case DEFINITION::CUTTERSTATES::CHARGING:
@@ -161,14 +162,12 @@ short SetState(short In_state)
     rightMotor.setSmoothness(WHEELMOTOR_SMOOTHNESS);
     Mower.stopCutter();
     Mower.stop();
-    time_at_turning=millis();
     return DEFINITION::CUTTERSTATES::CHARGING;
 
     case DEFINITION::CUTTERSTATES::DOCKING:
     Mower.stopCutter();
     Mower.stop();
     Sensor.select(0);
-    time_at_turning=millis();
     //Make the wheel motors extra responsive
     leftMotor.setSmoothness(10);
     rightMotor.setSmoothness(10);
@@ -408,7 +407,9 @@ Serial.println("LOOP 3");
       }
         Mower.stop();
         if (Battery.mustCharge()) {
-          state = SetState(DEFINITION::CUTTERSTATES::PREDOCK);
+          if(i==0)
+            state = SetState(DEFINITION::CUTTERSTATES::PRE_DOCK_LEFT_OUT);
+          state = SetState(DEFINITION::CUTTERSTATES::PRE_DOCK_RIGHT_OUT);
           break;
         }
 
@@ -627,15 +628,14 @@ if(millis()-time_at_turning > 300) // Kolla vart 300ms om vi ändrat status på 
     break;
 
     case DEFINITION::CUTTERSTATES::PRE_DOCK_RIGHT_OUT:
-    // höger spole är triggad. Kör vänster hjul.
+    // höger spole är triggad. Väster spole vald. Vi ska köra med vänster över BWF
     if(Sensor.isInside()) // medans vänster spole är inne..
       {
-        Mower.turnRight(2);
+        Mower.turnRight(4);
       }
-    else // vänster spole ute, sätt state docking
+    else // Vänster spole ute, sätt state docking
     {
-      Mower.stop();
-      state = SetState(DEFINITION::CUTTERSTATES::PRE_DOCK_LEFT_OUT);
+      state = SetState(DEFINITION::CUTTERSTATES::DOCKING);
     }
     break;
 
@@ -643,7 +643,7 @@ if(millis()-time_at_turning > 300) // Kolla vart 300ms om vi ändrat status på 
     // Vänster spole är triggad. Kolla vart vi är och justera.
     if(Sensor.isInside()) // medans vänster spole är inne..
       {
-        Mower.turnRight(2);
+        Mower.turnLeft(2);
       }
     else // vänster spole ute, sätt state docking
     {
@@ -660,7 +660,7 @@ if(millis()-time_at_turning > 300) // Kolla vart 300ms om vi ändrat status på 
 }//VOID loop
 /*
 NOTE::
-1. Stänger av NOTIFY klart
+1. Stänger av NOTIFY klart, nu mower status
 2. Adderar HeartBeat 1,2,3,4 eller vart 5:e sekund ?? gör ställbart.
 3. Alla  set svar är ;kommando:OK/NOK#
 4. alla kommandon måste avslutas med # ok
