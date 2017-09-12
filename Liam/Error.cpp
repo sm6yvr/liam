@@ -19,11 +19,17 @@ ERROR::ERROR(MYDISPLAY* display_, int led_pin_, CONTROLLER* Mower_, API *api, bo
  Mower = Mower_;
  this->api = api;
 }
-
+int ERROR::ERRORCODE()
+{
+  return this->errorCode;
+}
 void ERROR::flag(int error_number_) {
+
+  this->errorCode=error_number_;
 
   Mower->stopCutter();
   Mower->stop();
+
   mylcd->clear();
 
   mylcd->setCursor(5,0);
@@ -96,17 +102,30 @@ void ERROR::flag(int error_number_) {
   }
 
   // blink LED forever
-  while (true)
+  //while (true)
 	blink_led(error_number_);
 }
 
+void ERROR::waitForReset()
+{
+  blink_led(errorCode);
+for (int i = 0; i < 3; i++) {
+  digitalWrite(led_pin, HIGH);
+  delay(100);
+  digitalWrite(led_pin, LOW);
+  delay(100);
+}
+
+}
 
 void ERROR::blink_led(int error_number_){
+  // blinka error_number_ ggr / sekund
+  int blinkdelay = 1000 / (error_number_*2);
 	for (int i=0; i<error_number_;i++) {
 		digitalWrite(led_pin, HIGH);
-		delay(500);
+		delay(blinkdelay);
 		digitalWrite(led_pin, LOW);
-		delay(500);
+		delay(blinkdelay);
 	}
-	delay (2000);
+	delay (1000);
 }

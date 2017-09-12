@@ -1,7 +1,7 @@
 #include "API.h"
 #include "Arduino.h"
 #include "Definition.h"
-API::API(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt, DEFINITION *definition, int *state) {
+API::API(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt, DEFINITION *definition, int *state, CONTROLLER *controller) {
   leftMotor = left;
   rightMotor = right;
   cutter = cut;
@@ -10,6 +10,7 @@ API::API(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, 
   battery = batt;
   definitionDefaults =definition;
   mainState = state;
+  ApiController = controller;
 }
 bool API::IsWrittenToEEPROM()
 {
@@ -103,7 +104,7 @@ bool API::CheckSyncValue()
 bool API::setCommand()
 {
   commandIndex=(API::API_COMMAND)atoi(temp);
-  if(commandIndex==API_COMMAND::INVALID)
+  if(commandIndex==-1)
     return false;
   return true;
 }
@@ -141,7 +142,7 @@ bool API::CheckCommand()
       if(*c == endcommand || *c== delimit) // Some Get_Commands is syncValue and Commandnumber then \0 since we dont save term in buffer
       {
         #ifdef SERIALCOMMANDDEBUG
-        Serial.print("Will set us done\n");
+        Serial.println("Will set us done");
         #endif
         index = index + counter;
         return setCommand();
@@ -212,8 +213,8 @@ bool API::CheckArgs()
         clearTemp();
         counter=0;
       }
-      else if (*c == '\r' || *c == '\0')
-      {// if value is carrier return or 0 terminator we are considerd done.. store arg and continue
+      else if (*c == '\r' || *c == '\0' || *c == this->endcommand)
+      {// if value is carrier return, 0 terminator or endcommand we are considerd done.. store arg and continue
           argument[argscounter] = atoi(temp);
           #ifdef SERIALCOMMANDDEBUG
           Serial.print("End of command found\n");
@@ -257,19 +258,22 @@ void API::WeAreDone()
   for (size_t i = 0; i < argslength; i++) {
     if(argument[i] == '\0')
     break;
-    Serial.print(" : ");
+    Serial.print(delimit);
     Serial.print(argument[i],DEC);
   }
-  Serial.print('\n');
+  sendEndCommand();
   #endif
 }
 void API::Response_Invalid_Command()
 {
   #ifdef SERIALCOMMANDDEBUG
-  Serial.println(API_COMMAND_PRINT_NAME(API_COMMAND::INVALID));
+  Serial.println("Något gick fel");
   #else
-  sprintf (buffer, ";%i:%s",commandIndex," IS INVALID");
-  Serial.println(buffer);
+  Serial.print(syncValue);
+  Serial.print(commandIndex);
+  Serial.print(delimit);
+  Serial.print("Is INVALID");
+  sendEndCommand();
   #endif
 }
 
@@ -310,9 +314,11 @@ void API::clearBuffer()
 
 void API::RespondGetSetUpDebug()
 {
-  //Serial.print("IN RespondGetSetUpDebug\n");
-  sprintf (buffer, ";%i:%i", commandIndex, definitionDefaults->get_SETUP_AND_DEBUG());
-  Serial.println(buffer);
+  Serial.print(syncValue);
+  Serial.print(commandIndex);
+  Serial.print(delimit);
+  Serial.print(definitionDefaults->get_SETUP_AND_DEBUG());
+  sendEndCommand();
 }
 bool API::ACT_SetUpDebug()
 {
@@ -331,34 +337,50 @@ bool API::ACT_SetUpDebug()
   temp = false;
 
   definitionDefaults->set_SETUP_AND_DEBUG(temp);
-  RespondGetSetUpDebug();
+
   return true;
 }
 void API::Response_GetBattery()
 {
   /* Return sync, kommand, TYPE, MIN, MAX, GOHOME SOC */
-  sprintf (buffer,
-    ";%i:%i:%i:%i:%i:%i",
-    commandIndex,
-    battery->getBatteryType(),
-    battery->getDepletedLevel(),
-    battery->getFullyChargedLevel(),
-    battery->getGoHomeLevel(),
-    battery->getSOC()
-  );
-  Serial.println(buffer);
+  Serial.print(syncValue);
+  Serial.print(commandIndex);
+  Serial.print(delimit);
+  Serial.print(battery->getBatteryType());
+  Serial.print(delimit);
+  Serial.print(battery->getDepletedLevel());
+  Serial.print(delimit);
+  Serial.print(battery->getFullyChargedLevel());
+  Serial.print(delimit);
+  Serial.print(battery->getGoHomeLevel());
+  Serial.print(delimit);
+  Serial.print(battery->getSOC());
+  sendEndCommand();
+
 }
 void API::ACT_SetBattery()
 {
-  this->battery->setBatterType((BATTERY::BATTERY_TYPE)argument[0]);
-  this->battery->setDepletedLevel(argument[1]);
-  this->battery->setFullyChargedLevel(argument[2]);
-  this->battery->setGoHomeLevel(argument[3]);
+  bool err=false;
+  int battype,min,max,gohome = 0;
 
-  this->definitionDefaults->setBatteryType((BATTERY::BATTERY_TYPE)argument[0]);
-  this->definitionDefaults->setBatteryFullLevel(argument[2]);
-  this->definitionDefaults->setBatteryEmptyLevel(argument[1]);
-  this->definitionDefaults->setBatteryGoHomeLevel(argument[3]);
+    battype = getArgument(0);
+  min = getArgument(1);
+  max = getArgument(2);
+  gohome = getArgument(3);
+  this->battery->setBatterType((BATTERY::BATTERY_TYPE)battype);
+  this->battery->setDepletedLevel(min);
+  this->battery->setFullyChargedLevel(max);
+  this->battery->setGoHomeLevel(min);
+
+  this->definitionDefaults->setBatteryType((BATTERY::BATTERY_TYPE)battype);
+  this->definitionDefaults->setBatteryFullLevel(max);
+  this->definitionDefaults->setBatteryEmptyLevel(min);
+  this->definitionDefaults->setBatteryGoHomeLevel(min);
+  Serial.print("sätt-");
+  Serial.print(min);
+  Serial.print(max);
+  Serial.print(battype);
+  Serial.println("");
 }
 void API::ACT_GetSensor()
 { /* return sync, command, value */
@@ -379,7 +401,7 @@ for (int i = 0; i < sensor->getArrLength(); i++)
   Serial.print(':');
   Serial.print(sensor->getSignal(i));
 }
-Serial.println("");
+sendEndCommand();
 }
 
 void API::ActRespond()
@@ -389,6 +411,10 @@ void API::ActRespond()
   Serial.print("IN ActRespond\n");
   #endif
   switch (commandIndex) {
+    case API_COMMAND::GetMowerStatus:
+    Respond_get_MowerStatus();
+    break;
+
     case API_COMMAND::SetState:
     ACT_SetState();
     valueChanged = true;
@@ -413,7 +439,6 @@ void API::ActRespond()
     case API_COMMAND::SetBattery:
     ACT_SetBattery();
     valueChanged=true;
-    Response_GetBattery();
     break;
 
     case API_COMMAND::GetSensor:
@@ -434,6 +459,18 @@ void API::ActRespond()
     Respond_GetSlowWheelWhenDocking();
     break;
 
+    case API_COMMAND::GetMotor:
+    Response_get_MotorStatus();
+    break;
+
+    case API_COMMAND::GetWheelOverloadLevel:
+    Response_get_WheelOverloadlevel();
+    break;
+    case API_COMMAND::SetWheelOverloadLevel:
+    ACT_set_WheelOverloadlevel();
+    valueChanged=true;
+    Response_get_WheelOverloadlevel();
+    break;
     default:
     #ifdef SERIALCOMMANDDEBUG
     Serial.print("\nDefault value from AtcReponse\n");
@@ -444,11 +481,8 @@ void API::ActRespond()
   }
   if(valueChanged)
   {
-    Serial.print("Detta tog: ");
-    long nu=millis();
     EEPROM_WRITE();
-    Serial.print(millis()-nu);
-    Serial.println(" millisekunder");
+    sendOkResponse();
   }
   //Serial.print("Done\n");
 leave();
@@ -463,7 +497,7 @@ void API::leave()
   clearTemp();
   clear_args();
   clearBuffer();
-  commandIndex=API_COMMAND::INVALID;
+  commandIndex=-1;
   inputComplete=false;
 }
 
@@ -480,10 +514,11 @@ void API::SetFirstByteFalse()
 }
 void API::Response_GetState()
 {
-  Serial.print("state == ");
+  Serial.print(syncValue);
+  Serial.print(API::API_COMMAND::GetState);
+  Serial.print(delimit);
   Serial.print(*mainState);
-  Serial.print(" dockstate == ");
-  Serial.println(battery->isBeingCharged());
+  sendEndCommand();
 }
 void API::ACT_SetState()
 {
@@ -493,7 +528,7 @@ if(argument[0]>=0 && argument[0]<=7)
   this->stateChanged=true; // prepare for Lian.ino to detect changes.
 }
 }
-
+/*this was used for debugging purpose only */
 void API::updatetwo(int nr,int looptime)
 {
   Serial.print(';');
@@ -501,29 +536,31 @@ Serial.print(7,DEC);
 Serial.print(delimit);
 Serial.print(nr);
 Serial.print(delimit);
-Serial.println(looptime);
-
 }
+/* based on mower state message could be optimized */
 void API::update(int looptime)
 {
-  /*Denna körs var 25 loop
-  STATE SOC So far.... */
-Serial.print(';');
+Serial.print(syncValue);
 Serial.print(NOTIFY,DEC);
 Serial.print(delimit);
 Serial.print(*mainState);
 Serial.print(delimit);
 Serial.print(battery->getSOC());
 Serial.print(delimit);
-Serial.println(looptime);
+Serial.print(looptime);
 
+/* här täkner jag att man skulle kunna skräddasy meddelandet som
+skickas. Om klippning/ Charging så skicka med hur länge vi gjort det.
+IDLE*/
+sendEndCommand();
 }
 void API::Debug(char *value)
 {
-  Serial.print(';');
+  Serial.print(syncValue);
   Serial.print(DEBUG,DEC);
   Serial.print(delimit);
-  Serial.println(value);
+  Serial.print(value);
+  sendEndCommand();
 }
 
 bool API::get_StateHasBeenChanged()
@@ -549,9 +586,146 @@ void API::ACT_SetSlowWheelWhenDocking()
 }
 void API::Respond_GetSlowWheelWhenDocking()
 {
-  Serial.print(";");
+  Serial.print(syncValue);
   Serial.print(API_COMMAND::GetSlowWheelWhenDocking);
   Serial.print(this->delimit);
-  Serial.println(definitionDefaults->GetSlowWheelWhenDocking());
+  Serial.print(definitionDefaults->GetSlowWheelWhenDocking());
+  sendEndCommand();
+}
+void API::sendHeartBeat()
+{
+  Serial.print(syncValue);
+  Serial.print(API_RESPONSE::HEARTBEAT);
+  Serial.print(delimit);
+  Serial.print(millis()/1000);
+  sendEndCommand();
+}
+void API::sendEndCommand()
+{
+  Serial.print(endcommand);
+  Serial.print('\n');
+}
+void API::Response_get_MotorStatus()
+{
+  /* check motor nr
+      return speed and load */
+      int motornr = getArgument(0);
+      int speed, load=-1;
+      switch (motornr) {
+        case 0:
+        speed = leftMotor->getSpeed();
+        load = leftMotor->getLoad();
+        break;
+        case 1:
+        speed = rightMotor->getSpeed();
+        load = rightMotor->getLoad();
+        break;
+        case 2:
+        speed = this->cutter->getSpeed();
+        load = this->cutter->getLoad();
+        break;
+      }
+
+      Serial.print(syncValue);
+      Serial.print(commandIndex,DEC);
+      Serial.print(delimit);
+      Serial.print(motornr,DEC);
+      Serial.print(delimit);
+      Serial.print(speed,DEC);
+      Serial.print(delimit);
+      Serial.print(load,DEC);
+      sendEndCommand();
+
+}
+int API::getArgument(int number)
+{
+  if(argument[number]==-1)
+  {
+    Response_Invalid_Command();
+    leave();
+  return -1;
+  }
+  return argument[number];
+}
+void API::sendOkResponse()
+{
+  Serial.print(this->syncValue);
+  Serial.print(commandIndex);
+  Serial.print(delimit);
+  Serial.print(API::API_RESPONSE::OK);
+  sendEndCommand();
+}
+void API::Respond_get_MowerStatus()
+{/* syncValue
+  commandIndex
+  compass heading
+  isInside
+  motor load leftMotor
+  motor load rightMotor
+  state
+  SOC
+  errorNumber
+  cutterload
+  motorspeeds 1, 2 & 3
+  Looptime
+  */
+  Serial.print(this->syncValue);
+  Serial.print(commandIndex);
+  Serial.print(delimit);
+  Serial.print(compass->getHeading()); // compass
+  Serial.print(delimit);
+  Serial.print(sensor->isInside()); // in/out
+  Serial.print(delimit);
+  Serial.print(leftMotor->getLoad()); // LMoto
+  Serial.print(delimit);
+  Serial.print(rightMotor->getLoad()); // Rmoto
+  Serial.print(delimit);
+  Serial.print(*mainState); // state
+  Serial.print(delimit);
+  Serial.print(battery->getSOC()); // SOC
+  Serial.print(delimit);
+  Serial.print(*errorNumber); // errorcode
+  Serial.print(delimit);
+  Serial.print(cutter->getLoad()); // cutterload
+  Serial.print(delimit);
+  Serial.print(leftMotor->getSpeed()); // left motorspeeds
+  Serial.print(delimit);
+  Serial.print(rightMotor->getSpeed()); // right motorspeeds
+  Serial.print(delimit);
+  Serial.print(cutter->getSpeed()); // cutterSpeed
+  Serial.print(delimit);
+  Serial.print(this->looptime); // cutterSpeed
+  sendEndCommand();
+}
+
+void API::Response_get_WheelOverloadlevel()
+{
+  int wheel = this->getArgument(0);
+  Serial.print(syncValue);
+  Serial.print(commandIndex);
+  Serial.print(delimit);
+  Serial.print(definitionDefaults->get_WheelOverload());
+  sendEndCommand();
+}
+void API::ACT_set_WheelOverloadlevel()
+{
+  bool ok=false;
+  int value =-1;
+  ok = this->CheckArgNumber(0);
+  if(ok)
+{
+  value = this->getArgument(0);
+  this->definitionDefaults->set_WheelOverload(value);
+  Serial.print(syncValue);
+  Serial.print(commandIndex);
+  Serial.print(delimit);
+  Serial.print(API_RESPONSE::OK);
+  sendEndCommand();
+}
+else
+  {
+    Response_Invalid_Command();
+    leave();
+  }
 
 }

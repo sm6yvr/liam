@@ -21,11 +21,13 @@ class ERROR {
         ERROR(MYDISPLAY* display_, int led_pin_, CONTROLLER* Mower_, API *api, bool UseApi);
 
         void flag(int error_number);
-
+        int ERRORCODE();
+        void waitForReset();
     private:
     MYDISPLAY* mylcd;
     CONTROLLER* Mower;
     int led_pin;
+    int errorCode=0;
     API *api;
 
     void blink_led(int error_number);
