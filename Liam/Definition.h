@@ -212,6 +212,7 @@ class DEFINITION {
         PREDOCK,
         PRE_DOCK_RIGHT_OUT,
         PRE_DOCK_LEFT_OUT,
+		DOCKING_EVADE = 8,
         ERROR // LEAVE THIS AS LAST ITEM.. ALWAYS!!!! Error is used from API as end indicator.
         };
 
@@ -228,6 +229,8 @@ class DEFINITION {
             return "Charging";
             case IDLE:
             return "Idle";
+			case DOCKING_EVADE:
+				return "Evade";
             case PREDOCK:
             case PRE_DOCK_RIGHT_OUT:
             case PRE_DOCK_LEFT_OUT:

@@ -14,6 +14,7 @@ API::API(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, 
 }
 bool API::IsWrittenToEEPROM()
 {
+	return false;
   bool written = eeprom_read_byte(0);
   return written;
 }
