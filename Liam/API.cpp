@@ -12,6 +12,17 @@ API::API(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, 
   mainState = state;
   ApiController = controller;
 }
+void API::Init_Response()
+{
+  Serial.print(syncValue);
+  Serial.print(commandIndex);
+
+}
+void API::Response_add_value(int value)
+{
+  Serial.print(delimit);
+  Serial.print(value);
+}
 bool API::IsWrittenToEEPROM()
 {
   bool written = eeprom_read_byte(0);
@@ -24,7 +35,7 @@ void API::EEPROM_READ()
 void API::EEPROM_WRITE()
 {
   eeprom_write_block((const void*)definitionDefaults, (void*)1, sizeof(*definitionDefaults));
-  eeprom_write_byte(0,true);
+  eeprom_write_byte(0,true); // add true to first byte.. used for to identify if eepom is used in application or not. */
 }
 
 int API::SearchForChar(char *c)
@@ -108,7 +119,7 @@ bool API::setCommand()
 {
   commandIndex=(API::API_COMMAND)atoi(temp);
   if(commandIndex== -1)
-    return false;
+  return false;
   return true;
 }
 bool API::CheckCommand()
@@ -145,9 +156,9 @@ bool API::CheckCommand()
       if(*c == endcommand || *c== delimit) /* Command must have either endcommand <#> or delimit <:> as end. */
       {
         if(*c == endcommand)
-          {
-            endCommandFound = true; // no args...
-          }
+        {
+          endCommandFound = true; // no args...
+        }
         #ifdef SERIALCOMMANDDEBUG
         Serial.println("Command done");
         #endif
@@ -164,7 +175,7 @@ bool API::CheckCommand()
       }
     } // if not digit or alpha (else)
   } // for loop
-
+return false;
 } // CheckCommand
 
 void API::clear_args()
@@ -180,7 +191,7 @@ bool API::CheckArgs()
   printIndex();
   #endif
   if(endCommandFound)
-    return true;
+  return true;
   clearTemp();
   //Next char (index + 1) will hold first api_args, these must be digits.
   short counter=0;
@@ -211,37 +222,37 @@ bool API::CheckArgs()
     } // if digit
     else if (*c == this->delimit)
     {
-        argument[argscounter] = atoi(temp);
-        #ifdef SERIALCOMMANDDEBUG
-        Serial.print("Value of temp: ");
-        Serial.print(atoi(temp));
-        Serial.print('\n');
-        Serial.print("Value of arg: ");
-        Serial.print(argument[argscounter], DEC);
-        Serial.print('\n');
-        #endif
-        argscounter++;
-        clearTemp();
-        counter=0;
-      }
-      else if (*c == this->endcommand)
-      {/* all commmands must end with endcommand */
-          argument[argscounter] = atoi(temp);
+      argument[argscounter] = atoi(temp);
+      #ifdef SERIALCOMMANDDEBUG
+      Serial.print("Value of temp: ");
+      Serial.print(atoi(temp));
+      Serial.print('\n');
+      Serial.print("Value of arg: ");
+      Serial.print(argument[argscounter], DEC);
+      Serial.print('\n');
+      #endif
+      argscounter++;
+      clearTemp();
+      counter=0;
+    }
+    else if (*c == this->endcommand)
+    {/* all commmands must end with endcommand */
+      argument[argscounter] = atoi(temp);
 
-          #ifdef SERIALCOMMANDDEBUG
-            Serial.println("End of command found");
-          #endif
-          return true;
-          break;
-      }
-      else
-      {
-        // Debbuing purpose
-          Serial.print("This value will fail");
-          Serial.println(*c);
-          return false;
-        }
-      } // For loop
+      #ifdef SERIALCOMMANDDEBUG
+      Serial.println("End of command found");
+      #endif
+      return true;
+      break;
+    }
+    else
+    {
+      // Debbuing purpose
+      Serial.print("This value will fail");
+      Serial.println(*c);
+      return false;
+    }
+  } // For loop
 } // check args...
 
 void API::WeAreDone()
@@ -260,15 +271,23 @@ void API::WeAreDone()
   sendEndCommand();
   #endif
 }
+void API::Response_Invalid_Argument()
+{
+  Init_Response();
+  Serial.print(delimit);
+  Serial.print(API::API_STATUS_CODE::ARGUMENT_FAILED);
+  sendEndCommand();
+
+}
+
 void API::Response_Invalid_Command()
 {
   #ifdef SERIALCOMMANDDEBUG
   Serial.println("Något gick fel");
   #else
-  Serial.print(syncValue);
-  Serial.print(commandIndex);
-  Serial.print(delimit);
-  Serial.print("Is INVALID");
+  Init_Response();
+Serial.print(delimit);
+  Serial.print(API::API_STATUS_CODE::ERROR);
   sendEndCommand();
   #endif
 }
@@ -306,93 +325,54 @@ void API::clearBuffer()
   }
   bufPos=0;
   inputComplete=false;
-} // clearBuffer
-
-void API::RespondGetSetUpDebug()
-{
-  Serial.print(syncValue);
-  Serial.print(commandIndex);
-  Serial.print(delimit);
-  Serial.print(definitionDefaults->get_SETUP_AND_DEBUG());
-  sendEndCommand();
-}
-bool API::ACT_SetUpDebug()
-{
-  if(CheckArgNumber(1)) /* Check if therer are more arguments 1 and .....
-  if so, set this command invalid. */
-  {
-    Response_Invalid_Command();
-    leave();
-    return false;
-  }
-  bool temp;
-
-  if(argument[0]==1)
-  temp = true;
-  else
-  temp = false;
-
-  definitionDefaults->set_SETUP_AND_DEBUG(temp);
-
-  return true;
 }
 void API::Response_GetBattery()
 {
   /* Return sync, kommand, TYPE, MIN, MAX, GOHOME SOC */
-  Serial.print(syncValue);
-  Serial.print(commandIndex);
-  Serial.print(delimit);
-  Serial.print(battery->getBatteryType());
-  Serial.print(delimit);
-  Serial.print(battery->getDepletedLevel());
-  Serial.print(delimit);
-  Serial.print(battery->getFullyChargedLevel());
-  Serial.print(delimit);
-  Serial.print(battery->getGoHomeLevel());
-  Serial.print(delimit);
-  Serial.print(battery->getSOC());
-  sendEndCommand();
+Init_Response();
 
+Response_add_value(battery->getBatteryType());
+Response_add_value(battery->getDepletedLevel());
+Response_add_value(battery->getFullyChargedLevel());
+Response_add_value(battery->getGoHomeLevel());
+Response_add_value(battery->getSOC());
+sendEndCommand();
 }
 void API::ACT_SetBattery()
 {
-
   int battype,min,max,gohome = 0;
   battype = getArgument(0);
   min = getArgument(1);
   max = getArgument(2);
-  gohome = getArgument(3);
+  gohome = getArgument(1);
   this->battery->setBatterType((BATTERY::BATTERY_TYPE)battype);
   this->battery->setDepletedLevel(min);
   this->battery->setFullyChargedLevel(max);
-  this->battery->setGoHomeLevel(min);
+  this->battery->setGoHomeLevel(gohome);
 
   this->definitionDefaults->setBatteryType((BATTERY::BATTERY_TYPE)battype);
   this->definitionDefaults->setBatteryFullLevel(max);
   this->definitionDefaults->setBatteryEmptyLevel(min);
-  this->definitionDefaults->setBatteryGoHomeLevel(min);
+  this->definitionDefaults->setBatteryGoHomeLevel(gohome);
 
 }
 void API::ACT_GetSensor()
 { /* return sync, command, value */
 
-if(argument[0]==-1)
-{
-  Response_Invalid_Command();
-  leave();
-return;
-}
-sensor->select(argument[0]);
-Serial.print(";");
-Serial.print(commandIndex);
-Serial.print(':');
-Serial.print(argument[0]);
-for (int i = 0; i < sensor->getArrLength(); i++)
-{
-  Serial.print(':');
-  Serial.print(sensor->getSignal(i));
-}
-sendEndCommand();
+  if(argument[0]==-1)
+  {
+    Response_Invalid_Command();
+    leave();
+    return;
+  }
+  sensor->select(argument[0]);
+  Init_Response();
+  Response_add_value(argument[0]);
+  for (int i = 0; i < sensor->getArrLength(); i++)
+  {
+    Response_add_value(sensor->getSignal(i));
+  }
+  sendEndCommand();
 }
 
 void API::ActRespond()
@@ -413,14 +393,6 @@ void API::ActRespond()
 
     case API_COMMAND::GetState:
     Response_GetState();
-    break;
-
-    case API_COMMAND::GetSetUpDebug:
-    RespondGetSetUpDebug();
-    break;
-
-    case API_COMMAND::SetSetUpDebug:
-    valueChanged=ACT_SetUpDebug();
     break;
 
     case API_COMMAND::GetBattery:
@@ -457,11 +429,14 @@ void API::ActRespond()
     case API_COMMAND::GetWheelOverloadLevel:
     Response_get_WheelOverloadlevel();
     break;
+
     case API_COMMAND::SetWheelOverloadLevel:
     ACT_set_WheelOverloadlevel();
     valueChanged=true;
     Response_get_WheelOverloadlevel();
+
     break;
+
     default:
     #ifdef SERIALCOMMANDDEBUG
     Serial.print("\nDefault value from AtcReponse\n");
@@ -473,10 +448,10 @@ void API::ActRespond()
   if(valueChanged)
   {
     EEPROM_WRITE();
-    sendOkResponse();
+    Response_Command_OK();
   }
   //Serial.print("Done\n");
-leave();
+  leave();
 }
 
 void API::leave()
@@ -498,53 +473,37 @@ void API::clearTemp()
     temp[i]='\0';
   }
 }
+void API::Response_Command_OK()
+{
+  Init_Response();
+  Response_add_value(API_STATUS_CODE::OK);
+  sendEndCommand();
+}
 void API::SetFirstByteFalse()
 {
-  Serial.println("Sätter byte till false");
-  eeprom_write_byte(0, false);
+    eeprom_write_byte(0, false);
+    Response_Command_OK();
 }
 void API::Response_GetState()
 {
-  Serial.print(syncValue);
-  Serial.print(API::API_COMMAND::GetState);
-  Serial.print(delimit);
-  Serial.print(*mainState);
+  Init_Response();
+  Response_add_value(*mainState);
   sendEndCommand();
 }
 void API::ACT_SetState()
 {
-if(argument[0]>=0 && argument[0]<=7)
-{
-  *mainState=argument[0];
-  this->stateChanged=true; // prepare for Lian.ino to detect changes.
+  /*  Mowing och ERror är fösta och sista enum i state */
+  if(argument[0]>=DEFINITION::CUTTERSTATES::MOWING && argument[0]<=DEFINITION::CUTTERSTATES::ERROR)
+  {
+    *mainState=argument[0];
+    this->stateChanged=true; // prepare for Lian.ino to detect changes.
+  }
+  else
+  {
+    Response_Invalid_Argument();
+  }
 }
-}
-/*this was used for debugging purpose only */
-void API::updatetwo(int nr,int looptime)
-{
-  Serial.print(';');
-Serial.print(7,DEC);
-Serial.print(delimit);
-Serial.print(nr);
-Serial.print(delimit);
-}
-/* based on mower state message could be optimized */
-void API::update(int looptime)
-{
-Serial.print(syncValue);
-Serial.print(NOTIFY,DEC);
-Serial.print(delimit);
-Serial.print(*mainState);
-Serial.print(delimit);
-Serial.print(battery->getSOC());
-Serial.print(delimit);
-Serial.print(looptime);
 
-/* här täkner jag att man skulle kunna skräddasy meddelandet som
-skickas. Om klippning/ Charging så skicka med hur länge vi gjort det.
-IDLE*/
-sendEndCommand();
-}
 void API::Debug(char *value)
 {
   Serial.print(syncValue);
@@ -556,11 +515,11 @@ void API::Debug(char *value)
 
 bool API::get_StateHasBeenChanged()
 {
-return this->stateChanged;
+  return this->stateChanged;
 }
 void API::ResetStateHasBeenChanged()
 {
-this->stateChanged = false;
+  this->stateChanged = false;
 }
 
 bool API::get_ApiDebug()
@@ -577,16 +536,14 @@ void API::ACT_SetSlowWheelWhenDocking()
 }
 void API::Respond_GetSlowWheelWhenDocking()
 {
-  Serial.print(syncValue);
-  Serial.print(API_COMMAND::GetSlowWheelWhenDocking);
-  Serial.print(this->delimit);
-  Serial.print(definitionDefaults->GetSlowWheelWhenDocking());
+  Init_Response();
+  Response_add_value(definitionDefaults->GetSlowWheelWhenDocking());
   sendEndCommand();
 }
 void API::sendHeartBeat()
 {
   Serial.print(syncValue);
-  Serial.print(API_RESPONSE::HEARTBEAT);
+  Serial.print(API_COMMAND::HEARTBEAT);
   Serial.print(delimit);
   Serial.print(millis()/1000);
   sendEndCommand();
@@ -599,33 +556,29 @@ void API::sendEndCommand()
 void API::Response_get_MotorStatus()
 {
   /* check motor nr
-      return speed and load */
-      int motornr = getArgument(0);
-      int speed, load=-1;
-      switch (motornr) {
-        case 0:
-        speed = leftMotor->getSpeed();
-        load = leftMotor->getLoad();
-        break;
-        case 1:
-        speed = rightMotor->getSpeed();
-        load = rightMotor->getLoad();
-        break;
-        case 2:
-        speed = this->cutter->getSpeed();
-        load = this->cutter->getLoad();
-        break;
-      }
+  return speed and load */
+  int motornr = getArgument(0);
+  int speed, load=-1;
+  switch (motornr) {
+    case 0:
+    speed = leftMotor->getSpeed();
+    load = leftMotor->getLoad();
+    break;
+    case 1:
+    speed = rightMotor->getSpeed();
+    load = rightMotor->getLoad();
+    break;
+    case 2:
+    speed = this->cutter->getSpeed();
+    load = this->cutter->getLoad();
+    break;
+  }
 
-      Serial.print(syncValue);
-      Serial.print(commandIndex,DEC);
-      Serial.print(delimit);
-      Serial.print(motornr,DEC);
-      Serial.print(delimit);
-      Serial.print(speed,DEC);
-      Serial.print(delimit);
-      Serial.print(load,DEC);
-      sendEndCommand();
+  Init_Response();
+  Response_add_value(motornr);
+  Response_add_value(speed);
+  Response_add_value(load);
+  sendEndCommand();
 
 }
 int API::getArgument(int number)
@@ -634,68 +587,33 @@ int API::getArgument(int number)
   {
     Response_Invalid_Command();
     leave();
-  return -1;
+    return -1;
   }
   return argument[number];
 }
-void API::sendOkResponse()
-{
-  Serial.print(this->syncValue);
-  Serial.print(commandIndex);
-  Serial.print(delimit);
-  Serial.print(API::API_RESPONSE::OK);
-  sendEndCommand();
-}
+
 void API::Respond_get_MowerStatus()
-{/* syncValue
-  commandIndex
-  compass heading
-  isInside
-  motor load leftMotor
-  motor load rightMotor
-  state
-  SOC
-  errorNumber
-  cutterload
-  motorspeeds 1, 2 & 3
-  Looptime
-  */
-  Serial.print(this->syncValue);
-  Serial.print(commandIndex);
-  Serial.print(delimit);
-  Serial.print(compass->getHeading()); // compass
-  Serial.print(delimit);
-  Serial.print(sensor->isInside()); // in/out
-  Serial.print(delimit);
-  Serial.print(leftMotor->getLoad()); // LMoto
-  Serial.print(delimit);
-  Serial.print(rightMotor->getLoad()); // Rmoto
-  Serial.print(delimit);
-  Serial.print(*mainState); // state
-  Serial.print(delimit);
-  Serial.print(battery->getSOC()); // SOC
-  Serial.print(delimit);
-  Serial.print(*errorNumber); // errorcode
-  Serial.print(delimit);
-  Serial.print(cutter->getLoad()); // cutterload
-  Serial.print(delimit);
-  Serial.print(leftMotor->getSpeed()); // left motorspeeds
-  Serial.print(delimit);
-  Serial.print(rightMotor->getSpeed()); // right motorspeeds
-  Serial.print(delimit);
-  Serial.print(cutter->getSpeed()); // cutterSpeed
-  Serial.print(delimit);
-  Serial.print(this->looptime); // cutterSpeed
+{
+  Init_Response();
+  Response_add_value(compass->getHeading()); // compass
+  Response_add_value(sensor->isInside()); // in/out
+  Response_add_value(leftMotor->getLoad()); // LMoto
+  Response_add_value(rightMotor->getLoad()); // Rmoto
+  Response_add_value(*mainState); // state
+  Response_add_value(battery->getSOC()); // SOC
+  Response_add_value(*errorNumber); // errorcode
+  Response_add_value(cutter->getLoad()); // cutterload
+  Response_add_value(leftMotor->getSpeed()); // left motorspeeds
+  Response_add_value(rightMotor->getSpeed()); // right motorspeeds
+  Response_add_value(cutter->getSpeed()); // cutterSpeed
+  Response_add_value(this->looptime); // cutterSpeed
   sendEndCommand();
 }
 
 void API::Response_get_WheelOverloadlevel()
 {
-  int wheel = this->getArgument(0);
-  Serial.print(syncValue);
-  Serial.print(commandIndex);
-  Serial.print(delimit);
-  Serial.print(definitionDefaults->get_WheelOverload());
+  Init_Response();
+  Response_add_value(definitionDefaults->get_WheelOverload());
   sendEndCommand();
 }
 void API::ACT_set_WheelOverloadlevel()
@@ -704,16 +622,12 @@ void API::ACT_set_WheelOverloadlevel()
   int value =-1;
   ok = this->CheckArgNumber(0);
   if(ok)
-{
-  value = this->getArgument(0);
-  this->definitionDefaults->set_WheelOverload(value);
-  Serial.print(syncValue);
-  Serial.print(commandIndex);
-  Serial.print(delimit);
-  Serial.print(API_RESPONSE::OK);
-  sendEndCommand();
-}
-else
+  {
+    value = this->getArgument(0);
+    this->definitionDefaults->set_WheelOverload(value);
+    Response_Command_OK();
+  }
+  else
   {
     Response_Invalid_Command();
     leave();

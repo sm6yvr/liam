@@ -15,36 +15,38 @@
 class API
 {
 public:
-  /* API response mellan 300 och --> */
-enum API_RESPONSE {
-  OK=300,
-  INVALID=301,
-  HEARTBEAT=302,
-  NOTIFY=303,
-  SUBSCRIBE=304,
-  DEBUG=305,
-  ONLINE=306
+  /* API response/Status */
+enum API_STATUS_CODE {
+  OK=1,
+  ERROR=2,
+  ARGUMENT_FAILED=3
 };
-/* get commands are even, set are odd */
+
 enum API_COMMAND {
-  GetCommands=0,
-  GetMowerStatus=2,
-  GetState=10,
-  GetSetUpDebug=100,
-  GetBattery=102,
+  /* Notify 0-->99 */
+  HEARTBEAT=4,
+  NOTIFY=10,
+  SUBSCRIBE=11,
+  DEBUG=90,
+  ONLINE=99,
+  /* GetCommands 100-->199 */
+  GetCommands=100,
+  GetMowerStatus=101,
+  GetState=102,
+  GetBattery=103,
   GetSensor=104,
-  GetMotor=106, // ;106:MOTOR[0=left,1=Right,2=cutter]#
-  GetSlowWheelWhenDocking=108,
-  GetWheelOverloadLevel = 110,
+  GetMotor=105, // ;105:MOTOR[0=left,1=Right,2=cutter]#
+  GetSlowWheelWhenDocking=106,
+  GetWheelOverloadLevel = 107,
 
-  SetState=11,
-  SetSetUpDebug=101,
-  SetBattery=103,
-  SetMotor=105, //;105:MOTOR[0=left,1=Right,2=cutter]:SPEED# speed -100 --> 100
-  SetSlowWheelWhenDocking=109,
-  SetWheelOverloadLevel = 111,
+/* Set commands 200-->299 */
+  SetState=202,   /* state */
+  SetBattery=203, /* battype,min,max,gohome */
+  SetMotor=205, //;205:MOTOR[0=left,1=Right,2=cutter]:SPEED# speed -100 --> 100
+  SetSlowWheelWhenDocking=206, /* value */
+  SetWheelOverloadLevel = 207, /* value */
 
-  SetFirstByteToFalse=998
+  SetFirstByteToFalse=998 /* <;998# > */
 };
 /*Vet inte om man skulle kunna använda denna enum för att ge rätt kommandon till den som lyssnar på seriesnöret */
   const char* API_COMMAND_PRINT_NAME(API_COMMAND command)
@@ -56,10 +58,6 @@ enum API_COMMAND {
       return "Set State";
       case GetState:
       return "Get State";
-      case GetSetUpDebug:
-      return "Get setup and debug";
-      case SetSetUpDebug:
-      return "Set setup and debug";
       case GetBattery:
       return "Get Battery";
       case SetBattery:
@@ -91,8 +89,6 @@ enum API_COMMAND {
   void EEPROM_READ();
   void EEPROM_WRITE();
   bool IsWrittenToEEPROM();
-  void updatetwo(int nr,int looptime);
-  void update(int looptime);
   void Debug(char *value);
   bool get_StateHasBeenChanged();
   void ResetStateHasBeenChanged();
@@ -138,6 +134,11 @@ private:
   void clearBufferUpToIndex();
   void clear_args();
   void Response_Invalid_Command();
+  void Response_Invalid_Argument();
+  void Response_Command_OK();
+  void Init_Response();
+  void Response_add_value(int value);
+
   void printIndex();
 
   void leave();
@@ -147,9 +148,6 @@ private:
 
   void ActRespond(); // commando tolkning klar..
 
-  void RespondGetSetUpDebug();
-  bool ACT_SetUpDebug();
-
   void Response_GetBattery();
   void ACT_SetBattery();
 
@@ -157,7 +155,6 @@ private:
   void ACT_SetState();
 
   void ACT_GetSensor();
-  bool RespondSetSetUpDebug(bool &value);
 
   void ACT_SetSlowWheelWhenDocking();
   void Respond_GetSlowWheelWhenDocking();
@@ -166,7 +163,6 @@ private:
   void ACT_set_Motor();
 
   void sendEndCommand();
-  void sendOkResponse();
 
   void Respond_get_MowerStatus();
 

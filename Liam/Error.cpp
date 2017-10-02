@@ -19,9 +19,9 @@ ERROR::ERROR(MYDISPLAY* display_, int led_pin_, CONTROLLER* Mower_, API *api, bo
  Mower = Mower_;
  this->api = api;
 }
-int ERROR::ERRORCODE()
+int* ERROR::ERRORCODE()
 {
-  return this->errorCode;
+  return &this->errorCode;
 }
 void ERROR::flag(int error_number_) {
 
