@@ -205,10 +205,10 @@ class DEFINITION {
 
       enum CUTTERSTATES {
         MOWING = 0,
-        LAUNCHING = 1,
-        DOCKING = 2,
-        CHARGING = 3,
-        IDLE = 4,
+        LAUNCHING,
+        DOCKING,
+        CHARGING,
+        IDLE,
         PREDOCK,
         PRE_DOCK_RIGHT_OUT,
         PRE_DOCK_LEFT_OUT,
@@ -216,7 +216,7 @@ class DEFINITION {
         ERROR // LEAVE THIS AS LAST ITEM.. ALWAYS!!!! Error is used from API as end indicator.
         };
 
-        char* get_CutterStatesName(short number)
+      const char* get_CutterStatesName(short number)
         {
           switch (number) {
             case MOWING:
@@ -237,8 +237,8 @@ class DEFINITION {
             case ERROR:// LEAVE THIS AS LAST ITEM.. ALWAYS!!!! Error is used from API as end indicator.
             return "";
           }
-
         }
+
         void definePinsInputOutput();
         void setDefaultLevels(BATTERY* battery, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cutter);
         void set_SETUP_AND_DEBUG(bool & value);

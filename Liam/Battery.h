@@ -57,7 +57,8 @@ class BATTERY {
         void updateSOC();
         void resetSOC();
         int getSOC();
-		word readBatteryAndCalcValue();
+		    word readBatteryAndCalcValue();
+
 
     private:
       /*int LIIONFULL=1260;
@@ -74,6 +75,7 @@ class BATTERY {
     	int depletedLevel;
       int gohomeLevel;
     	word averageSOC;
+      int numbersOfFullyRead=0;
 };
 
 #endif /* _BATTERY_H_ */

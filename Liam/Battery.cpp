@@ -79,8 +79,7 @@ word BATTERY::readBatteryAndCalcValue(){
     unsigned long newReading = analogRead(batSocpin);
     newReading = newReading * 488  * VOLTDIVATOR;
     newReading /= 10000;
-    //return newReading;
-  	return word(newReading);
+    return word(newReading);
 }
 
 bool BATTERY::isBeingCharged() {
@@ -88,7 +87,26 @@ bool BATTERY::isBeingCharged() {
 }
 
 bool BATTERY::isFullyCharged() {
-	return (readBatteryAndCalcValue() > fullyChargedLevel);
+bool value=false;
+value = (readBatteryAndCalcValue() > fullyChargedLevel);
+if(value)
+{
+numbersOfFullyRead++;
+Serial.print(";501:");
+Serial.print(readBatteryAndCalcValue(),DEC);
+Serial.print(":");
+Serial.println(numbersOfFullyRead);
+
+if(numbersOfFullyRead > 10)
+{
+  value = true;
+}
+// 300 times needs to be read fullyCharged before leaveing.
+}
+else
+numbersOfFullyRead = 0;
+
+return value;
 }
 void BATTERY::setGoHomeLevel(int level)
 {
