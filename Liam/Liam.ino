@@ -604,7 +604,7 @@ Mower.adjustMotorSpeeds(Defaults.GetSlowWheelWhenDocking());
 break;
 
 	case DEFINITION::CUTTERSTATES::DOCKING_EVADE:
-		if (Mower.wheelsAreOverloaded(spikeTime))
+		if (Mower.wheelsAreOverloaded(Current_spikeTime))
 		{
 			if (!Defaults.GetUseAPI())
 				Serial.print("Wheel overload ");
@@ -635,7 +635,7 @@ break;
 					state = SetState(DEFINITION::CUTTERSTATES::PRE_DOCK_RIGHT_OUT);
 					break;
 				}
-			}// if (mower_is_outside)
+			}// if (mower_is_outside)       
 			else
 			{
 				leftMotor.setSpeed((int)Defaults.get_FULL_SPEED() * 0.7);
