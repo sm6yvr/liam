@@ -25,6 +25,7 @@ void API::Response_add_value(int value)
 }
 bool API::IsWrittenToEEPROM()
 {
+	return false;
   bool written = eeprom_read_byte(0);
   return written;
 }
