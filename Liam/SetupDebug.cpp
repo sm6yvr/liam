@@ -117,9 +117,9 @@ void SETUPDEBUG::startListeningOnSerial() {
       Serial.print(leftMotor->getLoad());
       Serial.print(" RMot: ");
       Serial.print(rightMotor->getLoad());
-      Serial.print(" SOC: ");
-      battery->resetSOC();
-      Serial.print(battery->getSOC());
+      Serial.print(" BAT: ");
+      battery->resetVoltage();
+      Serial.print(battery->getVoltage());
       Serial.print(" Dock: ");
       Serial.print(battery->isBeingCharged());
 
@@ -187,7 +187,7 @@ void SETUPDEBUG::startListeningOnSerial() {
   //
   //
   // }
-  //     Serial.println("P = print SOC & debug values");
+  //     Serial.println("P = print battery & debug values");
   //     Serial.println("E = Cutter motor calibrate");
 
 inChar = 0;
@@ -204,7 +204,7 @@ void SETUPDEBUG::printHelp() {
   _Serial->println("G = test Gyro/Compass/Accelerometer");
   _Serial->println("D = turn LED on/off");
   _Serial->println("T = make a 10 second test run");
-  _Serial->println("P = print SOC & debug values");
+  _Serial->println("P = print battery & debug values");
   _Serial->println("E = Cutter motor calibrate");
 }
 

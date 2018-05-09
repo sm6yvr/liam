@@ -21,7 +21,7 @@ const int NUMBER_OF_SENSORS = 2;  // Number of BWF sensors can be 1-4 depending 
 // Pin setup following Morgan 1.5 shield and up
 #define WHEEL_MOTOR_A_CURRENT_PIN       0
 #define WHEEL_MOTOR_B_CURRENT_PIN       1
-#define SOC_PIN                         2
+#define BAT_PIN                         2
 #define CUTTER_CURRENT_PIN              3
 #define I2C_SDA_PIN                     4
 #define I2C_SDL_PIN                     5
@@ -47,9 +47,9 @@ const int NUMBER_OF_SENSORS = 2;  // Number of BWF sensors can be 1-4 depending 
 #define NIDEC             2
 
 // Battery
-#define LEADACID  0
-#define NIMH    1
-#define LIION   2
+#define LEAD_ACID  0
+#define NIMH       1
+#define LIION      2
 
 // Wheel motor
 #define WHEELMOTOR_OVERLOAD   130

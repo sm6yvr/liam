@@ -84,9 +84,9 @@ void MYDISPLAY::update() {
 
   //Rad 3: Battery data
   setCursor(0,2);
-  print("Batt Soc:");
-  setCursor(10,2);
-  print(Battery->getSOC());
+  print("Battery:");
+  setCursor(9,2);
+  print(Battery->getVoltage());
 
   //Rad 4: State and Error data
   setCursor(0,3);

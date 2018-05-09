@@ -83,7 +83,7 @@ WHEELMOTOR leftMotor(WHEEL_MOTOR_B_PWM_PIN, WHEEL_MOTOR_B_DIRECTION_PIN, WHEEL_M
 
 // Battery
 // Battery types available are LIION, LEAD_ACID, NIMH
-BATTERY Battery(LIION, SOC_PIN, DOCK_PIN);
+BATTERY Battery(LIION, BAT_PIN, DOCK_PIN);
 
 // BWF Sensors
 BWFSENSOR Sensor(BWF_SELECT_B_PIN, BWF_SELECT_A_PIN);
@@ -133,7 +133,7 @@ void setup()
   Display.initialize();             // Start up the display
 
   CutterMotor.initialize();
-  Battery.resetSOC();             // Set the SOC to current value
+  Battery.resetVoltage(); // Reset the battery voltage reading
   Compass.initialize();
 
 #if defined __RTC_CLOCK__
@@ -213,7 +213,7 @@ void loop()
 
     //------------------------- MOWING ---------------------------
     case MOWING:
-      Battery.updateSOC();
+      Battery.updateVoltage();
       Display.update();
 
       Sensor.select(0);
@@ -226,7 +226,7 @@ void loop()
       // Check left sensor (0) and turn right if needed
       if (mower_is_outside) {
         Serial.println("Left outside");
-        Serial.println(Battery.getSOC());
+        Serial.println(Battery.getVoltage());
         Mower.stop();
 #ifdef GO_BACKWARD_UNTIL_INSIDE
         err=Mower.GoBackwardUntilInside (&Sensor);
@@ -273,7 +273,7 @@ void loop()
       // Check right sensor (1) and turn left if needed
       if (mower_is_outside) {
         Serial.println("Right Outside");
-        Serial.println(Battery.getSOC());
+        Serial.println(Battery.getVoltage());
         Mower.stop();
 
 #ifdef GO_BACKWARD_UNTIL_INSIDE
@@ -397,7 +397,7 @@ void loop()
       state = MOWING;
 
       // Reset the running average
-      Battery.resetSOC();
+      Battery.resetVoltage();
 
       break;
 
@@ -468,8 +468,8 @@ void loop()
         Mower.stop();
       }
 
-      Serial.print("SOC:");
-      Serial.println(Battery.getSOC());
+      Serial.print("BAT:");
+      Serial.println(Battery.getVoltage());
 
       break;
 
