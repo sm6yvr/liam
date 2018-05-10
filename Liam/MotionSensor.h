@@ -1,12 +1,11 @@
-// This is the library for a Compass
-// It uses a 9150 compass/gyro/accelerometer combo
-// Changelog:
-//     2014-12-12 - Initial version by Jonas
+/*
+ Liam - DIY Robot Lawn Mower
 
-/* ============================================
-Placed under the GNU license
+ Motion Sensor Library
 
-===============================================
+ ======================
+  Licensed under GPLv3
+ ======================
 */
 
 #ifndef _MOTIONSENSOR_H_
@@ -17,21 +16,21 @@ Placed under the GNU license
 #include "Definition.h"
 
 class MOTIONSENSOR {
-    public:
-        virtual boolean initialize();
-        virtual void updateHeading();
-        virtual int getHeading();
-        virtual void setNewTargetHeading();
-        virtual int headingVsTarget();
-        virtual int getTiltAngle();
-        
-    protected:
-    	int current_heading;
-    	int target_heading;
-    	int tilt_angle;
-    	int16_t mx, gx, ax;
-    	int16_t my, gy, ay;
-    	int16_t mz, gz, az;
+  public:
+    virtual boolean initialize();
+    virtual void updateHeading();
+    virtual int getHeading();
+    virtual void setNewTargetHeading();
+    virtual int headingVsTarget();
+    virtual int getTiltAngle();
+
+  protected:
+    int current_heading;
+    int target_heading;
+    int tilt_angle;
+    int16_t mx, gx, ax;
+    int16_t my, gy, ay;
+    int16_t mz, gz, az;
 };
 
 #endif /* _MOTIONSENSOR_H_ */
