@@ -125,6 +125,19 @@ const int CHARGING = 3;
 //#define GO_BACKWARD_UNTIL_INSIDE
 //#define MAX_GO_BACKWARD_TIME  5 // try to get inside for max x seconds, then stop and error.
 
+/* Settings for ADXL345 and MMA_7455, what angle values the sensor reports when the mover is standing flat.
+  IMPORTANT! You must calibrate those values for your setup.
+  See the wiki:https://github.com/sm6yvr/liam/wiki/12.-Gyro-Accelerometer */
+  /* Try to get inside for max x seconds, then stop and error. */
+
+  /*IMPORTANT II !!
+   * If you are using MMA_7455 you will get these values automatic from running setup-debug and type CAPITAL G, you still have to
+  come back here and type them in though*/
+
+#define Z_ANGLE_NORMAL 276 //false
+#define Y_ANGLE_NORMAL 30 // false
+#define X_ANGLE_NORMAL -20 // false
+
 class DEFINITION {
   public:
     void definePinsInputOutput();
