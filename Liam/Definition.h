@@ -14,7 +14,7 @@ Placed under the GNU license
 #ifndef _DEFINITION_H_
 #define _DEFINITION_H_
 
-const int NUMBER_OF_SENSORS = 3;	// Number of BWF sensors can be 1-4 depending on shield
+const int NUMBER_OF_SENSORS = 2;	// Number of BWF sensors can be 1-4 depending on shield. 2 sensors as default
 
 // Pin setup following Morgan 1.5 shield and up
 #define WHEEL_MOTOR_A_CURRENT_PIN		0
