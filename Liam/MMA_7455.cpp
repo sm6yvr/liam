@@ -42,7 +42,7 @@
 
 MMA_7455::MMA_7455(void)
 {
- Wire.begin();
+  Wire.begin();
 }
 
 void MMA_7455::autoupdate()
@@ -84,9 +84,12 @@ void MMA_7455::autoupdate()
     yavg = yavg * lpratio + y10 * (1 - lpratio);
     zavg = zavg * lpratio + z10 * (1 - lpratio);
     /* Display current axis values */
-    Serial.print("X: ");   Serial.print(xavg, DEC);
-    Serial.print("\tY: "); Serial.print(yavg, DEC);
-    Serial.print("\tZ: "); Serial.println(zavg, DEC);
+    Serial.print("X: ");
+    Serial.print(xavg, DEC);
+    Serial.print("\tY: ");
+    Serial.print(yavg, DEC);
+    Serial.print("\tZ: ");
+    Serial.println(zavg, DEC);
     /* Calculate axis offset */
     xc += -2 * x10;
     yc += -2 * y10;
@@ -96,15 +99,19 @@ void MMA_7455::autoupdate()
     if (xavg == 0 && yavg == 0 && zavg == 64)
     {
       Serial.println("Set X,Y,& Z values in definition.h to:");
-      Serial.print("X: ");Serial.println(xc, DEC);
-      Serial.print("Y: ");Serial.println(yc, DEC);
-      Serial.print("Z: ");Serial.println(zc, DEC);
-  found = true;
+      Serial.print("X: ");
+      Serial.println(xc, DEC);
+      Serial.print("Y: ");
+      Serial.println(yc, DEC);
+      Serial.print("Z: ");
+      Serial.println(zc, DEC);
+      found = true;
     }
     delay(200);
   }
 }
-boolean MMA_7455::initialize() {
+boolean MMA_7455::initialize()
+{
   Wire.begin();
   Serial.begin(115200);
   setSensitivity(2);
@@ -113,20 +120,23 @@ boolean MMA_7455::initialize() {
   return 0;
 }
 
-void MMA_7455::updateHeading() {
-
+void MMA_7455::updateHeading()
+{
 }
-int MMA_7455::getHeading() {
+int MMA_7455::getHeading()
+{
   return 0;
 }
 
-void MMA_7455::setNewTargetHeading() {
-
+void MMA_7455::setNewTargetHeading()
+{
 }
-int MMA_7455::headingVsTarget() {
+int MMA_7455::headingVsTarget()
+{
   return 0;
 }
-int MMA_7455::getTiltAngle() {
+int MMA_7455::getTiltAngle()
+{
   int y = readAxis10('y');
   int x = readAxis10('x');
   int z = 64 - readAxis10('z');
@@ -145,20 +155,24 @@ int MMA_7455::getTiltAngle() {
   }
   if (x >= y && x >= z)
     return x;
-  else if ( y >= x && y >= z)
+  else if (y >= x && y >= z)
     return y;
   else
     return z;
 }
-int MMA_7455::getZAngle() {
+int MMA_7455::getZAngle()
+{
   return readAxis10('z');
 }
 
-int MMA_7455::getYAngle() {
-  return readAxis10('y');;
+int MMA_7455::getYAngle()
+{
+  return readAxis10('y');
+  ;
 }
 
-int MMA_7455::getXAngle() {
+int MMA_7455::getXAngle()
+{
   return readAxis10('x');
 }
 
@@ -186,21 +200,21 @@ int MMA_7455::getXAngle() {
 void MMA_7455::setSensitivity(int sensitivity)
 {
   uint8_t selected = 0;
-  uint8_t val      = 0;
+  uint8_t val = 0;
   switch (sensitivity)
   {
-    case 2:
-      selected = MCTL_GLVL_2G;
-      break;
-    case 4:
-      selected = MCTL_GLVL_4G;
-      break;
-    case 8:
-      selected = MCTL_GLVL_8G;
-      break;
-    default:
-      selected = MCTL_GLVL_2G;
-      break;
+  case 2:
+    selected = MCTL_GLVL_2G;
+    break;
+  case 4:
+    selected = MCTL_GLVL_4G;
+    break;
+  case 8:
+    selected = MCTL_GLVL_8G;
+    break;
+  default:
+    selected = MCTL_GLVL_2G;
+    break;
   }
   val = this->readReg(MCTL_OFF);
   val &= ~MCTL_GLVL_MASK;
@@ -211,25 +225,25 @@ void MMA_7455::setSensitivity(int sensitivity)
 
 int MMA_7455::getSensitivity(void)
 {
-  int     selected = 0;
-  uint8_t val      = 0;
+  int selected = 0;
+  uint8_t val = 0;
 
   val = this->readReg(MCTL_OFF);
   val &= MCTL_GLVL_MASK;
   switch (val)
   {
-    case MCTL_GLVL_2G:
-      selected = 2;
-      break;
-    case MCTL_GLVL_4G:
-      selected = 4;
-      break;
-    case MCTL_GLVL_8G:
-      selected = 8;
-      break;
-    default:
-      selected = 0;
-      break;
+  case MCTL_GLVL_2G:
+    selected = 2;
+    break;
+  case MCTL_GLVL_4G:
+    selected = 4;
+    break;
+  case MCTL_GLVL_8G:
+    selected = 8;
+    break;
+  default:
+    selected = 0;
+    break;
   }
   return selected;
 }
@@ -237,24 +251,24 @@ int MMA_7455::getSensitivity(void)
 void MMA_7455::setMode(MODE mode)
 {
   uint8_t selected = 0;
-  uint8_t val      = 0;
+  uint8_t val = 0;
   switch (mode)
   {
-    case standby:
-      selected = MCTL_MOD_STBY;
-      break;
-    case measure:
-      selected = MCTL_MOD_MSMT;
-      break;
-    case level:
-      selected = MCTL_MOD_LVL;
-      break;
-    case pulse:
-      selected = MCTL_MOD_PLS;
-      break;
-    default:
-      selected = MCTL_MOD_MSMT;
-      break;
+  case standby:
+    selected = MCTL_MOD_STBY;
+    break;
+  case measure:
+    selected = MCTL_MOD_MSMT;
+    break;
+  case level:
+    selected = MCTL_MOD_LVL;
+    break;
+  case pulse:
+    selected = MCTL_MOD_PLS;
+    break;
+  default:
+    selected = MCTL_MOD_MSMT;
+    break;
   }
   val = this->readReg(MCTL_OFF);
   val &= ~MCTL_MOD_MASK;
@@ -265,28 +279,28 @@ void MMA_7455::setMode(MODE mode)
 
 MODE MMA_7455::getMode(void)
 {
-  MODE    selected = none;
-  uint8_t val      = 0;
+  MODE selected = none;
+  uint8_t val = 0;
 
   val = this->readReg(MCTL_OFF);
   val &= MCTL_MOD_MASK;
   switch (val)
   {
-    case MCTL_MOD_STBY:
-      selected = standby;
-      break;
-    case MCTL_MOD_MSMT:
-      selected = measure;
-      break;
-    case MCTL_MOD_LVL:
-      selected = level;
-      break;
-    case MCTL_MOD_PLS:
-      selected = pulse;
-      break;
-    default:
-      selected = none;
-      break;
+  case MCTL_MOD_STBY:
+    selected = standby;
+    break;
+  case MCTL_MOD_MSMT:
+    selected = measure;
+    break;
+  case MCTL_MOD_LVL:
+    selected = level;
+    break;
+  case MCTL_MOD_PLS:
+    selected = pulse;
+    break;
+  default:
+    selected = none;
+    break;
   }
   return selected;
 }
@@ -571,35 +585,41 @@ MODE MMA_7455::getMode(void)
 
 int16_t MMA_7455::readAxis10(char axis)
 {
-  uint8_t  reg[2]  = {0};
-  uint8_t  mask[2] = {0};
-  uint16_t u_val   = 0;
-  int16_t  s_val   = 0;
+  uint8_t reg[2] = {0};
+  uint8_t mask[2] = {0};
+  uint16_t u_val = 0;
+  int16_t s_val = 0;
 
   switch (axis)
   {
-    case 'x':
-    case 'X':
-      reg[0] = XOUTL_OFF; mask[0] = XOUTL_MASK;
-      reg[1] = XOUTH_OFF; mask[1] = XOUTH_MASK;
-      break;
-    case 'y':
-    case 'Y':
-      reg[0] = YOUTL_OFF; mask[0] = YOUTL_MASK;
-      reg[1] = YOUTH_OFF; mask[1] = YOUTH_MASK;
-      break;
-    case 'z':
-    case 'Z':
-      reg[0] = ZOUTL_OFF; mask[0] = ZOUTL_MASK;
-      reg[1] = ZOUTH_OFF; mask[1] = ZOUTH_MASK;
-      break;
-    default:
-      return 0;
+  case 'x':
+  case 'X':
+    reg[0] = XOUTL_OFF;
+    mask[0] = XOUTL_MASK;
+    reg[1] = XOUTH_OFF;
+    mask[1] = XOUTH_MASK;
+    break;
+  case 'y':
+  case 'Y':
+    reg[0] = YOUTL_OFF;
+    mask[0] = YOUTL_MASK;
+    reg[1] = YOUTH_OFF;
+    mask[1] = YOUTH_MASK;
+    break;
+  case 'z':
+  case 'Z':
+    reg[0] = ZOUTL_OFF;
+    mask[0] = ZOUTL_MASK;
+    reg[1] = ZOUTH_OFF;
+    mask[1] = ZOUTH_MASK;
+    break;
+  default:
+    return 0;
   }
 
-  u_val  = this->readReg(reg[0]) & mask[0];
+  u_val = this->readReg(reg[0]) & mask[0];
   u_val |= (this->readReg(reg[1]) & mask[1]) << 8;
-  s_val  = (int16_t)u_val;
+  s_val = (int16_t)u_val;
 
   /* fill of ones if negative value
      to make it valid in 16 bit format */
@@ -611,21 +631,24 @@ int16_t MMA_7455::readAxis10(char axis)
   return s_val;
 }
 
-void MMA_7455::readAxis10(int16_t* x, int16_t* y, int16_t* z)
+void MMA_7455::readAxis10(int16_t *x, int16_t *y, int16_t *z)
 {
-  if (x) *x = this->readAxis10('x');
-  if (y) *y = this->readAxis10('y');
-  if (z) *z = this->readAxis10('z');
+  if (x)
+    *x = this->readAxis10('x');
+  if (y)
+    *y = this->readAxis10('y');
+  if (z)
+    *z = this->readAxis10('z');
   return;
 }
 
 float MMA_7455::readAxis10g(char axis)
 {
-  float   f_val = 0;
+  float f_val = 0;
   int16_t s_val = 0;
-  int     sens  = 0;
+  int sens = 0;
 
-  sens  = this->getSensitivity();
+  sens = this->getSensitivity();
   s_val = this->readAxis10(axis);
 
   /* convert N to g/s */
@@ -636,11 +659,14 @@ float MMA_7455::readAxis10g(char axis)
   return f_val;
 }
 
-void MMA_7455::readAxis10g(float* x, float* y, float* z)
+void MMA_7455::readAxis10g(float *x, float *y, float *z)
 {
-  if (x) *x = this->readAxis10g('x');
-  if (y) *y = this->readAxis10g('y');
-  if (z) *z = this->readAxis10g('z');
+  if (x)
+    *x = this->readAxis10g('x');
+  if (y)
+    *y = this->readAxis10g('y');
+  if (z)
+    *z = this->readAxis10g('z');
   return;
 }
 
@@ -658,9 +684,10 @@ void MMA_7455::setAxisOffset(int16_t x, int16_t y, int16_t z)
   return;
 }
 
-void MMA_7455::getAxisOffset(int16_t* x, int16_t* y, int16_t* z)
+void MMA_7455::getAxisOffset(int16_t *x, int16_t *y, int16_t *z)
 {
-  if (x == NULL || y == NULL || z == NULL)   return;
+  if (x == NULL || y == NULL || z == NULL)
+    return;
 
   *x = this->readReg(XOFFL_OFF) & XOFFL_MASK;
   *x |= (this->readReg(XOFFH_OFF) & XOFFH_MASK) << 8;

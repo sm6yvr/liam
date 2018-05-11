@@ -1,28 +1,21 @@
 /*
-*  SemsADXL345.h is part of the project: liam - DIY Robot Lawn mover
-*
-*  Description: This file is a representation of a accelerometer/gyro sensor
-*              ADXL345 and are used in liam to detect the tilt angle of the mover.
-*              The class structure are reused from the MotionSensor class to easy
-*              plugin it in the current liam code base.
-*
-*  2017-06-06  - Initial commit
-*
-*  Copyright (c) 2017 Roberth Andersson (and team)
-*
-*  liam - DIY Robot LAwn mower is free software: you can redistribute it and/or modify
-*  it under the terms of the GNU General Public License as published by
-*  the Free Software Foundation, either version 3 of the License, or
-*  (at your option) any later version.
-*
-*  Foobar is distributed in the hope that it will be useful,
-*  but WITHOUT ANY WARRANTY; without even the implied warranty of
-*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*  GNU General Public License for more details.
-*
-*  You should have received a copy of the GNU General Public License
-*  along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
-*
+ Liam - DIY Robot Lawn Mower
+
+ ADXL345 Motion Sensor Library
+
+ ======================
+  Licensed under GPLv3
+ ======================
+*/
+
+/*
+  This file is a representation of a accelerometer/gyro
+  sensor ADXL345 and are used in liam to detect the tilt
+  angle of the mover.  The class structure are reused from
+  the MotionSensor class to easy plugin it in the current
+  liam code base.
+
+  Copyright (c) 2017 Roberth Andersson (and team)
 */
 
 #include "MotionSensor.h"
