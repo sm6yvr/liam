@@ -23,6 +23,10 @@ class MOTIONSENSOR {
     virtual void setNewTargetHeading();
     virtual int headingVsTarget();
     virtual int getTiltAngle();
+    virtual int getZAngle();
+    virtual int getYAngle();
+    virtual int getXAngle();
+    virtual void autoupdate();
 
   protected:
     int current_heading;

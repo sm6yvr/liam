@@ -24,6 +24,10 @@ class MS5883L : public MOTIONSENSOR {
     virtual void setNewTargetHeading();
     virtual int headingVsTarget();
     virtual int getTiltAngle();
+    virtual int getZAngle();
+    virtual int getYAngle();
+    virtual int getXAngle();
+    virtual void autoupdate();
 
   private:
     HMC5883L sensor;
