@@ -1,13 +1,13 @@
-/*
- Liam - DIY Robot Lawn Mower
+// This is the library for an Error
+//
+// Changelog:
+//     2014-12-12 - Initial version by Jonas
 
- Error Handler Library
+/* ============================================
+Placed under the GNU license
 
- ======================
-  Licensed under GPLv3
- ======================
+===============================================
 */
-
 #include <Arduino.h>
 #include <Wire.h>  // For LCD
 #include "myLcd.h"
@@ -17,16 +17,16 @@
 #define _ERROR_H_
 
 class ERROR {
-  public:
-    ERROR(MYDISPLAY* display_, int led_pin_, CONTROLLER* Mower_);
+    public:
+        ERROR(MYDISPLAY* display_, int led_pin_, CONTROLLER* Mower_);
+        
+        void flag(int error_number);
 
-    void flag(int error_number);
-
-  private:
+    private:
     MYDISPLAY* mylcd;
     CONTROLLER* Mower;
     int led_pin;
-
+    
     void blink_led(int error_number);
 };
 

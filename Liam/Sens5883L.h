@@ -1,11 +1,12 @@
-/*
- Liam - DIY Robot Lawn Mower
+// This is the library for a Compass
+// It uses a 9150 compass/gyro/accelerometer combo
+// Changelog:
+//     2014-12-12 - Initial version by Jonas
 
- HMC-5883L Motion Sensor Library
+/* ============================================
+Placed under the GNU license
 
- ======================
-  Licensed under GPLv3
- ======================
+===============================================
 */
 
 #ifndef _MS5883L_H_
@@ -17,16 +18,16 @@
 #include <HMC5883L.h>
 
 class MS5883L : public MOTIONSENSOR {
-  public:
-    virtual boolean initialize();
-    virtual void updateHeading();
-    virtual int getHeading();
-    virtual void setNewTargetHeading();
-    virtual int headingVsTarget();
-    virtual int getTiltAngle();
-
-  private:
-    HMC5883L sensor;
+    public:
+        virtual boolean initialize();
+        virtual void updateHeading();
+        virtual int getHeading();
+        virtual void setNewTargetHeading();
+        virtual int headingVsTarget();
+        virtual int getTiltAngle();
+        
+    private:
+    	HMC5883L sensor;
 
 };
 

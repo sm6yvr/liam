@@ -1,13 +1,13 @@
-/*
- Liam - DIY Robot Lawn Mower
+// This is the library for an LCD display
+//
+// Changelog:
+//     2014-12-12 - Initial version by Timo
 
- LCD Display Library
+/* ============================================
+Placed under the GNU license
 
- ======================
-  Licensed under GPLv3
- ======================
+===============================================
 */
-
 #include <Arduino.h>
 #include <Wire.h>  // For LCD
 #include <LiquidCrystal_I2C.h>
@@ -23,16 +23,16 @@
 #define _MYLCD_H_
 
 class myLCD : public MYDISPLAY {
-  public:
-    myLCD(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state);
+    public:
+        myLCD(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state);
+		
+        virtual boolean initialize();
+        virtual void setCursor(int col, int row);
+        virtual size_t write(uint8_t);
+        virtual void clear();
 
-    virtual boolean initialize();
-    virtual void setCursor(int col, int row);
-    virtual size_t write(uint8_t);
-    virtual void clear();
-
-  private:
-    LiquidCrystal_I2C lcd;
+    private:
+   		LiquidCrystal_I2C lcd;
 };
 
 #endif /* _MYLCD_H_ */
