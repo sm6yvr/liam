@@ -19,27 +19,27 @@
 const int NUMBER_OF_SENSORS = 2;  // Number of BWF sensors can be 1-4 depending on shield default 2 left and right front.
 
 // Pin setup following Morgan 1.5 shield and up
-#define WHEEL_MOTOR_A_CURRENT_PIN   0
-#define WHEEL_MOTOR_B_CURRENT_PIN   1
-#define SOC_PIN             2
-#define CUTTER_CURRENT_PIN        3
-#define I2C_SDA_PIN           4
-#define I2C_SDL_PIN           5
+#define WHEEL_MOTOR_A_CURRENT_PIN       0
+#define WHEEL_MOTOR_B_CURRENT_PIN       1
+#define SOC_PIN                         2
+#define CUTTER_CURRENT_PIN              3
+#define I2C_SDA_PIN                     4
+#define I2C_SDL_PIN                     5
 // Digital pins
-#define RX_PIN              0
-#define TX_PIN              1
-#define BWF_SENSOR_INPUT_PIN      2
-#define WHEEL_MOTOR_A_PWM_PIN     3
-#define BWF_SELECT_A_PIN        4
-#define DOCK_PIN            5
-#define CUTTER_PWM_PIN          6
-#define BWF_SELECT_B_PIN        7
-#define BUMPER              8
-#define LIFT_SENSOR_PIN         9
-#define LED_PIN             13
-#define WHEEL_MOTOR_B_PWM_PIN     11
-#define WHEEL_MOTOR_A_DIRECTION_PIN   12
-#define WHEEL_MOTOR_B_DIRECTION_PIN   13
+#define RX_PIN                          0
+#define TX_PIN                          1
+#define BWF_SENSOR_INPUT_PIN            2
+#define WHEEL_MOTOR_A_PWM_PIN           3
+#define BWF_SELECT_A_PIN                4
+#define DOCK_PIN                        5
+#define CUTTER_PWM_PIN                  6
+#define BWF_SELECT_B_PIN                7
+#define BUMPER                          8
+#define LIFT_SENSOR_PIN                 9
+#define LED_PIN                         13
+#define WHEEL_MOTOR_B_PWM_PIN           11
+#define WHEEL_MOTOR_A_DIRECTION_PIN     12
+#define WHEEL_MOTOR_B_DIRECTION_PIN     13
 
 // Cutter motor types
 #define BRUSHLESS           0
@@ -85,9 +85,9 @@ const int CHARGING = 3;
 #define INSIDE_BWF          85
 #define OUTSIDE_BWF         5
 
-#define MAJOR_VERSION       4
-#define MINOR_VERSION_1       9
-#define MINOR_VERSION_2       1
+#define MAJOR_VERSION           4
+#define MINOR_VERSION_1         9
+#define MINOR_VERSION_2         2
 
 // If you have a bumper connected to pin8, uncomment the line below. Remember to cut the brake connection on your motor shield
 //#define __Bumper__
