@@ -11,7 +11,7 @@
 #include "myLcd.h"
 
 
-myLCD::myLCD(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state): MYDISPLAY(batt, left, right, cut, bwf, comp, state), lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE)
+myLCD::myLCD(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state): MYDISPLAY(batt, left, right, cut, bwf, comp, state), lcd(LCD_I2C_ADDRESS, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE)
 {
   Battery = batt;
   leftMotor = left;

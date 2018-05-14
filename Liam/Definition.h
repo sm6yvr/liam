@@ -85,9 +85,9 @@ const int CHARGING = 3;
 #define INSIDE_BWF          85
 #define OUTSIDE_BWF         5
 
-#define MAJOR_VERSION           4
-#define MINOR_VERSION_1         9
-#define MINOR_VERSION_2         2
+#define MAJOR_VERSION           5
+#define MINOR_VERSION_1         3
+#define MINOR_VERSION_2         0
 
 // If you have a bumper connected to pin8, uncomment the line below. Remember to cut the brake connection on your motor shield
 //#define __Bumper__
@@ -102,6 +102,7 @@ const int CHARGING = 3;
 // Do you have a Display? If so, uncomment one of these lines
 //#define __OLED__
 //#define __LCD__
+#define LCD_I2C_ADDRESS 0x3F
 
 // Do you have a clock? If so, uncomment the line below
 //#define __RTC_CLOCK__
