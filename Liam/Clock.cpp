@@ -11,41 +11,41 @@
 #include "Clock.h"
 #include "Definition.h"
 
-void CLOCK::initialize() {
+CLOCK::CLOCK(uint8_t outHour, uint8_t outMinute, uint8_t inHour, uint8_t inMinute) {
+  outTimeHour = outHour;
+  outTimeMinutes = outMinute;
+  inTimeHour = outHour;
+  inTimeMinutes = outMinute;
 
   Wire.begin();
   RTC.begin();
 
   if (! RTC.isrunning()) {
     Serial.println("RTC is NOT running!");
-    // following line sets the RTC to the date & time this sketch was compiled
-    RTC.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
 }
 
-void CLOCK::setGoOutTime(uint8_t Hour, uint8_t Minutes) {
+void CLOCK::setTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hours, uint8_t minutes, uint8_t seconds) {
+  RTC.adjust(DateTime(year, month, day, hours, minutes, seconds));
+}
 
+void CLOCK::setGoOutTime(uint8_t Hour, uint8_t Minutes) {
   outTimeHour = Hour;
   outTimeMinutes = Minutes;
-
 }
 
 void CLOCK::setGoHomeTime(uint8_t Hour, uint8_t Minutes) {
-
   inTimeHour = Hour;
   inTimeMinutes = Minutes;
-
 }
 
 bool CLOCK::timeToCut() {
-
   if ((int)RTC.now().hour() * 60 + (int)RTC.now().minute() > (int)outTimeHour * 60 + (int)outTimeMinutes &&
       (int)RTC.now().hour() * 60 + (int)RTC.now().minute() < (int)inTimeHour * 60 + (int)inTimeMinutes)
     return true;
 
   return false;
 }
-
 
 void CLOCK::printTime() {
   DateTime now = RTC.now();

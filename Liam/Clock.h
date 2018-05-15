@@ -18,8 +18,9 @@
 
 class CLOCK {
   public:
-    void initialize();
+    CLOCK(uint8_t outHour, uint8_t outMinute, uint8_t inHour, uint8_t inMinute);
 
+    void setTime(uint16_t year, uint8_t month, uint8_t day, uint8_t hours, uint8_t minutes, uint8_t seconds);
     void setGoOutTime(uint8_t Hour, uint8_t Minutes);
     void setGoHomeTime(uint8_t Hour, uint8_t Minutes);
 

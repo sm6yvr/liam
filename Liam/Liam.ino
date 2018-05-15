@@ -107,9 +107,9 @@ myLCD Display(&Battery, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass
 MYDISPLAY Display(&Battery, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &state);
 #endif
 
-// RTC klocka
+// RTC clock
 #if defined __RTC_CLOCK__
-CLOCK myClock;
+CLOCK Clock(GO_OUT_TIME, GO_HOME_TIME);
 #endif
 
 // Error handler
@@ -135,12 +135,6 @@ void setup()
   CutterMotor.initialize();
   Battery.resetVoltage(); // Reset the battery voltage reading
   Compass.initialize();
-
-#if defined __RTC_CLOCK__
-  myClock.initialize();
-  myClock.setGoOutTime(GO_OUT_TIME);
-  myClock.setGoHomeTime(GO_HOME_TIME);
-#endif
 
   attachInterrupt(0, updateBWF, RISING);    // Run the updateBWF function every time there is a pulse on digital pin2
   Sensor.select(0);
@@ -443,7 +437,7 @@ void loop()
 
       // Just remain in this state until battery is full
 #if defined __RTC_CLOCK__
-      if (Battery.isFullyCharged() && myClock.timeToCut())
+      if (Battery.isFullyCharged() && Clock.timeToCut())
         state = LAUNCHING;
 #else
       if (Battery.isFullyCharged())
