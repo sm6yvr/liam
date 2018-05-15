@@ -13,6 +13,9 @@
 
 #include <Arduino.h>
 
+// Number of readings to average when measuring motor load
+#define MOTOR_LOAD_READINGS 10
+
 class WHEELMOTOR {
   public:
     WHEELMOTOR(int pwmpin_, int dirpin_, int loadpin_, int smoothness);
@@ -30,9 +33,7 @@ class WHEELMOTOR {
   private:
     int pwmpin;
     int dirpin;
-    bool dir;
     int loadpin;
-    int load;
     int speed;
     int overload_level;
     int smoothness_delay;
