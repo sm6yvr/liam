@@ -9,58 +9,66 @@
 */
 
 #include "myLcd.h"
+#include <LiquidCrystal_I2C.h>
 
-
-myLCD::myLCD(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state): MYDISPLAY(batt, left, right, cut, bwf, comp, state), lcd(LCD_I2C_ADDRESS, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE)
+myLCD::myLCD(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state) :
+  MYDISPLAY(batt, left, right, cut, bwf, comp, state),
+  // You may need to modify this line to work with your LCD controller
+  lcd(LCD_I2C_ADDRESS, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE)
 {
-  Battery = batt;
-  leftMotor = left;
-  rightMotor = right;
-  cutter = cut;
-  sensor = bwf;
-  compass = comp;
-  moverstate = state;
 }
-
 
 boolean myLCD::initialize()
 {
-  char buffer [9]; //Format 09.00.00
+  current_row = current_col = 0;
+  lcd.begin(max_cols, max_rows);
 
-  lcd.begin(20,4);         // initialize the lcd for 20 chars 4 lines, turn on backlight
-  lcd.noBacklight();
-  // ------- Quick 3 blinks of backlight  -------------
-  for(int i = 0; i < 3; i++)
-  {
-    lcd.backlight();
-    delay(100);
-    lcd.noBacklight();
-    delay(100);
-  }
-  lcd.backlight(); // finish with backlight on
+  // Hide cursor and turn on backlight
+  lcd.noCursor();
+  lcd.backlight();
 
-  lcd.setCursor(0, 0);
-  lcd.print("SW version:");
-  lcd.setCursor(0, 1);
-  sprintf (buffer, "%d.%d.%d", MAJOR_VERSION, MINOR_VERSION_1, MINOR_VERSION_2);
-  lcd.print(buffer);
-  lcd.setCursor(0, 2);
-  lcd.print(__DATE__);
-  lcd.setCursor(0, 3);
-  lcd.print(__TIME__);
-  delay(3000);
-  lcd.clear();
-
+  return MYDISPLAY::initialize();
 }
 
-void myLCD::setCursor(int col, int row) {
+
+size_t myLCD::write(uint8_t s)
+{
+  current_col++;
+
+  if(s == '\n' || current_col >= max_cols)
+  {
+    current_row++;
+    current_col = 0;
+    if(current_row >= max_rows)
+      current_row = 0;
+    lcd.setCursor(current_col, current_row);
+  }
+
+  lcd.write(s);
+
+  // Uncomment to write to serial port also
+  /* MYDISPLAY::write(s); */
+}
+
+void myLCD::setCursor(int col, int row)
+{
+  current_row = row;
+  current_col = col;
   lcd.setCursor(col, row);
 }
 
-size_t myLCD::write(uint8_t s) {
-  lcd.write(s);
+void myLCD::clear()
+{
+  lcd.clear();
+  setCursor(0,0);
 }
 
-void myLCD::clear() {
-  lcd.clear();
+void myLCD::blink()
+{
+  // Flash backlight
+  lcd.backlight();
+  delay(100);
+  lcd.noBacklight();
+  delay(100);
+  lcd.backlight();
 }

@@ -139,6 +139,14 @@ void setup()
   attachInterrupt(0, updateBWF, RISING);    // Run the updateBWF function every time there is a pulse on digital pin2
   Sensor.select(0);
 
+  // Print version information for five seconds before starting
+  Display.clear();
+  Display.print(F("--- LIAM ---\n"));
+  Display.print(F(VERSION_STRING "\n"));
+  Display.print(__DATE__ " " __TIME__ "\n");
+  delay(5000);
+  Display.clear();
+
   if (Battery.isBeingCharged()) {     // If Liam is in docking station then
     state = CHARGING;           // continue charging
     Mower.stopCutter();

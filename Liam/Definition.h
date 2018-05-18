@@ -89,6 +89,12 @@ const int CHARGING = 3;
 #define MINOR_VERSION_1         2
 #define MINOR_VERSION_2         2
 
+// A bit of macro magic to make a string out of the version number
+// The preprocessor works in mysterious ways...
+#define STR_(x) #x
+#define STR(x) STR_(x)
+#define VERSION_STRING STR(MAJOR_VERSION) "." STR(MINOR_VERSION_1) "." STR(MINOR_VERSION_2)
+
 // If you have a bumper connected to pin8, uncomment the line below. Remember to cut the brake connection on your motor shield
 //#define __Bumper__
 

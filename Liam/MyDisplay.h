@@ -9,9 +9,8 @@
 */
 
 /*
-  It will by default write to serial port, but can be
-  replaced by subclasses for a built in LCD or OLED for
-  example
+  Base class for displays.
+  Default behavior is to print to serial port.
 
   This code extends the Print class to get the print
   capabilities. Basically the print class method calls each
@@ -29,19 +28,19 @@
 #include "MotionSensor.h"
 #include "Battery.h"
 
-class MYDISPLAY : public Print {
+class MYDISPLAY : public Print
+{
   public:
     MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state);
     virtual boolean initialize();
-    virtual void update();
-    virtual void setCursor(int col, int row);
+    void update();
+
     virtual size_t write(uint8_t);
+    virtual void setCursor(int col, int row);
     virtual void clear();
     virtual void blink();
 
   protected:
-    int current_row;
-    int current_col;
     BATTERY* Battery;
     WHEELMOTOR* leftMotor;
     WHEELMOTOR* rightMotor;
@@ -49,8 +48,6 @@ class MYDISPLAY : public Print {
     BWFSENSOR* sensor;
     MOTIONSENSOR* compass;
     int* moverstate;
-
-
 };
 
 #endif /* _MYDISPLAY_H_ */
