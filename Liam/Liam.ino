@@ -178,7 +178,7 @@ void loop()
     Serial.print("Mower has flipped ");
     Mower.stopCutter();
     Mower.stop();
-    Error.flag(9);
+    Error.flag(ERROR_TILT);
   }
 #endif
 
@@ -192,7 +192,7 @@ void loop()
     Mower.runBackward(FULLSPEED);
     delay(2000);
     if(Mower.isLifted())
-      Error.flag(4);
+      Error.flag(ERROR_LIFT);
     Mower.turnRight(90);
     //Mover.startCutter();
     Mower.runForward(FULLSPEED);
@@ -261,7 +261,7 @@ void loop()
           delay(1000);
           Mower.stop();
           if (Mower.allSensorsAreOutside())
-            Error.flag(4);
+            Error.flag(ERROR_OUTSIDE);
         }
       }
 
@@ -300,7 +300,7 @@ void loop()
           delay(1000);
           Mower.stop();
           if (Mower.allSensorsAreOutside())
-            Error.flag(4);
+            Error.flag(ERROR_OUTSIDE);
         }
       }
 
@@ -346,7 +346,7 @@ void loop()
         Mower.runBackward(FULLSPEED);
         delay(2000);
         if(Mower.isLifted())
-          Error.flag(4);
+          Error.flag(ERROR_LIFT);
         Mower.turnRight(90);
         Mower.startCutter();
         Mower.runForward(FULLSPEED);
@@ -371,7 +371,7 @@ void loop()
         Serial.print("Mower has flipped ");
         Mower.stopCutter();
         Mower.stop();
-        Error.flag(9);
+        Error.flag(ERROR_TILT);
       }
 #endif
 

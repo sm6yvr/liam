@@ -10,6 +10,7 @@
 
 #include "Controller.h"
 #include "Definition.h"
+#include "Error.h"
 
 /** Specific constructor.
 */
@@ -48,12 +49,12 @@ int CONTROLLER::turnToReleaseLeft(int angle) {
     }
 
     if (wheelsAreOverloaded())
-      return 1;         // Overloaded
+      return ERROR_OVERLOAD;         // Overloaded
 
     turnLeft(10);
   }
 
-  return 2;             // Timed Out
+  return ERROR_OUTSIDE;             // Timed Out
 }
 
 int CONTROLLER::turnToReleaseRight(int angle) {
@@ -69,12 +70,12 @@ int CONTROLLER::turnToReleaseRight(int angle) {
     }
 
     if (wheelsAreOverloaded())
-      return 1;         // Overloaded
+      return ERROR_OVERLOAD;         // Overloaded
 
     turnRight(10);
   }
 
-  return 2;             // Timed Out
+  return ERROR_OUTSIDE;             // Timed Out
 }
 
 int CONTROLLER::turnRight(int angle) {
@@ -147,7 +148,7 @@ int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
     delay(1000);
     counter--;
     if(counter<=0)
-      return 1;
+      return ERROR_OUTSIDE;
   }
   return 0;
 }
