@@ -86,8 +86,8 @@ const int CHARGING = 3;
 #define OUTSIDE_BWF         5
 
 #define MAJOR_VERSION           5
-#define MINOR_VERSION_1         3
-#define MINOR_VERSION_2         0
+#define MINOR_VERSION_1         2
+#define MINOR_VERSION_2         2
 
 // If you have a bumper connected to pin8, uncomment the line below. Remember to cut the brake connection on your motor shield
 //#define __Bumper__
