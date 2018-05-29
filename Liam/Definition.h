@@ -69,10 +69,13 @@ const int CHARGING = 3;
 #define REVERSE_DELAY         2
 #define TURNDELAY           20 //Reduce for smaller turning angle
 
+#pragma region BWF
+
 // BWF Detection method (true = always, false = only at wire)
 #define BWF_DETECTION_ALWAYS      true
 #define TIMEOUT             6000 //Time without signal before error
-
+#define BWF_COLLECT_SIGNAL_TIME   200 // max time to spend looking for signal
+#define BWF_NUMBER_OF_PULSES  3
 // Trigger value for the mower to leave the BWF when going home
 // The higher value the more turns (in the same direction) the mower can make before leaving
 #define BALANCE_TRIGGER_LEVEL     10000
@@ -84,6 +87,9 @@ const int CHARGING = 3;
 // Version 2 of the BWF transmitter
 #define INSIDE_BWF          85
 #define OUTSIDE_BWF         5
+
+#pragma endregion BWF
+
 
 #define MAJOR_VERSION           5
 #define MINOR_VERSION_1         2

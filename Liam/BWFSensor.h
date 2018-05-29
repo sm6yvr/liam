@@ -22,6 +22,7 @@
 #define TIMEOUT_DELAY    20000
 #define NO_SIGNAL_DELAY  4000
 
+
 class BWFSENSOR {
   public:
     BWFSENSOR(int selA, int selB);
@@ -33,6 +34,7 @@ class BWFSENSOR {
     bool isOutside();
     bool isTimedOut();
     bool hasNoSignal();
+    bool gotSignal();
 
     void readSensor();
 

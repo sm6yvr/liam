@@ -163,6 +163,7 @@ void setup()
 // ***************** Main loop ***********************************
 void loop()
 {
+  long looptime= millis();
   boolean in_contact;
   boolean mower_is_outside;
   int err=0;
@@ -476,5 +477,8 @@ void loop()
       break;
 
   }
+  Serial.print("looptime == ");
+    Serial.print(millis() - looptime);
+
 }
 
