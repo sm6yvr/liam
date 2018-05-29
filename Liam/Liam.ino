@@ -477,8 +477,9 @@ void loop()
       break;
 
   }
-  Serial.print("looptime == ");
-    Serial.print(millis() - looptime);
+  Serial.print("\n\nlooptime : ");
+    Serial.println(millis() - looptime);
 
 }
+
 

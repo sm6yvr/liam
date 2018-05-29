@@ -255,12 +255,21 @@ int CONTROLLER::compensateSpeedToCompassHeading() {
   rightMotor->setSpeed(default_dir_fwd*rms);
 }
 
-boolean CONTROLLER::wheelsAreOverloaded() {
-  delay(200);       // Settle current spikes
-  if (leftMotor->isOverloaded() | rightMotor->isOverloaded())
-    return true;
-  else
-    return false;
+boolean CONTROLLER::wheelsAreOverloaded()
+{
+  long time = millis();
+  int l_load = 0;
+  int r_load = 0;
+  while (millis() - time <= 200) // might be better to set this value in Definition.h
+  {
+    l_load = leftMotor->getLoad();
+    r_load = rightMotor->getLoad();
+    if (l_load < WHEELMOTOR_OVERLOAD || r_load < WHEELMOTOR_OVERLOAD)
+    {
+      return false;
+    }
+  }
+  return true;
 }
 
 boolean CONTROLLER::hasBumped() {
