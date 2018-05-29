@@ -41,8 +41,10 @@
 
 #include "BWFSensor.h"
 
-int BWFSENSOR::outside_code[] = {OUTSIDE_BWF};
+int BWFSENSOR::outside_code[] = {OUTSIDE_BWF, INSIDE_BWF-OUTSIDE_BWF};
 int BWFSENSOR::inside_code[] = {INSIDE_BWF};
+
+int currentSensor = 0;
 
 BWFSENSOR::BWFSENSOR(int selA, int selB) {
   selpin_A = selA;
@@ -52,10 +54,16 @@ BWFSENSOR::BWFSENSOR(int selA, int selB) {
 
 // Select active sensor
 void BWFSENSOR::select(int sensornumber) {
+	if (currentSensor == sensornumber) {
+		
+		return;
+	}
+	currentSensor = sensornumber;
+	
   digitalWrite(selpin_A, (sensornumber & 1) > 0 ? HIGH : LOW);
   digitalWrite(selpin_B, (sensornumber & 2) > 0 ? HIGH : LOW);
   clearSignal();
-  // Wait to allow signal to be read
+  delay(25);      // Wait one cycle a little extra to collect signal.
   delay(200);
 }
 
@@ -76,6 +84,13 @@ bool BWFSENSOR::isInside() {
 
 bool BWFSENSOR::isOutside() {
   return (signal_status == OUTSIDE);
+}
+
+bool BWFSENSOR::isOutOfBounds() {
+	if (BWF_DETECTION_ALWAYS)
+		return !isInside();
+	else
+		return isOutside();
 }
 
 bool BWFSENSOR::isTimedOut() {
