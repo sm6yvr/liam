@@ -83,7 +83,7 @@ WHEELMOTOR leftMotor(WHEEL_MOTOR_B_PWM_PIN, WHEEL_MOTOR_B_DIRECTION_PIN, WHEEL_M
 
 // Battery
 // Battery types available are LIION, LEAD_ACID, NIMH
-BATTERY Battery(LIION, SOC_PIN, DOCK_PIN);
+BATTERY Battery(LIION, BAT_PIN, DOCK_PIN);
 
 // BWF Sensors
 BWFSENSOR Sensor(BWF_SELECT_B_PIN, BWF_SELECT_A_PIN);
@@ -107,9 +107,9 @@ myLCD Display(&Battery, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass
 MYDISPLAY Display(&Battery, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &state);
 #endif
 
-// RTC klocka
+// RTC clock
 #if defined __RTC_CLOCK__
-CLOCK myClock;
+CLOCK Clock(GO_OUT_TIME, GO_HOME_TIME);
 #endif
 
 // Error handler
@@ -133,17 +133,19 @@ void setup()
   Display.initialize();             // Start up the display
 
   CutterMotor.initialize();
-  Battery.resetSOC();             // Set the SOC to current value
+  Battery.resetVoltage(); // Reset the battery voltage reading
   Compass.initialize();
-
-#if defined __RTC_CLOCK__
-  myClock.initialize();
-  myClock.setGoOutTime(GO_OUT_TIME);
-  myClock.setGoHomeTime(GO_HOME_TIME);
-#endif
 
   attachInterrupt(0, updateBWF, RISING);    // Run the updateBWF function every time there is a pulse on digital pin2
   Sensor.select(0);
+
+  // Print version information for five seconds before starting
+  Display.clear();
+  Display.print(F("--- LIAM ---\n"));
+  Display.print(F(VERSION_STRING "\n"));
+  Display.print(__DATE__ " " __TIME__ "\n");
+  delay(5000);
+  Display.clear();
 
   if (Battery.isBeingCharged()) {     // If Liam is in docking station then
     state = CHARGING;           // continue charging
@@ -176,7 +178,7 @@ void loop()
     Serial.print("Mower has flipped ");
     Mower.stopCutter();
     Mower.stop();
-    Error.flag(9);
+    Error.flag(ERROR_TILT);
   }
 #endif
 
@@ -190,7 +192,7 @@ void loop()
     Mower.runBackward(FULLSPEED);
     delay(2000);
     if(Mower.isLifted())
-      Error.flag(4);
+      Error.flag(ERROR_LIFT);
     Mower.turnRight(90);
     //Mover.startCutter();
     Mower.runForward(FULLSPEED);
@@ -213,7 +215,7 @@ void loop()
 
     //------------------------- MOWING ---------------------------
     case MOWING:
-      Battery.updateSOC();
+      Battery.updateVoltage();
       Display.update();
 
       Sensor.select(0);
@@ -226,7 +228,7 @@ void loop()
       // Check left sensor (0) and turn right if needed
       if (mower_is_outside) {
         Serial.println("Left outside");
-        Serial.println(Battery.getSOC());
+        Serial.println(Battery.getVoltage());
         Mower.stop();
 #ifdef GO_BACKWARD_UNTIL_INSIDE
         err=Mower.GoBackwardUntilInside (&Sensor);
@@ -259,7 +261,7 @@ void loop()
           delay(1000);
           Mower.stop();
           if (Mower.allSensorsAreOutside())
-            Error.flag(4);
+            Error.flag(ERROR_OUTSIDE);
         }
       }
 
@@ -273,7 +275,7 @@ void loop()
       // Check right sensor (1) and turn left if needed
       if (mower_is_outside) {
         Serial.println("Right Outside");
-        Serial.println(Battery.getSOC());
+        Serial.println(Battery.getVoltage());
         Mower.stop();
 
 #ifdef GO_BACKWARD_UNTIL_INSIDE
@@ -298,7 +300,7 @@ void loop()
           delay(1000);
           Mower.stop();
           if (Mower.allSensorsAreOutside())
-            Error.flag(4);
+            Error.flag(ERROR_OUTSIDE);
         }
       }
 
@@ -344,7 +346,7 @@ void loop()
         Mower.runBackward(FULLSPEED);
         delay(2000);
         if(Mower.isLifted())
-          Error.flag(4);
+          Error.flag(ERROR_LIFT);
         Mower.turnRight(90);
         Mower.startCutter();
         Mower.runForward(FULLSPEED);
@@ -369,7 +371,7 @@ void loop()
         Serial.print("Mower has flipped ");
         Mower.stopCutter();
         Mower.stop();
-        Error.flag(9);
+        Error.flag(ERROR_TILT);
       }
 #endif
 
@@ -397,7 +399,7 @@ void loop()
       state = MOWING;
 
       // Reset the running average
-      Battery.resetSOC();
+      Battery.resetVoltage();
 
       break;
 
@@ -443,7 +445,7 @@ void loop()
 
       // Just remain in this state until battery is full
 #if defined __RTC_CLOCK__
-      if (Battery.isFullyCharged() && myClock.timeToCut())
+      if (Battery.isFullyCharged() && Clock.timeToCut())
         state = LAUNCHING;
 #else
       if (Battery.isFullyCharged())
@@ -468,8 +470,8 @@ void loop()
         Mower.stop();
       }
 
-      Serial.print("SOC:");
-      Serial.println(Battery.getSOC());
+      Serial.print("BAT:");
+      Serial.println(Battery.getVoltage());
 
       break;
 

@@ -7,32 +7,62 @@
   Licensed under GPLv3
  ======================
 */
+/*
+  The BWF sensor works by measuring the time between rising edges
+
+  Example:
+    Signal in BWF
+
+    I
+    ^
+    |      _         _
+    |     | |       | |
+    |     | |       | |
+    |...__| |  _____| |  ___...
+    |       | |       | |
+    |       | |       | |
+    |       |_|       |_|
+    |
+    +----------------------> t
+           1 1   5   1 1    5...
+
+    Outside of the fence, the sensor coil and amplifier circuit will sense the
+    rising edges in the signal. Inside the fence, the signal is inverted, and
+    the circuit will sense the falling edges of the signal instead.
+
+    In this example, the time between rising edges is 2 units, followed by 5,
+    2, 5, and so on. The time between falling edges is 7 units.
+
+  When a rising edge is detected on the currently selected sensor, the function
+  readSensor() is run. By keeping track of the last time it was run, it can
+  calculate the time between pulses and check if it matches what was expected
+  for being inside or outside of the fence.
+*/
 
 #include "BWFSensor.h"
 
 int BWFSENSOR::outside_code[] = {OUTSIDE_BWF};
 int BWFSENSOR::inside_code[] = {INSIDE_BWF};
 
-/** Specific constructor.
-*/
 BWFSENSOR::BWFSENSOR(int selA, int selB) {
   selpin_A = selA;
   selpin_B = selB;
 }
 
 
-// select this sensor to be active
+// Select active sensor
 void BWFSENSOR::select(int sensornumber) {
   digitalWrite(selpin_A, (sensornumber & 1) > 0 ? HIGH : LOW);
   digitalWrite(selpin_B, (sensornumber & 2) > 0 ? HIGH : LOW);
   clearSignal();
-  delay(200);      // Wait a little to collect signal
+  // Wait to allow signal to be read
+  delay(200);
 }
 
 
 void BWFSENSOR::clearSignal() {
-  for (int i=0; i<arr_length; i++)
-    arr[i]=0;
+  for (int i = 0; i < arr_length; i++)
+    arr[i] = 0;
   signal_status = NOSIGNAL;
   pulse_count_inside = 0;
   pulse_count_outside = 0;
@@ -49,59 +79,61 @@ bool BWFSENSOR::isOutside() {
 }
 
 bool BWFSENSOR::isTimedOut() {
-  return (signal_status_checked + TIMEOUT_DELAY < millis());
+  return (last_match + TIMEOUT_DELAY < millis());
 }
 
 bool BWFSENSOR::hasNoSignal() {
-  return (signal_status_checked + NO_SIGNAL_DELAY < millis());
+  return (last_match + NO_SIGNAL_DELAY < millis());
 }
 
-// This routine is run at every timer interrupt and updates the sensor status
+
+// This function is run each time the BWF pin gets a pulse
+// For accuracy, this function should be kept as fast as possible
 void BWFSENSOR::readSensor() {
-  volatile int pulse_unit = 0;
+  long now = micros();
 
   // Calculate the time since last pulse
-  pulse_length = int(micros() - pulse_time);
-  pulse_time = micros();
-  pulse_unit = (pulse_length+half_unit_length) / pulse_unit_length;
+  int time_since_pulse = int(now - last_pulse);
+  last_pulse = now;
 
-
-  // Store the numbers for debug printout
-  arr[arr_count++] = pulse_unit;
-  if (arr_count>arr_length) arr_count=0;
+  // Convert to pulse units (rounding up)
+  int pulse_length = (time_since_pulse+(pulse_unit_length/2)) / pulse_unit_length;
 
   // Check if the latest pulse fits the code for inside
-  if (abs(pulse_unit-inside_code[pulse_count_inside]) < 2) {
+  if (abs(pulse_length-inside_code[pulse_count_inside]) < 2) {
     pulse_count_inside++;
-    // If the whole code sequence has been OK, then set signal status to 1
+
+    // Check if the entire pulse train has been batched
     if (pulse_count_inside >= sizeof(inside_code)/sizeof(inside_code[0])) {
       signal_status = INSIDE;
-      signal_status_checked = millis();
+      last_match = millis();
       pulse_count_inside=0;
     }
-  }
-  else
+  } else {
     pulse_count_inside=0;
+  }
 
   // Check if the latest pulse fits the code for outside
-  if (abs(pulse_unit-outside_code[pulse_count_outside]) < 2) {
+  if (abs(pulse_length-outside_code[pulse_count_outside]) < 2) {
     pulse_count_outside++;
     if (pulse_count_outside >= sizeof(outside_code)/sizeof(outside_code[0])) {
       signal_status = OUTSIDE;
-      signal_status_checked = millis();
+      last_match = millis();
       pulse_count_outside=0;
     }
-  }
-  else
+  } else {
     pulse_count_outside=0;
+  }
 
+
+  // Store the received code for debug output
+  arr[arr_count++] = pulse_length;
+  if (arr_count>arr_length) arr_count=0;
 }
 
 void BWFSENSOR::printSignal() {
-
-  for (int i=0; i<arr_length; i++) {
+  for (int i = 0; i < arr_length; i++) {
     Serial.print(arr[i]);
     Serial.print(" ");
   }
-
 }

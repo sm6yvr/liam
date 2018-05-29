@@ -21,7 +21,7 @@ void DEFINITION::definePinsInputOutput() {
 
   pinMode(WHEEL_MOTOR_A_CURRENT_PIN, INPUT);
   pinMode(WHEEL_MOTOR_B_CURRENT_PIN, INPUT);
-  pinMode(SOC_PIN, INPUT);
+  pinMode(BAT_PIN, INPUT);
   pinMode(CUTTER_CURRENT_PIN, INPUT);
 
   /*  Some pins are better leave undefined as default

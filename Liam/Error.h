@@ -10,24 +10,30 @@
 
 #include <Arduino.h>
 #include <Wire.h>  // For LCD
-#include "myLcd.h"
+#include "MyDisplay.h"
 #include "Controller.h"
 
 #ifndef _ERROR_H_
 #define _ERROR_H_
 
+#define ERROR_OUTSIDE 1
+#define ERROR_OVERLOAD 2
+#define ERROR_TILT 3
+#define ERROR_LIFT 4
+
+
 class ERROR {
   public:
     ERROR(MYDISPLAY* display_, int led_pin_, CONTROLLER* Mower_);
 
+    String errorMessage(int error_number);
     void flag(int error_number);
 
   private:
-    MYDISPLAY* mylcd;
+    MYDISPLAY* display;
     CONTROLLER* Mower;
     int led_pin;
 
-    void blink_led(int error_number);
 };
 
 #endif /* _ERROR_H_ */

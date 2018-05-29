@@ -7,11 +7,19 @@
   Licensed under GPLv3
  ======================
 */
-
 /*
-  It will by default write to serial port, but can be
-  replaced by subclasses for a built in LCD or OLED for
-  example
+  Base class for displays.
+  Default behavior is to print to serial port.
+
+  Subclasses should implement the following functions:
+  - size_t write(uint8_t)
+  - void setCursor(int col, int row)
+  - void clear()
+  - void blink();
+
+  If necesary, also override
+  - boolean initialize()
+  but make sure to also call MYDISPLAY::initialize()
 */
 
 #include "MyDisplay.h"
@@ -27,116 +35,91 @@ MYDISPLAY::MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERM
   moverstate = state;
 }
 
-// Do not override
-boolean MYDISPLAY::initialize() {
-  char buffer [9]; //Format 09.00.00
-
-  current_row = 0;
-  current_col = 0;
-
+boolean MYDISPLAY::initialize()
+{
   for (int i=0; i<3; i++)
     blink();
 
-  setCursor(0, 0);
-  print("SW version:");
-  setCursor(0, 1);
-  sprintf (buffer, "%d.%d.%d", MAJOR_VERSION, MINOR_VERSION_1, MINOR_VERSION_2);
-  print(buffer);
-  setCursor(0, 2);
-  print(__DATE__);
-  setCursor(0, 3);
-  print(__TIME__);
-  delay(3000);
   clear();
+
+  return true;
 }
 
 // Do NOT override. Implement basic commands here
-void MYDISPLAY::update() {
-  int sens = 0;
-
-  // Rad 1: Sensors
-#if __MS9150__ || __MS5883L__ || __ADXL345__ || __MMA7455__
+void MYDISPLAY::update()
+{
+  // Row 1: Sensor status
   setCursor(0,0);
-  print("Comp:");
-  setCursor(7,0);
+#if __MS9150__ || __MS5883L__ || __ADXL345__ || __MMA7455__
+  print(F("Comp: "));
   print(compass->getHeading());
 #else
-  setCursor(0,0);
-  print("Sens:");
-  setCursor(7,0);
-  print("Disabled");
+  print(F("Sens: "));
+  print(F("Disabled"));
 #endif
 
-  setCursor(10,0);
-  print("InOut:");
-  setCursor(17,0);
+  print(F("InOut: "));
   print(sensor->isInside());
 
-  //Rad 2: Motor loading
-  setCursor(0,1);
-  print("LMoto:");
-  setCursor(7,1);
+  print("\n");
+  // Row 2: Motor load
+  print(F("LMoto: "));
   print(leftMotor->getLoad());
-  setCursor(10,1);
-  print("RMoto:");
-  setCursor(17,1);
+  print(F(" RMoto: "));
   print(rightMotor->getLoad());
 
-  //Rad 3: Battery data
-  setCursor(0,2);
-  print("Batt Soc:");
-  setCursor(10,2);
-  print(Battery->getSOC());
+  print("\n");
+  // Row 3: Battery
+  print(F("Battery: "));
+  print(Battery->getVoltage());
 
-  //Rad 4: State and Error data
-  setCursor(0,3);
-  print("State:");
-  setCursor(7,3);
+  print("\n");
+  // Row 4: State and Error data
+  print(F("State:"));
 
-  switch (*moverstate) {
+  switch (*moverstate)
+  {
     case MOWING:
-      print("MOWING");
+      print(F("MOWING"));
       break;
     case LAUNCHING:
-      print("LAUNCHING");
+      print(F("LAUNCHING"));
       break;
     case DOCKING:
-      print("DOCKING");
+      print(F("DOCKING"));
       break;
     case CHARGING:
-      print("CHARGING");
+      print(F("CHARGING"));
       break;
   }
 }
 
-// This is the basic implementation of the print and println command
+
+// DEVICE SPECIFIC FUNCTIONS
+
 // Override this for each type of display
-size_t MYDISPLAY::write(uint8_t s) {
+size_t MYDISPLAY::write(uint8_t s)
+{
   // By default just write to serial port
-  Serial.write(s);
+  return Serial.write(s);
 }
 
 // Override this for each type of display
-void MYDISPLAY::setCursor(int col, int row) {
+void MYDISPLAY::setCursor(int col, int row)
+{
   // For a serial port, do nothing
-  current_col = col;
-  current_row = row;
 }
 
 // Override this for each type of display
-void MYDISPLAY::clear() {
+void MYDISPLAY::clear()
+{
   // For a serial port, do very little
   println();
-  setCursor(0,0);
 }
 
 // Override this for each type of display
-void MYDISPLAY::blink() {
+void MYDISPLAY::blink()
+{
   // For a serial port, do very little
-  println("");
-  delay(1000);
-  //println("**********************");
   println("*");
-  delay(1000);
-  setCursor(0,0);
 }
