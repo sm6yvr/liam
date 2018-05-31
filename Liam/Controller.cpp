@@ -287,8 +287,8 @@ boolean CONTROLLER::wheelsAreOverloaded() {
 		if (l_load  < l_load_limit && r_load < r_load_limit)
 		{
 			return false;
-		}
-	};
+    }
+  }
 
 	return true;
 }
