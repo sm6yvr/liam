@@ -11,7 +11,8 @@
 #include "SetupDebug.h"
 #include "Definition.h"
 
-SETUPDEBUG::SETUPDEBUG(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt) {
+SETUPDEBUG::SETUPDEBUG(CONTROLLER* controller, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt) {
+  mower = controller;
   leftMotor = left;
   rightMotor = right;
   cutter = cut;
@@ -29,9 +30,24 @@ void SETUPDEBUG::initialize(HardwareSerial *serIn) {
   _Serial->println("Send 'H' for list of commands");
 }
 
-void SETUPDEBUG::startListeningOnSerial() {
+int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
 
   char inChar;
+
+
+  if (currentState != SETUP_DEBUG) {
+    if (Serial.available()) {
+      inChar = (char)Serial.read();
+      if (inChar == 'd' || inChar == 'D') {
+        mower->stopCutter();
+        mower->stop();
+        SETUPDEBUG::printHelp();
+        return SETUP_DEBUG;
+      }
+    }
+    return currentState;
+  };
+
   while (!Serial.available());      // Stay here until data is available
   inChar = (char)Serial.read(); // get the new byte:
 
@@ -179,6 +195,13 @@ void SETUPDEBUG::startListeningOnSerial() {
       // target_heading = current_heading;
 
       break;
+    case 'm':
+    case 'M':
+      mower->runForward(FULLSPEED);
+      return MOWING;
+    case 'b':
+    case 'B':
+      return LOOKING_FOR_BWF;
 
   }
   //   case 'g':
@@ -192,7 +215,7 @@ void SETUPDEBUG::startListeningOnSerial() {
 
 inChar = 0;
 
-
+return SETUP_DEBUG;
 }
 
 void SETUPDEBUG::printHelp() {
@@ -206,6 +229,8 @@ void SETUPDEBUG::printHelp() {
   _Serial->println("T = make a 10 second test run");
   _Serial->println("P = print battery & debug values");
   _Serial->println("E = Cutter motor calibrate");
+  _Serial->println("M = Start mowing");
+  _Serial->println("B = Look for BWF and dock");
 }
 
 void SETUPDEBUG::toggleWheelLeft() {

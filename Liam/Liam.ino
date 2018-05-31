@@ -60,6 +60,7 @@
 #include "Sens5883L.h"
 #include "Sens9150.h"
 #include "Definition.h"
+#include "SetupDebug.h"
 
 // Global variables
 int state;
@@ -103,6 +104,8 @@ MOTIONSENSOR Compass;
 
 // Controller (pass adresses to the motors and sensors for the controller to operate on)
 CONTROLLER Mower(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass);
+
+SETUPDEBUG SetDeb(&Mower, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery);
 
 // Display
 #if defined __LCD__
@@ -150,14 +153,19 @@ void setup()
   Display.print(__DATE__ " " __TIME__ "\n");
   delay(5000);
   Display.clear();
+  SetDeb.initialize(&Serial);
+  state = SetDeb.tryEnterSetupDebugMode(0);
 
-  if (Battery.isBeingCharged()) {     // If Liam is in docking station then
-    state = CHARGING;           // continue charging
-    Mower.stopCutter();
-  } else {                    // otherwise
-    state = MOWING;
-    Mower.startCutter();          // Start up the cutter motor
-    Mower.runForward(FULLSPEED);
+  if (state != SETUP_DEBUG) {
+    if (Battery.isBeingCharged()) {     // If Liam is in docking station then
+      state = CHARGING;           // continue charging
+      Mower.stopCutter();
+    }
+    else {                    // otherwise
+      state = MOWING;
+      Mower.startCutter();          // Start up the cutter motor
+      Mower.runForward(FULLSPEED);
+    }
   }
 
 }
@@ -167,6 +175,10 @@ void setup()
 // ***************** Main loop ***********************************
 void loop()
 {
+  state = SetDeb.tryEnterSetupDebugMode(state);
+  if (state == SETUP_DEBUG) {
+    return;
+  }
   long looptime= millis();
   boolean in_contact;
   boolean mower_is_outside;
