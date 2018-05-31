@@ -105,7 +105,7 @@ MOTIONSENSOR Compass;
 // Controller (pass adresses to the motors and sensors for the controller to operate on)
 CONTROLLER Mower(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass);
 
-SETUPDEBUG SetDeb(&Mower, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery);
+SETUPDEBUG SetupAndDebug(&Mower, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery);
 
 // Display
 #if defined __LCD__
@@ -151,10 +151,12 @@ void setup()
   Display.print(F("--- LIAM ---\n"));
   Display.print(F(VERSION_STRING "\n"));
   Display.print(__DATE__ " " __TIME__ "\n");
+  Serial.println("----------------");
+  Serial.println("Send D to enter setup and debug mode");
   delay(5000);
   Display.clear();
-  SetDeb.initialize(&Serial);
-  state = SetDeb.tryEnterSetupDebugMode(0);
+  SetupAndDebug.initialize(&Serial);
+  state = SetupAndDebug.tryEnterSetupDebugMode(0);
 
   if (state != SETUP_DEBUG) {
     if (Battery.isBeingCharged()) {     // If Liam is in docking station then
@@ -175,7 +177,7 @@ void setup()
 // ***************** Main loop ***********************************
 void loop()
 {
-  state = SetDeb.tryEnterSetupDebugMode(state);
+  state = SetupAndDebug.tryEnterSetupDebugMode(state);
   if (state == SETUP_DEBUG) {
     return;
   }
