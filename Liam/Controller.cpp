@@ -36,6 +36,16 @@ boolean CONTROLLER::allSensorsAreOutside() {
   return true;
 }
 
+int CONTROLLER::getFirstSensorOutOfBounds() {
+	for (int i = 0; i<NUMBER_OF_SENSORS; i++) {
+		sensor->select(i);
+		if (sensor->isOutOfBounds())
+			return i;
+	}
+
+	return -1;
+}
+
 int CONTROLLER::turnToReleaseLeft(int angle) {
   turnLeft(angle);
 
@@ -192,31 +202,34 @@ void CONTROLLER::setDefaultDirectionForward(bool fwd) {
 };
 
 void CONTROLLER::adjustMotorSpeeds() {
-  int  lms = abs(leftMotor->getSpeed());
-  int  rms = abs(rightMotor->getSpeed());
+  int  lms;
+  int  rms;
+  int ltime;
+  int rtime;
+  int lowSpeed = 40;
+  int highSpeed = FULLSPEED;
+  int shortTime = 10;
+  int longTime = 500;
 
-  if (!sensor->isInside()) {
-    lms = 100;
-    rms = 10;
+  if (sensor->isOutOfBounds()) {
+	  //Serial.println("Adjust to out of bounds");
+    lms = highSpeed;
+	ltime = shortTime;
+    rms = lowSpeed;
+	rtime = longTime;
   }
   else
-    if (sensor->isInside())
-    {
-      lms = 10;
-      rms = 100;
-    }
-    else {
-      rms += 80;
-      lms += 80;
-    }
+  {
+	  //Serial.println("Adjust to inside bounds");
+	  lms = lowSpeed;
+	  ltime = longTime;
+	  rms = highSpeed;
+	  rtime = shortTime;
+  }
 
-  if (rms > 100) rms = 100;
-  if (lms > 100) lms = 100;
-  if (rms < -50) rms = -50;
-  if (lms < -50) lms = -50;
 
-  leftMotor->setSpeed(default_dir_fwd*lms);
-  rightMotor->setSpeed(default_dir_fwd*rms);
+  leftMotor->setSpeedOverTime(default_dir_fwd*lms, ltime);
+  rightMotor->setSpeedOverTime(default_dir_fwd*rms, rtime);
 }
 
 void CONTROLLER::updateBalance() {
@@ -255,23 +268,57 @@ int CONTROLLER::compensateSpeedToCompassHeading() {
   rightMotor->setSpeed(default_dir_fwd*rms);
 }
 
-boolean CONTROLLER::wheelsAreOverloaded()
-{
-  long time = millis();
-  int l_load = 0;
-  int r_load = 0;
-  while (millis() - time <= 200) // might be better to set this value in Definition.h
-  {
-    l_load = leftMotor->getLoad();
-    r_load = rightMotor->getLoad();
-    if (l_load < WHEELMOTOR_OVERLOAD || r_load < WHEELMOTOR_OVERLOAD)
-    {
-      return false;
+boolean CONTROLLER::wheelsAreOverloaded() {
+	long now = millis();
+	int l_load = 0;
+	int r_load = 0;
+	int l_load_limit = 0;
+	int r_load_limit = 0;
+	int counter = 0;
+	while (millis() - now <= 200)
+	{
+		l_load = leftMotor->getLoad();
+		l_load_limit = WHEELMOTOR_OVERLOAD * max(30,abs(leftMotor->getSpeed())) / FULLSPEED;
+
+		r_load = rightMotor->getLoad();
+		r_load_limit = WHEELMOTOR_OVERLOAD * max(30,abs(rightMotor->getSpeed())) / FULLSPEED;
+		/*counter++;*/
+		delay(1);
+		if (l_load  < l_load_limit && r_load < r_load_limit)
+		{
+			return false;
     }
   }
-  return true;
+
+	return true;
 }
 
+void CONTROLLER::turnIfObstacle() {
+  // Check if bumper has triggered (providing you have one enabled)
+  if (
+#if defined __Bumper__
+    hasBumped() ||
+#endif
+#if defined __MS9150__ || defined __MS5883L__
+    hasTilted() ||
+#endif
+    wheelsAreOverloaded()) {
+    int angle = random(90, 160);
+    runBackward(FULLSPEED);
+
+    if (waitWhileInside(1200) == 0) {
+
+      if (random(0, 100) % 2 == 0) {
+        turnRight(angle);
+      }
+      else {
+        turnLeft(angle);
+      }
+      compass->setNewTargetHeading();
+      runForward(FULLSPEED);
+    }
+  }
+}
 boolean CONTROLLER::hasBumped() {
   return !digitalRead(BUMPER);
 }

@@ -14,17 +14,19 @@
 #include "BWFSensor.h"
 #include "MotionSensor.h"
 #include "Definition.h"
+#include "Controller.h"
 
 #ifndef _SETUPDEBUG_H_
 #define _SETUPDEBUG_H_
 
 class SETUPDEBUG {
   public:
-    SETUPDEBUG(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt);
+    SETUPDEBUG(CONTROLLER* mower, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt);
     void initialize(HardwareSerial *serIn);
-    void startListeningOnSerial();
+    int tryEnterSetupDebugMode(int currentState);
     void updateBWF();
   private:
+    CONTROLLER* mower;
     WHEELMOTOR* leftMotor;
     WHEELMOTOR* rightMotor;
     CUTTERMOTOR* cutter;

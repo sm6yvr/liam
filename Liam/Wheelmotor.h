@@ -23,6 +23,8 @@ class WHEELMOTOR {
     void setSpeed(int setspeed);
     int getSpeed();
 
+	void setSpeedOverTime(int speed, int actionTime);
+
     int getLoad();
 
     bool isOverloaded();
@@ -37,6 +39,11 @@ class WHEELMOTOR {
     int speed;
     int overload_level;
     int smoothness_delay;
+
+	int ot_setTime;
+	int ot_currentTargetValue;
+	int ot_startingValue;
+	int ot_currentValue;
 };
 
 #endif /* _WHEELMOTOR_H_ */

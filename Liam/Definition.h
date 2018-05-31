@@ -63,6 +63,8 @@ const int MOWING = 0;
 const int LAUNCHING = 1;
 const int DOCKING = 2;
 const int CHARGING = 3;
+const int LOOKING_FOR_BWF = 4;
+const int SETUP_DEBUG = 5;
 
 // Turning details
 #define TURN_INTERVAL         15000

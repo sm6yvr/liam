@@ -33,8 +33,10 @@ class CONTROLLER {
     void runForward(int speed);
     void runBackward(int speed);
     void stop();
+    void turnIfObstacle();
 
     boolean allSensorsAreOutside();
+	  int getFirstSensorOutOfBounds();
 
     void startCutter();
     void stopCutter();
