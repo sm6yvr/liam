@@ -105,6 +105,10 @@ int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
     case 'B':
       return LOOKING_FOR_BWF;
 
+    case 'a':
+    case 'A':
+      SETUPDEBUG::trimpotAdjust();
+      break;
   }
 
   inChar = 0;
@@ -123,6 +127,7 @@ void SETUPDEBUG::printHelp() {
   Serial.println(F("D = turn LED on/off"));
   Serial.println(F("T = make a 10 second test run"));
   Serial.println(F("P = print battery & debug values"));
+  Serial.println(F("A = Trimpot adjust mode"));
   Serial.println(F("M = Start mowing"));
   Serial.println(F("B = Look for BWF and dock"));
 }
@@ -285,3 +290,38 @@ void SETUPDEBUG::getMotionValues() {
   Serial.print(F("Tilt angle = "));
   Serial.println(tilt_angle);
 }
+
+void SETUPDEBUG::trimpotAdjust()
+{
+  Serial.println(F("Continuously printing battery voltage"));
+  Serial.println(F("Adjust your pot to match measured value"));
+  Serial.println(F("Send D to return to debug mode"));
+  Serial.print(F("Starting in 5"));
+  delay(1000);
+  Serial.print(F("...4"));
+  delay(1000);
+  Serial.print(F("...3"));
+  delay(1000);
+  Serial.print(F("...2"));
+  delay(1000);
+  Serial.println(F("...1"));
+  delay(1000);
+  while(1)
+  {
+    while(Serial.available())
+    {
+      char inChar = (char)Serial.read();
+      if (inChar == 'd' || inChar == 'D')
+      {
+        Serial.println(F("Returning to debug mode"));
+        return;
+      }
+    }
+
+    battery->resetVoltage();
+    Serial.print(battery->getVoltage());
+    Serial.println(F("     (D to stop)"));
+    delay(500);
+  }
+}
+

@@ -44,6 +44,7 @@ class SETUPDEBUG {
     void printStatus();
     void SETUPDEBUG::turnRight();
     void getMotionValues();
+    void trimpotAdjust();
 
     boolean led_is_on;
 
