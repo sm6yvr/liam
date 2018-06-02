@@ -68,7 +68,7 @@ void BWFSENSOR::select(int sensornumber) {
   {
     if (millis() - time >= BWF_COLLECT_SIGNAL_TIME) // max time of 200ms
     {
-      signal_status = OUTSIDE;
+      signal_status = NOSIGNAL;
     }
   }
   // delay(200);
