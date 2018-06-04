@@ -60,7 +60,10 @@
 #include "Sens5883L.h"
 #include "Sens9150.h"
 #include "Definition.h"
-#include "SetupDebug.h"
+
+#ifdef DEBUG_ENABLED
+  #include "SetupDebug.h"
+#endif
 
 // Global variables
 int state;
@@ -105,7 +108,9 @@ MOTIONSENSOR Compass;
 // Controller (pass adresses to the motors and sensors for the controller to operate on)
 CONTROLLER Mower(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass);
 
+#ifdef DEBUG_ENABLED
 SETUPDEBUG SetupAndDebug(&Mower, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery);
+#endif
 
 // Display
 #if defined __LCD__
@@ -151,12 +156,16 @@ void setup()
   Display.print(F("--- LIAM ---\n"));
   Display.print(F(VERSION_STRING "\n"));
   Display.print(__DATE__ " " __TIME__ "\n");
+  
+  #ifdef DEBUG_ENABLED
   Serial.println("----------------");
   Serial.println("Send D to enter setup and debug mode");
+  //SetupAndDebug.initialize(&Serial);
+  state = SetupAndDebug.tryEnterSetupDebugMode(0);
+  #endif
+
   delay(5000);
   Display.clear();
-  SetupAndDebug.initialize(&Serial);
-  state = SetupAndDebug.tryEnterSetupDebugMode(0);
 
   if (state != SETUP_DEBUG) {
     if (Battery.isBeingCharged()) {     // If Liam is in docking station then
@@ -177,10 +186,13 @@ void setup()
 // ***************** Main loop ***********************************
 void loop()
 {
+  
+  #ifdef DEBUG_ENABLED
   state = SetupAndDebug.tryEnterSetupDebugMode(state);
   if (state == SETUP_DEBUG) {
     return;
   }
+  #endif
   long looptime= millis();
   boolean in_contact;
   boolean mower_is_outside;
@@ -455,7 +467,7 @@ void loop()
 			  Mower.runBackward(FULLSPEED);
 			  delay(700);
 			  Mower.stop();
-			  Mower.turnRight(30);
+			  Mower.turnRight(20);
 			  Mower.stop();
 			  Mower.runForward(FULLSPEED);
 		  }

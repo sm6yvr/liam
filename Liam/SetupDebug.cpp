@@ -19,15 +19,7 @@ SETUPDEBUG::SETUPDEBUG(CONTROLLER* controller, WHEELMOTOR* left, WHEELMOTOR* rig
   sensor = bwf;
   compass = comp;
   battery = batt;
-  _Serial = NULL;
   pitch = 0;
-}
-
-void SETUPDEBUG::initialize(HardwareSerial *serIn) {
-  _Serial = serIn;
-  _Serial->begin(115200);
-  _Serial->println("Welcome to Liam Test Program");
-  _Serial->println("Send 'H' for list of commands");
 }
 
 int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
@@ -219,18 +211,18 @@ return SETUP_DEBUG;
 }
 
 void SETUPDEBUG::printHelp() {
-  _Serial->println("------- Help menu ------------");
-  _Serial->println("L = Left Wheel motor on/off");
-  _Serial->println("R = Right Wheel motor on/off");
-  _Serial->println("C = Cutter motor on/off");
-  _Serial->println("S = test BWF Sensor");
-  _Serial->println("G = test Gyro/Compass/Accelerometer");
-  _Serial->println("D = turn LED on/off");
-  _Serial->println("T = make a 10 second test run");
-  _Serial->println("P = print battery & debug values");
-  _Serial->println("E = Cutter motor calibrate");
-  _Serial->println("M = Start mowing");
-  _Serial->println("B = Look for BWF and dock");
+  Serial.println("------- Help menu ------------");
+  Serial.println("L = Left Wheel motor on/off");
+  Serial.println("R = Right Wheel motor on/off");
+  Serial.println("C = Cutter motor on/off");
+  Serial.println("S = test BWF Sensor");
+  Serial.println("G = test Gyro/Compass/Accelerometer");
+  Serial.println("D = turn LED on/off");
+  Serial.println("T = make a 10 second test run");
+  Serial.println("P = print battery & debug values");
+  Serial.println("E = Cutter motor calibrate");
+  Serial.println("M = Start mowing");
+  Serial.println("B = Look for BWF and dock");
 }
 
 void SETUPDEBUG::toggleWheelLeft() {
