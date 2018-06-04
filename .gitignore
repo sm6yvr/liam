@@ -6,3 +6,4 @@
 *.sln
 *.vcxproj*
 *.orig
+*/Release/*

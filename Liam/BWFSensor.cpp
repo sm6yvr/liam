@@ -54,23 +54,22 @@ BWFSENSOR::BWFSENSOR(int selA, int selB) {
 
 // Select active sensor
 void BWFSENSOR::select(int sensornumber) {
-	if (currentSensor == sensornumber) {
-		
-		return;
-	}
-	currentSensor = sensornumber;
-	
+  if (currentSensor == sensornumber) {
+
+    return;
+  }
+  currentSensor = sensornumber;
+
   digitalWrite(selpin_A, (sensornumber & 1) > 0 ? HIGH : LOW);
   digitalWrite(selpin_B, (sensornumber & 2) > 0 ? HIGH : LOW);
   clearSignal();
   long time = millis();
-  while (!gotSignal())
+  while (signal_status == NOSIGNAL 
+    && millis() - time < BWF_COLLECT_SIGNAL_TIME) // max time of 200ms
   {
-    if (millis() - time >= BWF_COLLECT_SIGNAL_TIME) // max time of 200ms
-    {
-      signal_status = NOSIGNAL;
-    }
+    delay(1);
   }
+
   // delay(200);
 }
 
