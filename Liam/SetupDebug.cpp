@@ -147,6 +147,11 @@ int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
 
       break;
 
+    case '9':
+      mower->turnRight(90);
+      mower->stop();
+      Serial.print("If turn was not 90 degrees, consider altering TURNDELAY in definition.h");
+      break;
     case 'g':
     case 'G':
 #if __MMA7455__
@@ -214,6 +219,7 @@ void SETUPDEBUG::printHelp() {
   Serial.println("------- Help menu ------------");
   Serial.println("L = Left Wheel motor on/off");
   Serial.println("R = Right Wheel motor on/off");
+  Serial.println("9 = Turn 90 degrees right");
   Serial.println("C = Cutter motor on/off");
   Serial.println("S = test BWF Sensor");
   Serial.println("G = test Gyro/Compass/Accelerometer");
