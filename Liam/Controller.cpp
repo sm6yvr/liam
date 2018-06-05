@@ -305,18 +305,16 @@ void CONTROLLER::turnIfObstacle() {
     wheelsAreOverloaded()) {
     int angle = random(90, 160);
     runBackward(FULLSPEED);
+    delay(1200);
 
-    if (waitWhileInside(1200) == 0) {
-
-      if (random(0, 100) % 2 == 0) {
-        turnRight(angle);
-      }
-      else {
-        turnLeft(angle);
-      }
-      compass->setNewTargetHeading();
-      runForward(FULLSPEED);
+    if (random(0, 100) % 2 == 0) {
+      turnRight(angle);
     }
+    else {
+      turnLeft(angle);
+    }
+    compass->setNewTargetHeading();
+    runForward(FULLSPEED);
   }
 }
 boolean CONTROLLER::hasBumped() {
