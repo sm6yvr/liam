@@ -139,7 +139,7 @@ int CONTROLLER::waitWhileInside(int duration) {
   for (int k=0; k<duration/(NUMBER_OF_SENSORS*200); k++)
     for (int i=0; i<NUMBER_OF_SENSORS; i++) {
       sensor->select(i);
-      if(!sensor->isInside())
+      if(sensor->isOutOfBounds())
         return 2;
     }
 
