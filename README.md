@@ -26,6 +26,12 @@ Most of the default values for your mower can be set in the
 Definition.h file. Use this to configure your mower for best
 performance.
 
+Configurations can also be put in a file called
+`LocalDefinition.h`, which will override `Definition.h` but
+is not tracked by git. This might be useful if you like to
+stay on top of any code updates, but don't want to remake
+the same configuration changes all the time.
+
 
 Compile
 ------

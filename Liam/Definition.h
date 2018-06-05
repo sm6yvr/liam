@@ -8,6 +8,11 @@
  ======================
 */
 
+/*
+ Note that settings in this file can be overridden in a file
+ named `LocalDefinition.h` which is not tracked by git.
+*/
+
 #include <Arduino.h>
 #include "Wheelmotor.h"
 #include "CutterMotor.h"
@@ -15,6 +20,21 @@
 
 #ifndef _DEFINITION_H_
 #define _DEFINITION_H_
+
+
+// Cutter motor types
+#define BRUSHLESS  0
+#define BRUSHED    1
+#define NIDEC      2
+
+#define CUTTER_MOTOR_TYPE BRUSHED
+
+// Battery
+#define LEAD_ACID  0
+#define NIMH       1
+#define LIION      2
+
+#define BATTERY_TYPE LIION
 
 #define DEBUG_ENABLED true
 
@@ -43,15 +63,6 @@ const int NUMBER_OF_SENSORS = 2;  // Number of BWF sensors can be 1-4 depending 
 #define WHEEL_MOTOR_A_DIRECTION_PIN     12
 #define WHEEL_MOTOR_B_DIRECTION_PIN     13
 
-// Cutter motor types
-#define BRUSHLESS           0
-#define BRUSHED             1
-#define NIDEC             2
-
-// Battery
-#define LEAD_ACID  0
-#define NIMH       1
-#define LIION      2
 
 // Wheel motor
 #define WHEELMOTOR_OVERLOAD   130
@@ -84,11 +95,7 @@ const int SETUP_DEBUG = 5;
 // The higher value the more turns (in the same direction) the mower can make before leaving
 #define BALANCE_TRIGGER_LEVEL     10000
 
-// Code for inside and outside
-//#define INSIDE_BWF            103,4,103
-//#define OUTSIDE_BWF           103,107,103
-
-// Version 2 of the BWF transmitter
+// BWF Code for inside and outside
 #define INSIDE_BWF          85
 #define OUTSIDE_BWF         5
 
@@ -149,5 +156,11 @@ class DEFINITION {
 
   private:
 };
+
+
+// Include LocalDefinition.h if it exists
+#if __has_include("LocalDefinition.h")
+#include "LocalDefinition.h"
+#endif
 
 #endif /* _DEFINITION_H_ */

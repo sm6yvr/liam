@@ -80,18 +80,14 @@ long lastDockingAllOutsideCheck = 0;
 DEFINITION Defaults;
 
 // Please select which type of cutter motor you have
-// Types available: BRUSHED (for all brushed motors, A3620 and NIDEC 22)
-//          BRUSHLESS (for all hobbyking motors with external ESC)
-//          NIDEC (for NIDEC 24)
-CUTTERMOTOR CutterMotor(BRUSHED, CUTTER_PWM_PIN, CUTTER_CURRENT_PIN);
+CUTTERMOTOR CutterMotor(CUTTER_MOTOR_TYPE, CUTTER_PWM_PIN, CUTTER_CURRENT_PIN);
 
 // Wheelmotors
 WHEELMOTOR rightMotor(WHEEL_MOTOR_A_PWM_PIN, WHEEL_MOTOR_A_DIRECTION_PIN, WHEEL_MOTOR_A_CURRENT_PIN, WHEELMOTOR_SMOOTHNESS);
 WHEELMOTOR leftMotor(WHEEL_MOTOR_B_PWM_PIN, WHEEL_MOTOR_B_DIRECTION_PIN, WHEEL_MOTOR_B_CURRENT_PIN, WHEELMOTOR_SMOOTHNESS);
 
 // Battery
-// Battery types available are LIION, LEAD_ACID, NIMH
-BATTERY Battery(LIION, BAT_PIN, DOCK_PIN);
+BATTERY Battery(BATTERY_TYPE, BAT_PIN, DOCK_PIN);
 
 // BWF Sensors
 BWFSENSOR Sensor(BWF_SELECT_B_PIN, BWF_SELECT_A_PIN);
