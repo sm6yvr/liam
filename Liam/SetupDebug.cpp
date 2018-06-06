@@ -266,7 +266,7 @@ void SETUPDEBUG::printStatus() {
 void SETUPDEBUG::turnRight() {
   mower->turnRight(90);
   mower->stop();
-  Serial.print(F("If turn was not 90 degrees, consider altering TURNDELAY in definition.h"));
+  Serial.println(F("If turn was not 90 degrees, consider altering TURNDELAY in definition.h"));
 }
 
 void SETUPDEBUG::getMotionValues() {
