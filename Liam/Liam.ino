@@ -385,12 +385,6 @@ void loop()
 
       //----------------------- LAUNCHING ---------------------------
     case LAUNCHING:
-
-		//Don't launch without signal
-		if (!Sensor.isInside() && Sensor.isOutside()) {
-			break;
-		}
-
       Mower.runBackward(FULLSPEED);
 
       delay(7000);
@@ -525,12 +519,16 @@ void loop()
 
       // Just remain in this state until battery is full
 #if defined __RTC_CLOCK__
-      if (Battery.isFullyCharged() && Clock.timeToCut())
-        state = LAUNCHING;
+      if (Battery.isFullyCharged() && Clock.timeToCut()) {
 #else
-      if (Battery.isFullyCharged())
-        state = LAUNCHING;
+      if (Battery.isFullyCharged()) {
 #endif
+          //Don't launch without signal
+        if (Sensor.isInside() || Sensor.isOutside())
+        {
+          state = LAUNCHING;
+        }
+      }
 
       in_contact = false;
 
