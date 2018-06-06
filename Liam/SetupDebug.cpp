@@ -227,11 +227,11 @@ void SETUPDEBUG::testRun() {
   for (int i=0; i<100; i++) {
     sensor->select(0);
     delay(100);
-    rightMotor->setSpeed((sensor->isInside()?100:-100));
+    rightMotor->setSpeed((!sensor->isOutOfBounds()?100:-100));
 
     sensor->select(1);
     delay(100);
-    leftMotor->setSpeed((sensor->isInside()?100:-100));
+    leftMotor->setSpeed((!sensor->isOutOfBounds()?100:-100));
   }
   leftMotor->setSpeed(0);
   rightMotor->setSpeed(0);

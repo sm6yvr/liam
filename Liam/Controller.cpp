@@ -29,7 +29,7 @@ boolean CONTROLLER::allSensorsAreOutside() {
 
   for(int i=0; i<NUMBER_OF_SENSORS; i++) {
     sensor->select(i);
-    if (!sensor->isOutside())
+    if (!sensor->isOutOfBounds())
       return false;
   }
 
@@ -52,9 +52,9 @@ int CONTROLLER::turnToReleaseLeft(int angle) {
   for (int i=0; i<20; i++) {
     sensor->select(1);
 
-    if (sensor->isInside()) {
+    if (!sensor->isOutOfBounds()) {
       sensor->select(0);
-      if (sensor->isInside())
+      if (!sensor->isOutOfBounds())
         return 0;       // OK
     }
 
@@ -73,9 +73,9 @@ int CONTROLLER::turnToReleaseRight(int angle) {
   for (int i=0; i<20; i++) {
     sensor->select(0);
 
-    if (sensor->isInside()) {
+    if (!sensor->isOutOfBounds()) {
       sensor->select(1);
-      if (sensor->isInside())
+      if (!sensor->isOutOfBounds())
         return 0;       // OK
     }
 
@@ -152,7 +152,7 @@ int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
   int counter=MAX_GO_BACKWARD_TIME;
   //Mover has just stoped. Let it pause for a second.
   delay(1000);
-  while(Sensor->isInside()==false)
+  while(!sensor->isOutOfBounds()==false)
   {
     runBackward(FULLSPEED);
     delay(1000);

@@ -59,7 +59,7 @@ void MYDISPLAY::update()
 #endif
 
   print(F("InOut: "));
-  print(sensor->isInside());
+  print(!sensor->isOutOfBounds());
 
   print("\n");
   // Row 2: Motor load
