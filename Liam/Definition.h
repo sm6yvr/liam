@@ -87,7 +87,7 @@ const int SETUP_DEBUG = 5;
 #pragma region BWF
 
 // BWF Detection method (true = always, false = only at wire)
-#define BWF_DETECTION_ALWAYS      false
+#define BWF_DETECTION_ALWAYS      true
 #define TIMEOUT             6000 //Time without signal before error
 #define BWF_COLLECT_SIGNAL_TIME   200 // max time to spend looking for signal
 #define BWF_NUMBER_OF_PULSES  3
