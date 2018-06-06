@@ -548,6 +548,7 @@ void loop()
         Mower.stop();
       }
 
+      Battery.updateVoltage();
       Serial.print("BAT:");
       Serial.println(Battery.getVoltage());
 
