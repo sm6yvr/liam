@@ -1,2 +1,10 @@
+Liam/LocalDefinition.h
 .DS_Store
 .vscode
+*/.vs/
+*/__vm/
+*/Debug/
+*.sln
+*.vcxproj*
+*.orig
+*/Release/*

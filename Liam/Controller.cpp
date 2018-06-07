@@ -10,6 +10,7 @@
 
 #include "Controller.h"
 #include "Definition.h"
+#include "Error.h"
 
 /** Specific constructor.
 */
@@ -28,11 +29,21 @@ boolean CONTROLLER::allSensorsAreOutside() {
 
   for(int i=0; i<NUMBER_OF_SENSORS; i++) {
     sensor->select(i);
-    if (!sensor->isOutside())
+    if (!sensor->isOutOfBounds())
       return false;
   }
 
   return true;
+}
+
+int CONTROLLER::getFirstSensorOutOfBounds() {
+	for (int i = 0; i<NUMBER_OF_SENSORS; i++) {
+		sensor->select(i);
+		if (sensor->isOutOfBounds())
+			return i;
+	}
+
+	return -1;
 }
 
 int CONTROLLER::turnToReleaseLeft(int angle) {
@@ -41,19 +52,19 @@ int CONTROLLER::turnToReleaseLeft(int angle) {
   for (int i=0; i<20; i++) {
     sensor->select(1);
 
-    if (sensor->isInside()) {
+    if (!sensor->isOutOfBounds()) {
       sensor->select(0);
-      if (sensor->isInside())
+      if (!sensor->isOutOfBounds())
         return 0;       // OK
     }
 
     if (wheelsAreOverloaded())
-      return 1;         // Overloaded
+      return ERROR_OVERLOAD;         // Overloaded
 
     turnLeft(10);
   }
 
-  return 2;             // Timed Out
+  return ERROR_OUTSIDE;             // Timed Out
 }
 
 int CONTROLLER::turnToReleaseRight(int angle) {
@@ -62,19 +73,19 @@ int CONTROLLER::turnToReleaseRight(int angle) {
   for (int i=0; i<20; i++) {
     sensor->select(0);
 
-    if (sensor->isInside()) {
+    if (!sensor->isOutOfBounds()) {
       sensor->select(1);
-      if (sensor->isInside())
+      if (!sensor->isOutOfBounds())
         return 0;       // OK
     }
 
     if (wheelsAreOverloaded())
-      return 1;         // Overloaded
+      return ERROR_OVERLOAD;         // Overloaded
 
     turnRight(10);
   }
 
-  return 2;             // Timed Out
+  return ERROR_OUTSIDE;             // Timed Out
 }
 
 int CONTROLLER::turnRight(int angle) {
@@ -128,7 +139,7 @@ int CONTROLLER::waitWhileInside(int duration) {
   for (int k=0; k<duration/(NUMBER_OF_SENSORS*200); k++)
     for (int i=0; i<NUMBER_OF_SENSORS; i++) {
       sensor->select(i);
-      if(!sensor->isInside())
+      if(sensor->isOutOfBounds())
         return 2;
     }
 
@@ -141,13 +152,13 @@ int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
   int counter=MAX_GO_BACKWARD_TIME;
   //Mover has just stoped. Let it pause for a second.
   delay(1000);
-  while(Sensor->isInside()==false)
+  while(!sensor->isOutOfBounds()==false)
   {
     runBackward(FULLSPEED);
     delay(1000);
     counter--;
     if(counter<=0)
-      return 1;
+      return ERROR_OUTSIDE;
   }
   return 0;
 }
@@ -191,31 +202,34 @@ void CONTROLLER::setDefaultDirectionForward(bool fwd) {
 };
 
 void CONTROLLER::adjustMotorSpeeds() {
-  int  lms = abs(leftMotor->getSpeed());
-  int  rms = abs(rightMotor->getSpeed());
+  int  lms;
+  int  rms;
+  int ltime;
+  int rtime;
+  int lowSpeed = 40;
+  int highSpeed = FULLSPEED;
+  int shortTime = 10;
+  int longTime = 500;
 
-  if (!sensor->isInside()) {
-    lms = 100;
-    rms = 10;
+  if (sensor->isOutOfBounds()) {
+	  //Serial.println("Adjust to out of bounds");
+    lms = highSpeed;
+	ltime = shortTime;
+    rms = lowSpeed;
+	rtime = longTime;
   }
   else
-    if (sensor->isInside())
-    {
-      lms = 10;
-      rms = 100;
-    }
-    else {
-      rms += 80;
-      lms += 80;
-    }
+  {
+	  //Serial.println("Adjust to inside bounds");
+	  lms = lowSpeed;
+	  ltime = longTime;
+	  rms = highSpeed;
+	  rtime = shortTime;
+  }
 
-  if (rms > 100) rms = 100;
-  if (lms > 100) lms = 100;
-  if (rms < -50) rms = -50;
-  if (lms < -50) lms = -50;
 
-  leftMotor->setSpeed(default_dir_fwd*lms);
-  rightMotor->setSpeed(default_dir_fwd*rms);
+  leftMotor->setSpeedOverTime(default_dir_fwd*lms, ltime);
+  rightMotor->setSpeedOverTime(default_dir_fwd*rms, rtime);
 }
 
 void CONTROLLER::updateBalance() {
@@ -255,13 +269,54 @@ int CONTROLLER::compensateSpeedToCompassHeading() {
 }
 
 boolean CONTROLLER::wheelsAreOverloaded() {
-  delay(200);       // Settle current spikes
-  if (leftMotor->isOverloaded() | rightMotor->isOverloaded())
-    return true;
-  else
-    return false;
+	long now = millis();
+	int l_load = 0;
+	int r_load = 0;
+	int l_load_limit = 0;
+	int r_load_limit = 0;
+	int counter = 0;
+	while (millis() - now <= 200)
+	{
+		l_load = leftMotor->getLoad();
+		l_load_limit = WHEELMOTOR_OVERLOAD * max(30,abs(leftMotor->getSpeed())) / FULLSPEED;
+
+		r_load = rightMotor->getLoad();
+		r_load_limit = WHEELMOTOR_OVERLOAD * max(30,abs(rightMotor->getSpeed())) / FULLSPEED;
+		/*counter++;*/
+		delay(1);
+		if (l_load  < l_load_limit && r_load < r_load_limit)
+		{
+			return false;
+    }
+  }
+
+	return true;
 }
 
+void CONTROLLER::turnIfObstacle() {
+  // Check if bumper has triggered (providing you have one enabled)
+  if (
+#if defined __Bumper__
+    hasBumped() ||
+#endif
+#if defined __MS9150__ || defined __MS5883L__
+    hasTilted() ||
+#endif
+    wheelsAreOverloaded()) {
+    int angle = random(90, 160);
+    runBackward(FULLSPEED);
+    delay(1200);
+
+    if (random(0, 100) % 2 == 0) {
+      turnRight(angle);
+    }
+    else {
+      turnLeft(angle);
+    }
+    compass->setNewTargetHeading();
+    runForward(FULLSPEED);
+  }
+}
 boolean CONTROLLER::hasBumped() {
   return !digitalRead(BUMPER);
 }

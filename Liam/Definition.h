@@ -8,6 +8,11 @@
  ======================
 */
 
+/*
+ Note that settings in this file can be overridden in a file
+ named `LocalDefinition.h` which is not tracked by git.
+*/
+
 #include <Arduino.h>
 #include "Wheelmotor.h"
 #include "CutterMotor.h"
@@ -16,12 +21,29 @@
 #ifndef _DEFINITION_H_
 #define _DEFINITION_H_
 
+
+// Cutter motor types
+#define BRUSHLESS  0
+#define BRUSHED    1
+#define NIDEC      2
+
+#define CUTTER_MOTOR_TYPE BRUSHED
+
+// Battery
+#define LEAD_ACID  0
+#define NIMH       1
+#define LIION      2
+
+#define BATTERY_TYPE LIION
+
+#define DEBUG_ENABLED true
+
 const int NUMBER_OF_SENSORS = 2;  // Number of BWF sensors can be 1-4 depending on shield default 2 left and right front.
 
 // Pin setup following Morgan 1.5 shield and up
 #define WHEEL_MOTOR_A_CURRENT_PIN       0
 #define WHEEL_MOTOR_B_CURRENT_PIN       1
-#define SOC_PIN                         2
+#define BAT_PIN                         2
 #define CUTTER_CURRENT_PIN              3
 #define I2C_SDA_PIN                     4
 #define I2C_SDL_PIN                     5
@@ -41,15 +63,6 @@ const int NUMBER_OF_SENSORS = 2;  // Number of BWF sensors can be 1-4 depending 
 #define WHEEL_MOTOR_A_DIRECTION_PIN     12
 #define WHEEL_MOTOR_B_DIRECTION_PIN     13
 
-// Cutter motor types
-#define BRUSHLESS           0
-#define BRUSHED             1
-#define NIDEC             2
-
-// Battery
-#define LEADACID  0
-#define NIMH    1
-#define LIION   2
 
 // Wheel motor
 #define WHEELMOTOR_OVERLOAD   130
@@ -63,31 +76,41 @@ const int MOWING = 0;
 const int LAUNCHING = 1;
 const int DOCKING = 2;
 const int CHARGING = 3;
+const int LOOKING_FOR_BWF = 4;
+const int SETUP_DEBUG = 5;
 
 // Turning details
 #define TURN_INTERVAL         15000
 #define REVERSE_DELAY         2
 #define TURNDELAY           20 //Reduce for smaller turning angle
 
+#pragma region BWF
+
 // BWF Detection method (true = always, false = only at wire)
 #define BWF_DETECTION_ALWAYS      true
 #define TIMEOUT             6000 //Time without signal before error
-
+#define BWF_COLLECT_SIGNAL_TIME   200 // max time to spend looking for signal
+#define BWF_NUMBER_OF_PULSES  3
 // Trigger value for the mower to leave the BWF when going home
 // The higher value the more turns (in the same direction) the mower can make before leaving
 #define BALANCE_TRIGGER_LEVEL     10000
 
-// Code for inside and outside
-//#define INSIDE_BWF            103,4,103
-//#define OUTSIDE_BWF           103,107,103
-
-// Version 2 of the BWF transmitter
+// BWF Code for inside and outside
 #define INSIDE_BWF          85
 #define OUTSIDE_BWF         5
+
+#pragma endregion BWF
+
 
 #define MAJOR_VERSION           5
 #define MINOR_VERSION_1         2
 #define MINOR_VERSION_2         2
+
+// A bit of macro magic to make a string out of the version number
+// The preprocessor works in mysterious ways...
+#define STR_(x) #x
+#define STR(x) STR_(x)
+#define VERSION_STRING STR(MAJOR_VERSION) "." STR(MINOR_VERSION_1) "." STR(MINOR_VERSION_2)
 
 // If you have a bumper connected to pin8, uncomment the line below. Remember to cut the brake connection on your motor shield
 //#define __Bumper__
@@ -133,5 +156,11 @@ class DEFINITION {
 
   private:
 };
+
+
+// Include LocalDefinition.h if it exists
+#if __has_include("LocalDefinition.h")
+#include "LocalDefinition.h"
+#endif
 
 #endif /* _DEFINITION_H_ */

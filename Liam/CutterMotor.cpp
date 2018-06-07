@@ -7,38 +7,36 @@
   Licensed under GPLv3
  ======================
 */
-
 /*
-  The motor can be either brushed or brushless
+  The cutter motor can be of type BRUSHLESS, BRUSHED or
+  NIDEC
 
-  Motor speed is defined as percentage of full speed.  A
-  speed of 100 means full speed and 0 is stop.  Speed can
-  also be negative if reverse direction is requested.
+  BRUSHLESS is assumed to be connected via an ESC.
+  BRUSHED and NIDEC are controlled via PWM, but the signal
+  to NIDEC is inverted.
 
-  Current draw of the motor can be read using the getLoad()
-  method
+  Speed can be set between 0 and 100.
 */
 
 #include "CutterMotor.h"
+#include "Definition.h"
 
-/** Specific constructor.
-*/
 CUTTERMOTOR::CUTTERMOTOR(int type_, int pwmpin_, int loadpin_) {
   type = type_;
   pwmpin = pwmpin_;
   loadpin = loadpin_;
-
 }
 
 void CUTTERMOTOR::initialize() {
   // Initialize if brushless with ESC
-  if (type == 0) {
+  if (type == BRUSHLESS) {
     cutter.attach(pwmpin);
     cutter.writeMicroseconds(2000);
     delay(400);
     cutter.writeMicroseconds(1000);
     delay(2000);
   }
+  setSpeed(0);
 }
 
 
@@ -47,16 +45,15 @@ void CUTTERMOTOR::setSpeed(int setspeed) {
   if (speed > 100) speed = 100;
   if (speed < 0) speed = 0;
 
-  if (type == 0)     // brushless
-    pwm = abs(10*speed)+1000;
-  else if (type == 1)    // brushed
-    pwm = abs(2.55*speed);
-  else if (type == 2)    // Nidec
-    pwm = 255 - abs(2.55*speed);
+  int pwm;
+  if (type == BRUSHLESS)
+    pwm = 1000 + 1000 * speed/100;
+  else if (type == BRUSHED)
+    pwm = 255 * speed/100;
+  else if (type == NIDEC)
+    pwm = 255 - 255 * speed/100;
 
-  braking = false;
-
-  if (type == 0)
+  if (type == BRUSHLESS)
     cutter.writeMicroseconds(pwm);
   else
     analogWrite(pwmpin, pwm);
@@ -67,21 +64,8 @@ int CUTTERMOTOR::getSpeed() {
   return speed;
 }
 
-
 int CUTTERMOTOR::getLoad() {
   return analogRead(loadpin);
-}
-
-
-
-void CUTTERMOTOR::brake() {
-  setSpeed(0);
-  braking = true;
-}
-
-
-bool CUTTERMOTOR::isBraking() {
-  return braking;
 }
 
 bool CUTTERMOTOR::isOverloaded() {

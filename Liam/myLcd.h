@@ -22,17 +22,24 @@
 #ifndef _MYLCD_H_
 #define _MYLCD_H_
 
-class myLCD : public MYDISPLAY {
+class myLCD : public MYDISPLAY
+{
   public:
     myLCD(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state);
 
-    virtual boolean initialize();
-    virtual void setCursor(int col, int row);
-    virtual size_t write(uint8_t);
-    virtual void clear();
+    boolean initialize();
+
+    size_t write(uint8_t);
+    void setCursor(int col, int row);
+    void clear();
+    void blink();
 
   private:
     LiquidCrystal_I2C lcd;
+    int current_row;
+    int current_col;
+    const int max_rows = 4;
+    const int max_cols = 20;
 };
 
 #endif /* _MYLCD_H_ */
