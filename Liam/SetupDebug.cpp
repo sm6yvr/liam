@@ -37,7 +37,7 @@ int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
     }
     return currentState;
   }
-
+  
   printHelp();
   while (!Serial.available());      // Stay here until data is available
   inChar = (char)Serial.read(); // get the new byte:
@@ -100,7 +100,6 @@ int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
       break;
     case 'm':
     case 'M':
-      mower->runForward(FULLSPEED);
       return MOWING;
     case 'b':
     case 'B':

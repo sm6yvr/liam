@@ -162,7 +162,6 @@ void setup()
   //SetupAndDebug.initialize(&Serial);
   state = SetupAndDebug.tryEnterSetupDebugMode(0);
   #endif
-
   delay(5000);
   Display.clear();
 
@@ -174,7 +173,7 @@ void setup()
     else {                    // otherwise
       state = MOWING;
       Mower.startCutter();          // Start up the cutter motor
-      Mower.runForward(FULLSPEED);
+      //Mower.runForward(FULLSPEED);
     }
   }
 
@@ -326,8 +325,8 @@ void loop()
         }
       }
 
-
-      Mower.runForward(FULLSPEED);
+      Mower.startCutter();
+      Mower.runForwardOverTime(SLOWSPEED, FULLSPEED, ACCELERATION_DURATION);
 
       // Adjust the speed of the mower to the grass thickness
       Mower.compensateSpeedToCutterLoad();
@@ -396,8 +395,6 @@ void loop()
       Mower.waitWhileChecking(5000);
 
       Compass.setNewTargetHeading();
-
-      Mower.runForward(FULLSPEED);
 
       state = MOWING;
 
@@ -507,7 +504,7 @@ void loop()
 			state = DOCKING;
     }
     else {
-      Mower.runForward(FULLSPEED);
+      Mower.runForwardOverTime(SLOWSPEED, FULLSPEED, ACCELERATION_DURATION);
       Mower.turnIfObstacle();
     }
 		break;

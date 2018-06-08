@@ -142,6 +142,7 @@ const int SETUP_DEBUG = 5;
 #define FULLSPEED           100
 #define SLOWSPEED           30
 #define CUTTERSPEED           100
+#define ACCELERATION_DURATION 400
 
 // Enable this if you need the mower to go backward until it's inside and then turn.
 // Default behavior is to turn directly when mower is outside BWF, if definition below is enabled this might help mower not to get stuck in slopes.

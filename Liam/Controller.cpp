@@ -164,6 +164,7 @@ int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
 }
 #endif
 void CONTROLLER::startCutter() {
+  if (cutter->getSpeed() == CUTTERSPEED) return;
   for (int i=0; i<CUTTERSPEED; i++)
     cutter->setSpeed(i);
 }
@@ -183,6 +184,15 @@ void CONTROLLER::restoreState() {
   rightMotor->setSpeed(rightMotorSpeed);
   cutter->setSpeed(cutterSpeed);
 }
+
+
+void CONTROLLER::runForwardOverTime(int minSpeed, int targetSpeed, int time) {
+  if (leftMotor->getSpeed() < minSpeed) leftMotor->setSpeed(minSpeed);
+  if (rightMotor->getSpeed() < minSpeed) rightMotor->setSpeed(minSpeed);
+  leftMotor->setSpeedOverTime(default_dir_fwd*targetSpeed, time);
+  rightMotor->setSpeedOverTime(default_dir_fwd*targetSpeed, time);
+}
+
 
 void CONTROLLER::runForward(int speed) {
   leftMotor->setSpeed(default_dir_fwd*speed);
@@ -278,10 +288,10 @@ boolean CONTROLLER::wheelsAreOverloaded() {
 	while (millis() - now <= 200)
 	{
 		l_load = leftMotor->getLoad();
-		l_load_limit = WHEELMOTOR_OVERLOAD * max(30,abs(leftMotor->getSpeed())) / FULLSPEED;
+		l_load_limit = WHEELMOTOR_OVERLOAD * max(60,abs(leftMotor->getSpeed())) / FULLSPEED;
 
 		r_load = rightMotor->getLoad();
-		r_load_limit = WHEELMOTOR_OVERLOAD * max(30,abs(rightMotor->getSpeed())) / FULLSPEED;
+		r_load_limit = WHEELMOTOR_OVERLOAD * max(60,abs(rightMotor->getSpeed())) / FULLSPEED;
 		/*counter++;*/
 		delay(1);
 		if (l_load  < l_load_limit && r_load < r_load_limit)
@@ -313,8 +323,10 @@ void CONTROLLER::turnIfObstacle() {
     else {
       turnLeft(angle);
     }
+    stop();
     compass->setNewTargetHeading();
-    runForward(FULLSPEED);
+
+    //runForward(FULLSPEED);
   }
 }
 boolean CONTROLLER::hasBumped() {

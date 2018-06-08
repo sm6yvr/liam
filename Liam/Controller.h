@@ -31,6 +31,7 @@ class CONTROLLER {
     int waitWhileInside(int duration);
     int GoBackwardUntilInside(BWFSENSOR *Sensor);
     void runForward(int speed);
+    void runForwardOverTime(int minSpeed, int targetSpeed, int time);
     void runBackward(int speed);
     void stop();
     void turnIfObstacle();

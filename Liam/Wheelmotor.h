@@ -40,10 +40,10 @@ class WHEELMOTOR {
     int overload_level;
     int smoothness_delay;
 
-	int ot_setTime;
-	int ot_currentTargetValue;
-	int ot_startingValue;
-	int ot_currentValue;
+	int ot_setTime = 0;
+	int ot_currentTargetValue = 0;
+	int ot_startingValue = 0;
+	int ot_currentValue = 0;
 };
 
 #endif /* _WHEELMOTOR_H_ */
