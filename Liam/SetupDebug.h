@@ -23,6 +23,7 @@ class SETUPDEBUG {
   public:
     SETUPDEBUG(CONTROLLER* mower, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt);
     int tryEnterSetupDebugMode(int currentState);
+    void printHelpHelp();
   private:
     CONTROLLER* mower;
     WHEELMOTOR* leftMotor;

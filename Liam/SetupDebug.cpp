@@ -38,7 +38,7 @@ int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
     return currentState;
   }
   
-  printHelp();
+  printHelpHelp();
   while (!Serial.available());      // Stay here until data is available
   inChar = (char)Serial.read(); // get the new byte:
 
@@ -114,6 +114,10 @@ int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
   inChar = 0;
 
 return SETUP_DEBUG;
+}
+
+void SETUPDEBUG::printHelpHelp() {
+  Serial.println(F("Send H for command list"));
 }
 
 void SETUPDEBUG::printHelp() {
