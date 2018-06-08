@@ -38,6 +38,7 @@ int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
     return currentState;
   }
 
+  printHelp();
   while (!Serial.available());      // Stay here until data is available
   inChar = (char)Serial.read(); // get the new byte:
 
