@@ -252,6 +252,23 @@ void loop()
         break;
       }
 
+      if((millis() - time_at_turning) > TURN_INTERVAL)
+      {
+        int angle = random(90, 160);
+        Mower.runBackward(FULLSPEED);
+        delay(1200);
+
+        if (random(0, 100) % 2 == 0) {
+          Mower.turnRight(angle);
+        }
+        else {
+          Mower.turnLeft(angle);
+        }
+        time_at_turning = millis();
+        Compass.setNewTargetHeading();
+        Mower.runForward(FULLSPEED);
+      }
+
       Sensor.select(0);
 
       mower_is_outside = Sensor.isOutOfBounds();
@@ -278,6 +295,7 @@ void loop()
             Error.flag(err);
         }
 
+        time_at_turning = millis();
         Compass.setNewTargetHeading();
 
         if (Mower.allSensorsAreOutside()) {
@@ -314,6 +332,7 @@ void loop()
             Error.flag(err);
         }
 
+        time_at_turning = millis();
         Compass.setNewTargetHeading();
 
         if (Mower.allSensorsAreOutside()) {
@@ -334,19 +353,6 @@ void loop()
       // Adjust the speed of the mower to the compass heading
       Compass.updateHeading();
       Mower.compensateSpeedToCompassHeading();
-
-      // Check if mower has hit something
-      //if (Mower.wheelsAreOverloaded())
-      //{
-      //  Serial.print("Wheel overload ");
-      //  Mower.runBackward(FULLSPEED);
-      //  if(Mower.waitWhileInside(2000) == 0);
-      //  Mower.turnRight(90);
-      //  Compass.setNewTargetHeading();
-      //  Mower.runForward(FULLSPEED);
-      //}
-
-
 
 #if defined __Lift_Sensor__
       if (Mower.isLifted())
@@ -394,6 +400,7 @@ void loop()
       Mower.startCutter();
       Mower.waitWhileChecking(5000);
 
+      time_at_turning = millis();
       Compass.setNewTargetHeading();
 
       state = MOWING;
@@ -497,6 +504,24 @@ void loop()
 
 	case LOOKING_FOR_BWF:
     Mower.stopCutter();
+
+    if((millis() - time_at_turning) > TURN_INTERVAL)
+    {
+      int angle = random(90, 160);
+      Mower.runBackward(FULLSPEED);
+      delay(1200);
+
+      if (random(0, 100) % 2 == 0) {
+        Mower.turnRight(angle);
+      }
+      else {
+        Mower.turnLeft(angle);
+      }
+      time_at_turning = millis();
+      Compass.setNewTargetHeading();
+      Mower.runForward(FULLSPEED);
+    }
+
 		Sensor.select(0);
 		
 		if (Sensor.isOutOfBounds()) {

@@ -12,6 +12,8 @@
 #include "Definition.h"
 #include "Error.h"
 
+extern long time_at_turning;
+
 /** Specific constructor.
 */
 CONTROLLER::CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp) {
@@ -324,6 +326,7 @@ void CONTROLLER::turnIfObstacle() {
       turnLeft(angle);
     }
     stop();
+    time_at_turning = millis();
     compass->setNewTargetHeading();
 
     //runForward(FULLSPEED);

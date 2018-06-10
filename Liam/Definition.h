@@ -80,9 +80,10 @@ const int LOOKING_FOR_BWF = 4;
 const int SETUP_DEBUG = 5;
 
 // Turning details
-#define TURN_INTERVAL         15000
 #define REVERSE_DELAY         2
 #define TURNDELAY           20 //Reduce for smaller turning angle
+// Max expected time between turns
+#define TURN_INTERVAL         60000
 
 #pragma region BWF
 
