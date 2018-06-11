@@ -99,6 +99,8 @@ BWFSENSOR Sensor(BWF_SELECT_B_PIN, BWF_SELECT_A_PIN);
 MS5883L Compass;
 #elif defined __MS9150__
 MS9150 Compass;
+#elif defined __ADXL345__
+MS9150 Compass;
 #else
 MOTIONSENSOR Compass;
 #endif
@@ -172,7 +174,7 @@ void setup()
     }
     else {                    // otherwise
       state = MOWING;
-      Mower.startCutter();          // Start up the cutter motor
+      //Mower.startCutter();          // Start up the cutter motor
       //Mower.runForward(FULLSPEED);
     }
   }
@@ -201,7 +203,7 @@ void loop()
   }
 
   // Security check Mower is flipped/lifted.
-#if defined __MS9150__ || defined __MS5883L__
+#if defined __MS9150__ || defined __MS5883L__ || __ADXL345__
   if (Mower.hasFlipped())
   {
     Serial.print("Mower has flipped ");
@@ -370,7 +372,7 @@ void loop()
 #endif
 
       // Check if mower has tilted (providing you have one enabled)
-#if defined __MS9150__ || defined __MS5883L__
+#if defined __MS9150__ || defined __MS5883L__ || __ADXL345__
 
 
       // Check if mower has flipped (providing you have one enabled)
@@ -397,7 +399,7 @@ void loop()
 
       // Turn right in random degree
       Mower.turnRight(random(30,60));
-      Mower.startCutter();
+      //Mower.startCutter();
       Mower.waitWhileChecking(5000);
 
       time_at_turning = millis();

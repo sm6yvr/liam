@@ -23,7 +23,9 @@ class WHEELMOTOR {
     void setSpeed(int setspeed);
     int getSpeed();
 
-	void setSpeedOverTime(int speed, int actionTime);
+	  int setSpeedOverTime(int speed, int actionTime);
+
+    bool isAtTargetSpeed();
 
     int getLoad();
 

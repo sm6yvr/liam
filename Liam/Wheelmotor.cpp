@@ -21,10 +21,7 @@ WHEELMOTOR::WHEELMOTOR(int pwmpin_, int dirpin_, int loadpin_, int smoothness) {
 
 
 
-void WHEELMOTOR::setSpeedOverTime(int targetSpeed, int actionTime) {
-	//void setPWM(int pwmPin, int directionPin, int targetValue, int totalActionMs) {
-
-
+int WHEELMOTOR::setSpeedOverTime(int targetSpeed, int actionTime) {
 		int _now = millis();
 		if (targetSpeed != ot_currentTargetValue) {
 			ot_currentTargetValue = targetSpeed;
@@ -35,7 +32,7 @@ void WHEELMOTOR::setSpeedOverTime(int targetSpeed, int actionTime) {
 		if (targetSpeed == ot_currentValue) {
       //Serial.print("Speed is already set: ");
       //Serial.println(targetSpeed);
-      return;
+      return 0;
 		}
 
 
@@ -61,12 +58,13 @@ void WHEELMOTOR::setSpeedOverTime(int targetSpeed, int actionTime) {
 
 		analogWrite(pwmpin, 2.55*abs(newValue));
 		digitalWrite(dirpin, (newValue > 0));
-  //  Serial.print("Target: ");
-		//Serial.print(targetSpeed);
-  //  Serial.print(" New speed: ");
-  //  Serial.println(newValue);
-    targetSpeed = newValue;
+
 		ot_currentValue = newValue;
+    return targetSpeed - newValue;
+}
+
+bool WHEELMOTOR::isAtTargetSpeed() {
+  return ot_currentTargetValue == ot_currentValue;
 }
 
 void WHEELMOTOR::setSpeed(int setspeed) {

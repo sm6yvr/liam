@@ -39,6 +39,46 @@ void CUTTERMOTOR::initialize() {
   setSpeed(0);
 }
 
+int CUTTERMOTOR::setSpeedOverTime(int targetSpeed, int actionTime) {
+  int _now = millis();
+  if (targetSpeed != ot_currentTargetValue) {
+    ot_currentTargetValue = targetSpeed;
+    ot_startingValue = ot_currentValue;
+    ot_setTime = _now;
+  }
+
+  if (targetSpeed == ot_currentValue) {
+    //Serial.print("Speed is already set: ");
+    //Serial.println(targetSpeed);
+    return 0;
+  }
+
+
+  int newValue;
+  if (actionTime == 0) {
+
+    newValue = targetSpeed;
+  }
+  else {
+    if (ot_setTime + actionTime < _now) {
+      newValue = targetSpeed;
+    }
+    else {
+      if (ot_startingValue > targetSpeed) {
+        newValue = map(_now, ot_setTime, ot_setTime + actionTime, targetSpeed, ot_startingValue);
+
+      }
+      else {
+        newValue = map(_now, ot_setTime, ot_setTime + actionTime, ot_startingValue, targetSpeed);
+      }
+    }
+  }
+
+  setSpeed(newValue);
+
+  ot_currentValue = newValue;
+  return targetSpeed - newValue;
+}
 
 void CUTTERMOTOR::setSpeed(int setspeed) {
   speed = setspeed;

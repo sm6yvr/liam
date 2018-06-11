@@ -70,6 +70,7 @@ const int NUMBER_OF_SENSORS = 2;  // Number of BWF sensors can be 1-4 depending 
 
 // CUTTER
 #define CUTTER_OVERLOAD     100
+#define CUTTER_SPINUP_TIME 4000
 
 // Cutter states
 const int MOWING = 0;
@@ -120,8 +121,8 @@ const int SETUP_DEBUG = 5;
 //#define __Lift_Sensor__
 
 // Do you have a Sensor? If so, uncomment one of these lines
-//#define __MS5883L__
-//#define __MS9150__
+//#define __MS5883L__ true
+//#define __MS9150__ true
 
 // Do you have a Display? If so, uncomment one of these lines
 //#define __OLED__
