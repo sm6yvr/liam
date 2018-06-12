@@ -93,9 +93,6 @@ const int SETUP_DEBUG = 5;
 #define TIMEOUT             6000 //Time without signal before error
 #define BWF_COLLECT_SIGNAL_TIME   200 // max time to spend looking for signal
 #define BWF_NUMBER_OF_PULSES  3
-// Trigger value for the mower to leave the BWF when going home
-// The higher value the more turns (in the same direction) the mower can make before leaving
-#define BALANCE_TRIGGER_LEVEL     10000
 
 // BWF Code for inside and outside
 #define INSIDE_BWF          85

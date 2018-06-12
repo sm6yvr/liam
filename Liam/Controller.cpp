@@ -149,8 +149,8 @@ int CONTROLLER::waitWhileInside(int duration) {
   return 0;
 }
 
-#ifdef GO_BACKWARD_UNTIL_INSIDE
 int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
+#ifdef GO_BACKWARD_UNTIL_INSIDE
   int counter=MAX_GO_BACKWARD_TIME;
   //Mover has just stoped. Let it pause for a second.
   delay(1000);
@@ -162,12 +162,11 @@ int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
     if(counter<=0)
       return ERROR_OUTSIDE;
   }
+#endif
   return 0;
 }
-#endif
 void CONTROLLER::startCutter() {
   cutter->setSpeedOverTime(CUTTERSPEED, CUTTER_SPINUP_TIME);
-  
 }
 
 void CONTROLLER::stopCutter() {

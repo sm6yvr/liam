@@ -22,6 +22,9 @@ SETUPDEBUG::SETUPDEBUG(CONTROLLER* controller, WHEELMOTOR* left, WHEELMOTOR* rig
 }
 
 int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
+#ifndef DEBUG_ENABLED
+  return currentState;
+#endif
 
   char inChar;
 
