@@ -128,14 +128,15 @@ void updateBWF() {
 
 // ****************** SETUP ******************************************
 void setup() {
-  // Turn off the cutter motor as fast as possible
-  CutterMotor.initialize();
 
   // Fast communication on the serial port for all terminal messages
   Serial.begin(115200);
 
   // Configure all the pins for input or output
   Defaults.definePinsInputOutput();
+
+  // Turn off the cutter motor as fast as possible
+  CutterMotor.initialize();
 
   // Set default levels (defined in Definition.h) for your mower
   Defaults.setDefaultLevels(&Battery, &leftMotor, &rightMotor, &CutterMotor);
@@ -176,8 +177,7 @@ void setup() {
       state = MOWING;
     }
   }
-}
-
+} // setup.
 
 // TODO: This should probably be in Controller
 void randomTurn(bool goBack) {
@@ -441,20 +441,19 @@ void doCharging() {
 // ***************** MAIN LOOP ***************************************
 void loop() {
   static long lastDisplayUpdate = 0;
+  static int previousState;
+
+  long looptime = millis();
+
   if((state = SetupAndDebug.tryEnterSetupDebugMode(state)) == SETUP_DEBUG)
     return;
 
-  long looptime = millis();
+  Battery.updateVoltage();
+
   // Check state of all sensors
   for(int i = 0; i < 2; i++) {
     Sensor.select(i);
     sensorOutside[i] = Sensor.isOutOfBounds();
-  }
-
-  Battery.updateVoltage();
-  if(millis()-lastDisplayUpdate > 5000) {
-    Display.update();
-    lastDisplayUpdate = millis();
   }
 
   // Safety checks
@@ -479,6 +478,12 @@ void loop() {
       break;
   }
 
-  Serial.print("\n\nlooptime : ");
-  Serial.println(millis() - looptime);
+  if(millis()-lastDisplayUpdate > 5000) {
+    Display.update();
+
+    Serial.print("\nlooptime : ");
+    Serial.println(millis() - looptime);
+
+    lastDisplayUpdate = millis();
+  }
 }
