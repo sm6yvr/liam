@@ -36,6 +36,7 @@ class BWFSENSOR {
 	bool isOutOfBounds();
     bool hasNoSignal();
     bool gotSignal();
+    int getCurrentSensor();
 
     void readSensor();
 
@@ -45,7 +46,7 @@ class BWFSENSOR {
     // BWF Code for inside and outside the fence
     static int inside_code[];
     static int outside_code[];
-
+    int _currentSensor = 0;
     const static int pulse_unit_length = 100;
 
     int pulse_count_inside;
@@ -53,7 +54,7 @@ class BWFSENSOR {
 
     int selpin_A;
     int selpin_B;
-
+    volatile bool _switching; //volatile since it's share between interrupt and loop
     int signal_status;
     long last_match;
     long last_pulse;

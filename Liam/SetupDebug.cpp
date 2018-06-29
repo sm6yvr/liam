@@ -149,21 +149,30 @@ void SETUPDEBUG::toggleLed() {
   led_is_on = !led_is_on;
 }
 
+void SETUPDEBUG::RampUpMotor(WHEELMOTOR* motor)
+{
+  motor->setSpeedOverTime(FULLSPEED, ACCELERATION_DURATION);
+  while (!motor->isAtTargetSpeed()) {
+    motor->setSpeedOverTime(FULLSPEED, ACCELERATION_DURATION);
+  }
+}
+
+void SETUPDEBUG::RampDownMotor(WHEELMOTOR* motor)
+{
+  motor->setSpeedOverTime(0, ACCELERATION_DURATION);
+  while (!motor->isAtTargetSpeed()) {
+    motor->setSpeedOverTime(0, ACCELERATION_DURATION);
+  }
+}
 void SETUPDEBUG::toggleWheelLeft() {
   if (left_wheel_motor_is_on == true) {
     Serial.println(F("Ramping down left wheel"));
-    for (int i=100; i>0; i--) {
-      leftMotor->setSpeed(i);
-      delay(10);
-    }
+    RampDownMotor(leftMotor);
     Serial.println(F("Ramp down completed"));
     left_wheel_motor_is_on = false;
   } else {
     Serial.println(F("Ramping up left wheel"));
-    for (int i=0; i<100; i++) {
-      leftMotor->setSpeed(i);
-      delay(10);
-    }
+    RampUpMotor(leftMotor);
     Serial.println(F("Ramp up completed"));
     left_wheel_motor_is_on = true;
   }
@@ -172,18 +181,12 @@ void SETUPDEBUG::toggleWheelLeft() {
 void SETUPDEBUG::togglewheelRight() {
   if (right_wheel_motor_is_on == true) {
     Serial.println(F("Ramping down right wheel"));
-    for (int i=100; i>0; i--) {
-      rightMotor->setSpeed(i);
-      delay(10);
-    }
+    RampDownMotor(rightMotor);
     Serial.println(F("Ramp down completed"));
     right_wheel_motor_is_on = false;
   } else {
     Serial.println(F("Ramping up right wheel"));
-    for (int i=0; i<100; i++) {
-      rightMotor->setSpeed(i);
-      delay(10);
-    }
+    RampUpMotor(rightMotor);
     Serial.println(F("Ramp up completed"));
     right_wheel_motor_is_on = true;
   }

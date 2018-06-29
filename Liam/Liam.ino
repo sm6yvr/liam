@@ -234,8 +234,10 @@ void doMowing() {
   }
 
   // Make regular turns to avoid getting stuck on things
-  if((millis() - time_at_turning) > TURN_INTERVAL)
+  if ((millis() - time_at_turning) > TURN_INTERVAL) {
     randomTurn(true);
+    return;
+  }
 
   // Check if any sensor is outside
   for(int i = 0; i < 2; i++) {
@@ -277,6 +279,7 @@ void doMowing() {
 
     time_at_turning = millis();
     Compass.setNewTargetHeading();
+    return; //Stale sensor data after previous delays
   }
 
   // Avoid obstacles
@@ -300,10 +303,11 @@ void doLaunching() {
   Mower.runBackward(FULLSPEED);
   delay(5000);
   Mower.stop();
-  randomTurn(false);
+  Mower.turnRight(90);
+  //randomTurn(false);
 
   Battery.resetVoltage();
-
+  time_at_turning = millis();
   state = MOWING;
 }
 
@@ -311,7 +315,6 @@ void doLaunching() {
 void doDocking() {
   static int collisionCount = 0;
   static long lastCollision = 0;
-  static long lastAllOutsideCheck = 0;
   static long lastOutside = 0;
 
   Mower.stopCutter();
@@ -334,7 +337,7 @@ void doDocking() {
 
     Serial.print("Collision while docking: ");
     Serial.println(collisionCount);
-
+    Mower.stop();
     // Let it run for a bit and check if we hit the charger
     delay(1000);
     if(Battery.isBeingCharged()) {
@@ -346,30 +349,31 @@ void doDocking() {
     // Go back a bit and try again
     Mower.runBackward(FULLSPEED);
     delay(1300);
+    Mower.stop();
+
 
     // After third try. Try to go around obstacle
-    if(collisionCount == 3) {
+    if(collisionCount >= 3) {
       Mower.turnRight(70);
       Mower.stop();
       collisionCount = 0;
       lastOutside = millis();
       Mower.runForward(FULLSPEED);
-      return;
+      
     }
+    return; //Stale sensor data after previous delays
   }
 
   // Check regularly if right sensor is outside
-  if(millis() - lastAllOutsideCheck > 500) {
-    if(sensorOutside[1]) {
-      Mower.stop();
-      Mower.runBackward(FULLSPEED);
-      delay(700);
-      Mower.stop();
-      Mower.turnRight(20);
-      Mower.stop();
-      Mower.runForward(FULLSPEED);
-    }
-    lastAllOutsideCheck = millis();
+  if(sensorOutside[1]) {
+    Serial.println("Right out");
+    Mower.stop();
+    Mower.runBackward(FULLSPEED);
+    delay(700);
+    Mower.stop();
+    Mower.turnRight(20);
+    Mower.runForward(FULLSPEED);
+    return;  //Stale sensor data after previous delays
   }
 
   // If left sensor has been inside fence for a long time
@@ -377,12 +381,14 @@ void doDocking() {
     Mower.stop();
     Mower.turnLeft(30);
     state = LOOKING_FOR_BWF;
+    Serial.println("Start look for BWF");
+    time_at_turning = millis();
     return;
   }
 
   // Track the BWF by compensating the wheel motor speeds
-  Sensor.select(0);
-  Mower.adjustMotorSpeeds();
+  //Sensor.select(0);
+  Mower.adjustMotorSpeeds(sensorOutside[0]);
 }
 
 void doLookForBWF() {
@@ -395,8 +401,10 @@ void doLookForBWF() {
   }
 
   // Make regular turns to avoid getting stuck on things
-  if((millis() - time_at_turning) > TURN_INTERVAL)
+  if ((millis() - time_at_turning) > TURN_INTERVAL) {
     randomTurn(true);
+    return;
+  }
 
   Mower.runForwardOverTime(SLOWSPEED, FULLSPEED, ACCELERATION_DURATION);
   Mower.turnIfObstacle();
@@ -437,7 +445,14 @@ void doCharging() {
   }
 }
 
-
+//void awareDelay(int ms) {
+//  unsigned long exitAt = millis() + ms;
+//  int sensor = Sensor.getCurrentSensor();
+//  while (millis() < exitAt) {
+//    Sensor.select(sensor % NUMBER_OF_SENSORS);
+//    sensorOutside[Sensor.getCurrentSensor()] = Sensor.isOutOfBounds();
+//  }
+//}
 // ***************** MAIN LOOP ***************************************
 void loop() {
   static long lastDisplayUpdate = 0;
@@ -450,10 +465,13 @@ void loop() {
 
   Battery.updateVoltage();
 
+  
+  int startingSensor = Sensor.getCurrentSensor();
   // Check state of all sensors
-  for(int i = 0; i < 2; i++) {
-    Sensor.select(i);
-    sensorOutside[i] = Sensor.isOutOfBounds();
+  for(int i = startingSensor; i < startingSensor + NUMBER_OF_SENSORS; i++) {
+
+    Sensor.select(i % NUMBER_OF_SENSORS);
+    sensorOutside[Sensor.getCurrentSensor()] = Sensor.isOutOfBounds();
   }
 
   // Safety checks

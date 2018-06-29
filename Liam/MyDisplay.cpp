@@ -91,6 +91,9 @@ void MYDISPLAY::update()
     case CHARGING:
       print(F("CHARGING"));
       break;
+    case LOOKING_FOR_BWF:
+      print(F("LOOKING"));
+      break;
   }
 }
 

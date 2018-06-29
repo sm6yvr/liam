@@ -170,7 +170,7 @@ void CONTROLLER::startCutter() {
 }
 
 void CONTROLLER::stopCutter() {
-  cutter->setSpeed(0);
+  cutter->setSpeedOverTime(0, 0);
 }
 
 void CONTROLLER::storeState() {
@@ -211,7 +211,7 @@ void CONTROLLER::setDefaultDirectionForward(bool fwd) {
     default_dir_fwd = -1;
 };
 
-void CONTROLLER::adjustMotorSpeeds() {
+void CONTROLLER::adjustMotorSpeeds(bool isOutOfBounds) {
   int  lms;
   int  rms;
   int ltime;
@@ -221,7 +221,7 @@ void CONTROLLER::adjustMotorSpeeds() {
   int shortTime = 10;
   int longTime = 500;
 
-  if (sensor->isOutOfBounds()) {
+  if (isOutOfBounds) {
 	  //Serial.println("Adjust to out of bounds");
     lms = highSpeed;
 	ltime = shortTime;

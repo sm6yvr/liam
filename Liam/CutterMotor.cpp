@@ -36,7 +36,7 @@ void CUTTERMOTOR::initialize() {
     cutter.writeMicroseconds(1000);
     delay(2000);
   }
-  setSpeed(0);
+  setSpeedOverTime(0,0);
 }
 
 int CUTTERMOTOR::setSpeedOverTime(int targetSpeed, int actionTime) {
@@ -64,13 +64,7 @@ int CUTTERMOTOR::setSpeedOverTime(int targetSpeed, int actionTime) {
       newValue = targetSpeed;
     }
     else {
-      if (ot_startingValue > targetSpeed) {
-        newValue = map(_now, ot_setTime, ot_setTime + actionTime, targetSpeed, ot_startingValue);
-
-      }
-      else {
-        newValue = map(_now, ot_setTime, ot_setTime + actionTime, ot_startingValue, targetSpeed);
-      }
+      newValue = map(_now, ot_setTime, ot_setTime + actionTime, ot_startingValue, targetSpeed);
     }
   }
 

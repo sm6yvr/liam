@@ -44,7 +44,7 @@ class CONTROLLER {
 
     void setDefaultDirectionForward(bool fwd);
 
-    void adjustMotorSpeeds();
+    void adjustMotorSpeeds(bool isOutOfBounds);
     int compensateSpeedToCutterLoad();
     int compensateSpeedToCompassHeading();
 

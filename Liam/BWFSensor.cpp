@@ -44,7 +44,6 @@
 int BWFSENSOR::outside_code[] = {OUTSIDE_BWF, INSIDE_BWF-OUTSIDE_BWF};
 int BWFSENSOR::inside_code[] = {INSIDE_BWF};
 
-int currentSensor = 0;
 
 BWFSENSOR::BWFSENSOR(int selA, int selB) {
   selpin_A = selA;
@@ -52,17 +51,25 @@ BWFSENSOR::BWFSENSOR(int selA, int selB) {
 }
 
 
+int BWFSENSOR::getCurrentSensor() {
+  return _currentSensor;
+}
+
 // Select active sensor
 void BWFSENSOR::select(int sensornumber) {
-  if (currentSensor == sensornumber) {
 
-    return;
-  }
-  currentSensor = sensornumber;
-
+  _switching = true;
   digitalWrite(selpin_A, (sensornumber & 1) > 0 ? HIGH : LOW);
   digitalWrite(selpin_B, (sensornumber & 2) > 0 ? HIGH : LOW);
+
+  if (_currentSensor == sensornumber) {
+    return;
+  }
+  _currentSensor = sensornumber;
+
   clearSignal();
+  _switching = false;
+  
   long time = millis();
   while (signal_status == NOSIGNAL 
     && millis() - time < BWF_COLLECT_SIGNAL_TIME) // max time of 200ms
@@ -111,6 +118,9 @@ bool BWFSENSOR::hasNoSignal() {
 // This function is run each time the BWF pin gets a pulse
 // For accuracy, this function should be kept as fast as possible
 void BWFSENSOR::readSensor() {
+
+  if (_switching) return; //Avoid data for undefined state for selection pins
+
   long now = micros();
 
   // Calculate the time since last pulse

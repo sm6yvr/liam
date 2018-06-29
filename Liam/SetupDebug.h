@@ -35,6 +35,8 @@ class SETUPDEBUG {
 
     void printHelp();
     void toggleLed();
+    void RampUpMotor(WHEELMOTOR* motor);
+    void RampDownMotor(WHEELMOTOR* motor);
     void toggleWheelLeft();
     void togglewheelRight();
     void getBwfSignals();
