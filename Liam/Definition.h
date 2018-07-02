@@ -79,6 +79,8 @@ const int DOCKING = 2;
 const int CHARGING = 3;
 const int LOOKING_FOR_BWF = 4;
 const int SETUP_DEBUG = 5;
+const int IDLE = 6;
+
 
 // Turning details
 #define REVERSE_DELAY         2

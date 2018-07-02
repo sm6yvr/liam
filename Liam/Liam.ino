@@ -68,7 +68,6 @@
 // Global variables
 int state;
 long time_at_turning = millis();
-bool sensorOutside[2];
 
 
 // Set up all the defaults (check the Definition.h file for all default values)
@@ -128,7 +127,6 @@ void updateBWF() {
 
 // ****************** SETUP ******************************************
 void setup() {
-
   // Fast communication on the serial port for all terminal messages
   Serial.begin(115200);
 
@@ -151,7 +149,6 @@ void setup() {
   // Run the updateBWF function every time there is a pulse on digital pin2
   attachInterrupt(0, updateBWF, RISING);
   Sensor.select(0);
-
   // Print version information for five seconds before starting
   Display.clear();
   Display.print(F("--- LIAM ---\n"));
@@ -177,6 +174,7 @@ void setup() {
       state = MOWING;
     }
   }
+state = IDLE;
 } // setup.
 
 // TODO: This should probably be in Controller
@@ -201,6 +199,7 @@ void randomTurn(bool goBack) {
 // ***************** SAFETY CHECKS ***********************************
 void checkIfFlipped() {
 #if defined __MS9150__ || defined __MS5883L__ || __ADXL345__
+Serial.println("FlipSensor Defined");
   if (Mower.hasFlipped()) {
     Serial.print("Mower has flipped ");
     Mower.stopCutter();
@@ -212,6 +211,7 @@ void checkIfFlipped() {
 
 void checkIfLifted() {
 #if defined __Lift_Sensor__
+  Serial.println("LiftSensor Defined");
   if (Mower.isLifted()) {
     Serial.println("Mower is lifted");
     Mower.stopCutter();
@@ -241,15 +241,15 @@ void doMowing() {
 
   // Check if any sensor is outside
   for(int i = 0; i < 2; i++) {
+    char buf[10];
+    sprintf(buf,"%i == %i",i,Sensor.sensorOutside[i]);
+
+    Serial.println(buf);
     // If sensor is inside, don't do anything
-    if(!sensorOutside[i])
+    if(!Sensor.sensorOutside[i])
       continue;
     // ... otherwise ...
 
-    Serial.print("Sensor ");
-    Serial.print(i);
-    Serial.println(" outside");
-    Sensor.select(i);
     Mower.stop();
 
     int err = Mower.GoBackwardUntilInside(&Sensor);
@@ -319,7 +319,7 @@ void doDocking() {
 
   Mower.stopCutter();
 
-  if(sensorOutside[0])
+  if(Sensor.sensorOutside[0])
     lastOutside = millis();
 
   if(Battery.isBeingCharged()) {
@@ -359,13 +359,12 @@ void doDocking() {
       collisionCount = 0;
       lastOutside = millis();
       Mower.runForward(FULLSPEED);
-      
     }
     return; //Stale sensor data after previous delays
   }
 
   // Check regularly if right sensor is outside
-  if(sensorOutside[1]) {
+  if(Sensor.sensorOutside[1]) {
     Serial.println("Right out");
     Mower.stop();
     Mower.runBackward(FULLSPEED);
@@ -388,14 +387,29 @@ void doDocking() {
 
   // Track the BWF by compensating the wheel motor speeds
   //Sensor.select(0);
-  Mower.adjustMotorSpeeds(sensorOutside[0]);
+  Mower.adjustMotorSpeeds(Sensor.sensorOutside[0]);
+}
+void doWait()
+{
+  for (int i = 0; i < 2; i++)
+  {
+    // If sensor is inside, don't do anything
+    if (!Sensor.sensorOutside[i])
+      continue;
+    // ... otherwise ...
+
+    Serial.print("Sensor ");
+    Serial.print(i);
+    Serial.println(" outside");
+  }
+  delay(500);
 }
 
 void doLookForBWF() {
   Mower.stopCutter();
 
   // If sensor is outside, then the BWF has been found
-  if(sensorOutside[0]) {
+  if(Sensor.sensorOutside[0]) {
     state = DOCKING;
     return;
   }
@@ -450,11 +464,12 @@ void doCharging() {
 //  int sensor = Sensor.getCurrentSensor();
 //  while (millis() < exitAt) {
 //    Sensor.select(sensor % NUMBER_OF_SENSORS);
-//    sensorOutside[Sensor.getCurrentSensor()] = Sensor.isOutOfBounds();
+//    Sensor.sensorOutside[Sensor.getCurrentSensor()] = Sensor.isOutOfBounds();
 //  }
 //}
 // ***************** MAIN LOOP ***************************************
 void loop() {
+  
   static long lastDisplayUpdate = 0;
   static int previousState;
 
@@ -466,13 +481,13 @@ void loop() {
   Battery.updateVoltage();
 
   
-  int startingSensor = Sensor.getCurrentSensor();
+  // int startingSensor = Sensor.getCurrentSensor();
   // Check state of all sensors
-  for(int i = startingSensor; i < startingSensor + NUMBER_OF_SENSORS; i++) {
+  // for(int i = startingSensor; i < startingSensor + NUMBER_OF_SENSORS; i++) {
 
-    Sensor.select(i % NUMBER_OF_SENSORS);
-    sensorOutside[Sensor.getCurrentSensor()] = Sensor.isOutOfBounds();
-  }
+  //   Sensor.select(i % NUMBER_OF_SENSORS);
+  //   Sensor.sensorOutside[Sensor.getCurrentSensor()] = Sensor.isOutOfBounds();
+  // }
 
   // Safety checks
   checkIfFlipped();
@@ -493,6 +508,9 @@ void loop() {
       break;
     case CHARGING:
       doCharging();
+      break;
+      case IDLE:
+      doWait();
       break;
   }
 

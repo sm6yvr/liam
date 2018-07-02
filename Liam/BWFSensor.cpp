@@ -41,7 +41,7 @@
 
 #include "BWFSensor.h"
 
-int BWFSENSOR::outside_code[] = {OUTSIDE_BWF, INSIDE_BWF-OUTSIDE_BWF};
+int BWFSENSOR::outside_code[] = {OUTSIDE_BWF};
 int BWFSENSOR::inside_code[] = {INSIDE_BWF};
 
 
@@ -57,25 +57,24 @@ int BWFSENSOR::getCurrentSensor() {
 
 // Select active sensor
 void BWFSENSOR::select(int sensornumber) {
-
+   if (_currentSensor == sensornumber) {
+    return;
+  }
   _switching = true;
   digitalWrite(selpin_A, (sensornumber & 1) > 0 ? HIGH : LOW);
   digitalWrite(selpin_B, (sensornumber & 2) > 0 ? HIGH : LOW);
-
-  if (_currentSensor == sensornumber) {
-    return;
-  }
   _currentSensor = sensornumber;
+  // Serial.println(_currentSensor);
+  // clearSignal();
 
-  clearSignal();
-  _switching = false;
+  // _switching = false;
   
-  long time = millis();
-  while (signal_status == NOSIGNAL 
-    && millis() - time < BWF_COLLECT_SIGNAL_TIME) // max time of 200ms
-  {
-    delay(1);
-  }
+  // long time = millis();
+  // while (signal_status == NOSIGNAL 
+  //   && millis() - time < BWF_COLLECT_SIGNAL_TIME) // max time of 200ms
+  // {
+  //   delay(1);
+  // }
 
   // delay(200);
 }
@@ -118,11 +117,15 @@ bool BWFSENSOR::hasNoSignal() {
 // This function is run each time the BWF pin gets a pulse
 // For accuracy, this function should be kept as fast as possible
 void BWFSENSOR::readSensor() {
-
-  if (_switching) return; //Avoid data for undefined state for selection pins
-
+  bool needOneMoreRun = false;
   long now = micros();
-
+  if (_switching)
+  {
+    last_pulse = now;
+    _switching = false;
+    return; //Avoid data for undefined state for selection pins
+  }
+  char buf[40];
   // Calculate the time since last pulse
   int time_since_pulse = int(now - last_pulse);
   last_pulse = now;
@@ -140,6 +143,8 @@ void BWFSENSOR::readSensor() {
       last_match = millis();
       pulse_count_inside=0;
     }
+    else
+      needOneMoreRun = true;
   } else {
     pulse_count_inside=0;
   }
@@ -151,15 +156,23 @@ void BWFSENSOR::readSensor() {
       signal_status = OUTSIDE;
       last_match = millis();
       pulse_count_outside=0;
+      sprintf(buf,"ställer sensor %i till Outside",_currentSensor);
+        Serial.println(buf);
     }
+    else
+      needOneMoreRun = true;
   } else {
     pulse_count_outside=0;
+
   }
-
-
+  if(needOneMoreRun)
+    return;
   // Store the received code for debug output
   arr[arr_count++] = pulse_length;
   if (arr_count>arr_length) arr_count=0;
+sensorOutside[_currentSensor] = isOutOfBounds();
+select(_currentSensor == 0 ? 1:0);
+
 }
 
 void BWFSENSOR::printSignal() {

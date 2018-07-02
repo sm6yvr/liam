@@ -33,12 +33,13 @@ class BWFSENSOR {
     bool isInside();
     bool isOutside();
     bool isTimedOut();
-	bool isOutOfBounds();
+	  bool isOutOfBounds();
     bool hasNoSignal();
     bool gotSignal();
     int getCurrentSensor();
 
     void readSensor();
+    bool sensorOutside[2];
 
     void printSignal();
 
