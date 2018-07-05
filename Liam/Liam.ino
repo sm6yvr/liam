@@ -273,8 +273,9 @@ void doMowing() {
       else
         err = Mower.turnToReleaseLeft(30);
 
-      if(err)
+      if (err && err != ERROR_OVERLOAD) {
         Error.flag(err);
+      }
     }
 
     time_at_turning = millis();
@@ -294,6 +295,7 @@ void doMowing() {
 
   // Adjust the speed of the mower to the compass heading
   Compass.updateHeading();
+
   Mower.compensateSpeedToCompassHeading();
 }
 

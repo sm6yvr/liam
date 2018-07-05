@@ -50,6 +50,7 @@ int CONTROLLER::getFirstSensorOutOfBounds() {
 
 int CONTROLLER::turnToReleaseLeft(int angle) {
   turnLeft(angle);
+  return 0; //Hack to get it running until we figure out what the heck is going on
 
   for (int i=0; i<20; i++) {
     sensor->select(1);
@@ -71,8 +72,9 @@ int CONTROLLER::turnToReleaseLeft(int angle) {
 
 int CONTROLLER::turnToReleaseRight(int angle) {
   turnRight(angle);
+  return 0; //Hack to get it running until we figure out what the heck is going on
 
-  for (int i=0; i<20; i++) {
+  for (int i=0; i<(180-angle) / 10; i++) {
     sensor->select(0);
 
     if (!sensor->isOutOfBounds()) {
@@ -90,26 +92,28 @@ int CONTROLLER::turnToReleaseRight(int angle) {
   return ERROR_OUTSIDE;             // Timed Out
 }
 
-int CONTROLLER::turnRight(int angle) {
+int CONTROLLER::turn(int angle, bool toLeft) {
+  unsigned long start = millis();
   int outcome = 0;
-
-  leftMotor->setSpeed(default_dir_fwd*100);
-  rightMotor->setSpeed(default_dir_fwd*-100);
-
-  delay(angle*TURNDELAY);
-
+  int leftFactor = toLeft ? -1 :  1;
+  bool done = false;
+  while (!done){
+    int l = leftMotor->setSpeedOverTime(leftFactor * default_dir_fwd * 100, 30);
+    int r = rightMotor->setSpeedOverTime(-leftFactor * default_dir_fwd * 100, 30);
+    done = l == 0 && r == 0;
+    delay(1);
+  }
+  delay(angle*TURNDELAY + start - millis());
+  stop();
   return outcome;
 }
 
+int CONTROLLER::turnRight(int angle) {
+  return turn(angle, false);
+}
+
 int CONTROLLER::turnLeft(int angle) {
-  int outcome = 0;
-
-  leftMotor->setSpeed(default_dir_fwd*-100);
-  rightMotor->setSpeed(default_dir_fwd*100);
-
-  delay(angle*TURNDELAY);
-
-  return outcome;
+  return turn(angle, true);
 }
 
 
@@ -264,6 +268,8 @@ int CONTROLLER::compensateSpeedToCutterLoad() {
 }
 
 int CONTROLLER::compensateSpeedToCompassHeading() {
+  if (!leftMotor->isAtTargetSpeed() || !rightMotor->isAtTargetSpeed()) return;
+
   int  lms = abs(leftMotor->getSpeed());
   int  rms = abs(rightMotor->getSpeed());
 

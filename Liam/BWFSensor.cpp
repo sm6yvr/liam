@@ -41,8 +41,8 @@
 
 #include "BWFSensor.h"
 
-int BWFSENSOR::outside_code[] = {OUTSIDE_BWF, INSIDE_BWF-OUTSIDE_BWF};
-int BWFSENSOR::inside_code[] = {INSIDE_BWF};
+int BWFSENSOR::outside_code[] = {OUTSIDE_BWF, INSIDE_BWF-OUTSIDE_BWF,OUTSIDE_BWF, INSIDE_BWF - OUTSIDE_BWF };
+int BWFSENSOR::inside_code[] = {INSIDE_BWF, INSIDE_BWF };
 
 
 BWFSENSOR::BWFSENSOR(int selA, int selB) {
