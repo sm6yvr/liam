@@ -156,8 +156,6 @@ void BWFSENSOR::readSensor() {
       signal_status = OUTSIDE;
       last_match = millis();
       pulse_count_outside=0;
-      sprintf(buf,"ställer sensor %i till Outside",_currentSensor);
-        Serial.println(buf);
     }
     else
       needOneMoreRun = true;

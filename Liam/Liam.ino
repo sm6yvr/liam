@@ -174,7 +174,7 @@ void setup() {
       state = MOWING;
     }
   }
-state = IDLE;
+// state = IDLE;
 } // setup.
 
 // TODO: This should probably be in Controller
@@ -241,10 +241,6 @@ void doMowing() {
 
   // Check if any sensor is outside
   for(int i = 0; i < 2; i++) {
-    char buf[10];
-    sprintf(buf,"%i == %i",i,Sensor.sensorOutside[i]);
-
-    Serial.println(buf);
     // If sensor is inside, don't do anything
     if(!Sensor.sensorOutside[i])
       continue;
