@@ -29,27 +29,36 @@ int WHEELMOTOR::setSpeedOverTime(int targetSpeed, int actionTime) {
 			ot_setTime = _now;
 		}
 
+    int newValue;
+
 		if (targetSpeed == ot_currentValue) {
       //Serial.print("Speed is already set: ");
       //Serial.println(targetSpeed);
       _atTargetSpeed = true;
-      return 0;
-		}
-
-
-		int newValue;
-		if (actionTime == 0) {
-
-			newValue = targetSpeed;
+      newValue = targetSpeed;
     }
     else {
-      if (ot_setTime + actionTime < _now) {
+      if (actionTime == 0) {
+        //Serial.println("Actiontime zero");
+
         newValue = targetSpeed;
       }
       else {
+        if (ot_setTime + actionTime < _now) {
+          //Serial.println("Overdue");
+          newValue = targetSpeed;
+        }
+        else {
+          //Serial.println("Mapping");
+          //Serial.print("ot_startingValue: ");
+          //Serial.println(ot_startingValue);
+          //Serial.print("targetSpeed: ");
+          //Serial.println(targetSpeed);
           newValue = map(_now, ot_setTime, ot_setTime + actionTime, ot_startingValue, targetSpeed);
+        }
       }
     }
+
 
 		analogWrite(pwmpin, 2.55*abs(newValue));
 		digitalWrite(dirpin, (newValue > 0));
@@ -65,30 +74,38 @@ bool WHEELMOTOR::isAtTargetSpeed() {
 }
 
 void WHEELMOTOR::setSpeed(int setspeed) {
+  /*Serial.print("setspeed");
+  Serial.println(setspeed);*/
+
 	//ot_startingValue = setspeed;
  // ot_currentValue = setspeed;
 	if (setspeed > 100) setspeed = 100;
 	if (setspeed < -100) setspeed = -100;
 
-  // Increase or decrease speed?
-  int diff = (setspeed < speed)? -1 : 1;
+  //// Increase or decrease speed?
+  //int diff = (setspeed < speed)? -1 : 1;
 
-  // Ramp up/down motor smoothly by changing speed by one %-unit at a time.
-  while(speed != setspeed)
-  {
-		speed += diff;
 
-    setSpeedOverTime(speed, 0);
-  //  analogWrite(pwmpin, 255*abs(speed)/100);
-		//digitalWrite(dirpin, (speed > 0));
-
-    delayMicroseconds(smoothness_delay);
+  while (setSpeedOverTime(setspeed, smoothness_delay * setspeed / 1000) != 0) {
+    delay(1);
   }
+  //Serial.println("SetSpeed done");
+  //// Ramp up/down motor smoothly by changing speed by one %-unit at a time.
+  //while(speed != setspeed)
+  //{
+		//speed += diff;
+
+  //  setSpeedOverTime(speed, 0);
+  ////  analogWrite(pwmpin, 255*abs(speed)/100);
+		////digitalWrite(dirpin, (speed > 0));
+
+  //  delayMicroseconds(smoothness_delay);
+  //}
 }
 
 
 int WHEELMOTOR::getSpeed() {
-  return speed;
+  return ot_currentValue;
 }
 
 

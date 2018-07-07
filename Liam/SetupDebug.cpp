@@ -206,6 +206,32 @@ void SETUPDEBUG::getBwfSignals() {
     Serial.print(sensor->isOutside());
     Serial.println();
   }
+
+  Serial.println("Fast swapping sensors...");
+  Serial.println("Send d to abort");
+  delay(3000);
+  int i = 0;
+  while (1)
+  {
+    while (Serial.available())
+    {
+      char inChar = (char)Serial.read();
+      if (inChar == 'd' || inChar == 'D')
+      {
+        Serial.println(F("Returning to debug mode"));
+        break;
+      }
+    }
+    for (int i = 0; i < NUMBER_OF_SENSORS; i++) {
+      sensor->select(i);
+      Serial.print("Sensor: ");
+      Serial.print(sensor->getCurrentSensor());
+      Serial.print(" outforbounds:");
+      Serial.print(sensor->isOutOfBounds());
+    }
+    Serial.println("");
+  }
+
   Serial.println(F("Sensor test completed"));
 }
 

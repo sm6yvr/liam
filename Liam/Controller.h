@@ -24,9 +24,9 @@ class CONTROLLER {
     CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp);
 
     //
-    int turn(int degrees);
     int turnToReleaseLeft(int degrees);
     int turnToReleaseRight(int degrees);
+    int turn(int angle, bool toLeft);
     int waitWhileChecking(int duration);
     int waitWhileInside(int duration);
     int GoBackwardUntilInside(BWFSENSOR *Sensor);
