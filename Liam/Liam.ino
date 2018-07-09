@@ -69,7 +69,7 @@
 int state;
 long time_at_turning = millis();
 
-
+long olastemp = millis();
 // Set up all the defaults (check the Definition.h file for all default values)
 DEFINITION Defaults;
 
@@ -333,8 +333,8 @@ void doDocking() {
     collisionCount++;
     lastCollision = millis();
 
-    Serial.print("Collision while docking: ");
-    Serial.println(collisionCount);
+    // Serial.print("Collision while docking: ");
+    // Serial.println(collisionCount);
     Mower.stop();
     // Let it run for a bit and check if we hit the charger
     delay(1000);
@@ -363,7 +363,7 @@ void doDocking() {
 
   // Check regularly if right sensor is outside
   if(Sensor.sensorOutside[1]) {
-    Serial.println("Right out");
+    // Serial.println("Right out");
     Mower.stop();
     Mower.runBackward(FULLSPEED);
     delay(700);
@@ -389,16 +389,17 @@ void doDocking() {
 }
 void doWait()
 {
+  char buf[30];
   for (int i = 0; i < 2; i++)
   {
+    // only here for debug purpose
     // If sensor is inside, don't do anything
     if (!Sensor.sensorOutside[i])
       continue;
     // ... otherwise ...
 
-    Serial.print("Sensor ");
-    Serial.print(i);
-    Serial.println(" outside");
+    sprintf(buf,"Sensor %i is outside",i);
+    Serial.println(buf);
   }
   delay(500);
 }
@@ -512,12 +513,13 @@ void loop() {
       break;
   }
 
-  if(millis()-lastDisplayUpdate > 5000) {
+  if(millis()-lastDisplayUpdate > 30000) {
+    // olastemp = millis();
+    Mower.stop();
     Display.update();
-
-    Serial.print("\nlooptime : ");
-    Serial.println(millis() - looptime);
-
+    Mower.runForwardOverTime(SLOWSPEED, FULLSPEED, ACCELERATION_DURATION);
+    // Serial.print("\nprintTime : ");
+    // Serial.println(millis() -olastemp);
     lastDisplayUpdate = millis();
   }
 }

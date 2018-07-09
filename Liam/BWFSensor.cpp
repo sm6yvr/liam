@@ -67,7 +67,7 @@ void BWFSENSOR::select(int sensornumber) {
   // Serial.println(_currentSensor);
   // clearSignal();
 
-  // _switching = false;
+  _switching = false;
   
   // long time = millis();
   // while (signal_status == NOSIGNAL 
@@ -122,7 +122,7 @@ void BWFSENSOR::readSensor() {
   if (_switching)
   {
     last_pulse = now;
-    _switching = false;
+    Serial.println(">> new puls while still processing.");
     return; //Avoid data for undefined state for selection pins
   }
   char buf[40];

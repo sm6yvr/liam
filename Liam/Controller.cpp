@@ -161,27 +161,22 @@ int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
   long now = millis();
   long timeout = now + (MAX_GO_BACKWARD_TIME * 1000);
   // while(!sensor->isOutOfBounds()==false)
-  char buf[40];
   while(sensor->sensorOutside[0] || sensor->sensorOutside[1])
   {
-    if(sensor->sensorOutside[0])
-    {
-      sprintf(buf,"left sensor is outside %i",sensor->sensorOutside[0]);
-    Serial.println(buf);
-    }
-    if(sensor->sensorOutside[1])
-    {
-      sprintf(buf,"ringht sensor is outside %i",sensor->sensorOutside[1]);
-    Serial.println(buf);
-    }
+    // if(sensor->sensorOutside[0])
+    // {
+    //   sprintf(buf,"left sensor is outside %i",sensor->sensorOutside[0]);
+    // Serial.println(buf);
+    // }
+    // if(sensor->sensorOutside[1])
+    // {
+    //   sprintf(buf,"ringht sensor is outside %i",sensor->sensorOutside[1]);
+    // Serial.println(buf);
+    // }
 
     runBackward(FULLSPEED);
-    // if(millis() - timeout > 50)
-    //   return ERROR_OUTSIDE;
-    // // // delay(1000);
-    // counter--;
-    // if(counter<=0)
-
+    if(timeout - millis() < 0)
+      return ERROR_OUTSIDE;
   }
 #endif
   return 0;

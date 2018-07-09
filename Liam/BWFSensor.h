@@ -39,7 +39,7 @@ class BWFSENSOR {
     int getCurrentSensor();
 
     void readSensor();
-    bool sensorOutside[2];
+    volatile bool sensorOutside[2];
 
     void printSignal();
 
