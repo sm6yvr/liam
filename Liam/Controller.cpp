@@ -30,8 +30,7 @@ CONTROLLER::CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BW
 boolean CONTROLLER::allSensorsAreOutside() {
 
   for(int i=0; i<NUMBER_OF_SENSORS; i++) {
-    sensor->select(i);
-    if (!sensor->isOutOfBounds())
+    if (!sensor->isOutOfBounds(i))
       return false;
   }
 
@@ -40,8 +39,7 @@ boolean CONTROLLER::allSensorsAreOutside() {
 
 int CONTROLLER::getFirstSensorOutOfBounds() {
 	for (int i = 0; i<NUMBER_OF_SENSORS; i++) {
-		sensor->select(i);
-		if (sensor->isOutOfBounds())
+		if (sensor->isOutOfBounds(i))
 			return i;
 	}
 
@@ -50,14 +48,11 @@ int CONTROLLER::getFirstSensorOutOfBounds() {
 
 int CONTROLLER::turnToReleaseLeft(int angle) {
   turnLeft(angle);
-  return 0; //Hack to get it running until we figure out what the heck is going on
+  //return 0; //Hack to get it running until we figure out what the heck is going on
 
   for (int i=0; i<20; i++) {
-    sensor->select(1);
-
-    if (!sensor->isOutOfBounds()) {
-      sensor->select(0);
-      if (!sensor->isOutOfBounds())
+    if (!sensor->isOutOfBounds(0) && !sensor->isOutOfBounds(1))
+    {
         return 0;       // OK
     }
 
@@ -72,14 +67,12 @@ int CONTROLLER::turnToReleaseLeft(int angle) {
 
 int CONTROLLER::turnToReleaseRight(int angle) {
   turnRight(angle);
-  return 0; //Hack to get it running until we figure out what the heck is going on
+  //return 0; //Hack to get it running until we figure out what the heck is going on
 
   for (int i=0; i<(180-angle) / 10; i++) {
-    sensor->select(0);
 
-    if (!sensor->isOutOfBounds()) {
-      sensor->select(1);
-      if (!sensor->isOutOfBounds())
+    if (!sensor->isOutOfBounds(0) && !sensor->isOutOfBounds(1))
+    {
         return 0;       // OK
     }
 
@@ -144,8 +137,7 @@ int CONTROLLER::waitWhileInside(int duration) {
 
   for (int k=0; k<duration/(NUMBER_OF_SENSORS*200); k++)
     for (int i=0; i<NUMBER_OF_SENSORS; i++) {
-      sensor->select(i);
-      if(sensor->isOutOfBounds())
+      if(sensor->isOutOfBounds(i))
         return 2;
     }
 
@@ -235,7 +227,7 @@ void CONTROLLER::adjustMotorSpeeds(bool isOutOfBounds) {
   int lowSpeed = 40;
   int highSpeed = FULLSPEED;
   int shortTime = 10;
-  int longTime = 500;
+  int longTime = 1000;
 
   if (isOutOfBounds) {
 	  //Serial.println("Adjust to out of bounds");

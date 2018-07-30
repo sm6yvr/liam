@@ -26,24 +26,29 @@
 class BWFSENSOR {
   public:
     BWFSENSOR(int selA, int selB);
+    void setup();
 
-    void select(int sensornumber);
-    void clearSignal();
+    void selectNext();
 
-    bool isInside();
-    bool isOutside();
+
+    bool isInside(int sensornumber);
+    bool isOutside(int sensornumber);
+	  bool isOutOfBounds(int sensornumber);
     bool isTimedOut();
-	  bool isOutOfBounds();
     bool hasNoSignal();
     bool gotSignal();
-    int getCurrentSensor();
 
     void readSensor();
-    volatile bool sensorOutside[2];
+
 
     void printSignal();
 
   private:
+    void assignIfNeeded(int sensor, int signalStatus);
+    void select(int sensornumber);
+    int sensorValue[NUMBER_OF_SENSORS];
+    int getCurrentSensor();
+    void clearSignal();
     // BWF Code for inside and outside the fence
     static int inside_code[];
     static int outside_code[];
@@ -57,6 +62,7 @@ class BWFSENSOR {
     int selpin_B;
     volatile bool _switching; //volatile since it's share between interrupt and loop
     int signal_status;
+    unsigned long lastSwitch;
     long last_match;
     long last_pulse;
 

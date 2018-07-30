@@ -124,6 +124,39 @@ void updateBWF() {
   Sensor.readSensor();
 }
 
+void setupInterrupt() {
+
+  // Timer0 is already used for millis() - we'll just interrupt somewhere
+  // in the middle and call the "Compare A" function below
+  OCR0A = 0xAF;
+  TIMSK0 |= _BV(OCIE0A);
+
+  //cli();//stop interrupts
+
+  //TCCR0A = 0;// set entire TCCR0A register to 0
+  //TCCR0B = 0;// same for TCCR0B
+  //TCNT0 = 0;//initialize counter value to 0
+  //          // set compare match register for 2khz increments
+  //OCR0A = 124;// = (16*10^6) / (2000*64) - 1 (must be <256)
+  //            // turn on CTC mode
+  //TCCR0A |= (1 << WGM01);
+  //// Set CS01 and CS00 bits for 64 prescaler
+  //TCCR0B |= (1 << CS01) | (1 << CS00);
+  //// enable timer compare interrupt
+  //TIMSK0 |= (1 << OCIE0A);
+
+  //sei();//allow interrupts
+}
+// Interrupt is called once a millisecond, looks for any new GPS data, and stores it
+SIGNAL(TIMER0_COMPA_vect)
+{
+   doInterruptThings();
+}
+
+
+void doInterruptThings() {
+  Sensor.selectNext();
+}
 
 // ****************** SETUP ******************************************
 void setup() {
@@ -139,6 +172,8 @@ void setup() {
   // Set default levels (defined in Definition.h) for your mower
   Defaults.setDefaultLevels(&Battery, &leftMotor, &rightMotor, &CutterMotor);
 
+  setupInterrupt();
+
   // Start up the display
   Display.initialize();
 
@@ -148,7 +183,7 @@ void setup() {
 
   // Run the updateBWF function every time there is a pulse on digital pin2
   attachInterrupt(0, updateBWF, RISING);
-  Sensor.select(0);
+  Sensor.setup();
   // Print version information for five seconds before starting
   Display.clear();
   Display.print(F("--- LIAM ---\n"));
@@ -242,7 +277,7 @@ void doMowing() {
   // Check if any sensor is outside
   for(int i = 0; i < 2; i++) {
     // If sensor is inside, don't do anything
-    if(!Sensor.sensorOutside[i])
+    if(!Sensor.isOutOfBounds(i))
       continue;
     // ... otherwise ...
 
@@ -317,7 +352,7 @@ void doDocking() {
 
   Mower.stopCutter();
 
-  if(Sensor.sensorOutside[0])
+  if(Sensor.isOutOfBounds(0))
     lastOutside = millis();
 
   if(Battery.isBeingCharged()) {
@@ -362,7 +397,7 @@ void doDocking() {
   }
 
   // Check regularly if right sensor is outside
-  if(Sensor.sensorOutside[1]) {
+  if(Sensor.isOutOfBounds(1)) {
     // Serial.println("Right out");
     Mower.stop();
     Mower.runBackward(FULLSPEED);
@@ -385,7 +420,7 @@ void doDocking() {
 
   // Track the BWF by compensating the wheel motor speeds
   //Sensor.select(0);
-  Mower.adjustMotorSpeeds(Sensor.sensorOutside[0]);
+  Mower.adjustMotorSpeeds(Sensor.isOutOfBounds(0));
 }
 void doWait()
 {
@@ -394,7 +429,7 @@ void doWait()
   {
     // only here for debug purpose
     // If sensor is inside, don't do anything
-    if (!Sensor.sensorOutside[i])
+    if (!Sensor.isOutOfBounds(i))
       continue;
     // ... otherwise ...
 
@@ -408,7 +443,7 @@ void doLookForBWF() {
   Mower.stopCutter();
 
   // If sensor is outside, then the BWF has been found
-  if(Sensor.sensorOutside[0]) {
+  if(Sensor.isOutOfBounds(0) || Sensor.isOutOfBounds(1)) {
     state = DOCKING;
     return;
   }
@@ -451,7 +486,7 @@ void doCharging() {
 #endif
     ) {
     // Don't launch if no BWF signal is present
-    if(Sensor.isInside() || Sensor.isOutside()) {
+    if(Sensor.isInside(0) || Sensor.isOutside(0)) {
       state = LAUNCHING;
       return;
     }
@@ -474,8 +509,8 @@ void loop() {
 
   long looptime = millis();
 
-  if((state = SetupAndDebug.tryEnterSetupDebugMode(state)) == SETUP_DEBUG)
-    return;
+  //if((state = SetupAndDebug.tryEnterSetupDebugMode(state)) == SETUP_DEBUG)
+  //  return;
 
   Battery.updateVoltage();
 

@@ -154,6 +154,7 @@ void SETUPDEBUG::RampUpMotor(WHEELMOTOR* motor)
   motor->setSpeedOverTime(FULLSPEED, ACCELERATION_DURATION);
   while (!motor->isAtTargetSpeed()) {
     motor->setSpeedOverTime(FULLSPEED, ACCELERATION_DURATION);
+    delay(500);
   }
 }
 
@@ -162,6 +163,7 @@ void SETUPDEBUG::RampDownMotor(WHEELMOTOR* motor)
   motor->setSpeedOverTime(0, ACCELERATION_DURATION);
   while (!motor->isAtTargetSpeed()) {
     motor->setSpeedOverTime(0, ACCELERATION_DURATION);
+    delay(500);
   }
 }
 void SETUPDEBUG::toggleWheelLeft() {
@@ -195,15 +197,15 @@ void SETUPDEBUG::togglewheelRight() {
 void SETUPDEBUG::getBwfSignals() {
   Serial.println(F("-------- Testing Sensors 0 -> 3 --------"));
   for (int i=0; i<4; i++) {
-    sensor->select(i);
+    //sensor->select(i);
     delay(1000);
     Serial.print(i);
     Serial.print(F(": "));
     sensor->printSignal();
     Serial.print(F(" in:"));
-    Serial.print(sensor->isInside());
+    Serial.print(sensor->isInside(i));
     Serial.print(F(" out:"));
-    Serial.print(sensor->isOutside());
+    Serial.print(sensor->isOutside(i));
     Serial.println();
   }
 
@@ -222,14 +224,15 @@ void SETUPDEBUG::getBwfSignals() {
         break;
       }
     }
+    Serial.print("Out of bounds:");
+
     for (int i = 0; i < NUMBER_OF_SENSORS; i++) {
-      sensor->select(i);
-      Serial.print("Sensor: ");
-      Serial.print(sensor->getCurrentSensor());
-      Serial.print(" outforbounds:");
-      Serial.print(sensor->isOutOfBounds());
+      //sensor->select(i);
+      Serial.print(" ");
+      Serial.print(sensor->isOutOfBounds(i));
     }
     Serial.println("");
+    delay(500);
   }
 
   Serial.println(F("Sensor test completed"));
@@ -261,13 +264,13 @@ void SETUPDEBUG::toggleCutterMotor() {
 
 void SETUPDEBUG::testRun() {
   for (int i=0; i<100; i++) {
-    sensor->select(0);
+    //sensor->select(0);
     delay(100);
-    rightMotor->setSpeed((!sensor->isOutOfBounds()?100:-100));
+    rightMotor->setSpeed((!sensor->isOutOfBounds(0)?100:-100));
 
-    sensor->select(1);
+//    sensor->select(1);
     delay(100);
-    leftMotor->setSpeed((!sensor->isOutOfBounds()?100:-100));
+    leftMotor->setSpeed((!sensor->isOutOfBounds(1)?100:-100));
   }
   leftMotor->setSpeed(0);
   rightMotor->setSpeed(0);

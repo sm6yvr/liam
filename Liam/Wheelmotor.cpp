@@ -33,13 +33,13 @@ int WHEELMOTOR::setSpeedOverTime(int targetSpeed, int actionTime) {
 
 		if (targetSpeed == ot_currentValue) {
       //Serial.print("Speed is already set: ");
-      //Serial.println(targetSpeed);
+      //Serial.print(targetSpeed);
       _atTargetSpeed = true;
       newValue = targetSpeed;
     }
     else {
       if (actionTime == 0) {
-        //Serial.println("Actiontime zero");
+        //Serial.print("Actiontime zero");
 
         newValue = targetSpeed;
       }
@@ -49,15 +49,18 @@ int WHEELMOTOR::setSpeedOverTime(int targetSpeed, int actionTime) {
           newValue = targetSpeed;
         }
         else {
-          //Serial.println("Mapping");
-          //Serial.print("ot_startingValue: ");
-          //Serial.println(ot_startingValue);
-          //Serial.print("targetSpeed: ");
-          //Serial.println(targetSpeed);
+
           newValue = map(_now, ot_setTime, ot_setTime + actionTime, ot_startingValue, targetSpeed);
+          //Serial.print("Mapping");
+          //Serial.print(" ot_startingValue: ");
+          //Serial.print(ot_startingValue);
+          //Serial.print(" targetSpeed: ");
+          //Serial.print(targetSpeed);
         }
       }
     }
+    //Serial.print(" newValue: ");
+    //Serial.println(newValue);
 
 
 		analogWrite(pwmpin, 2.55*abs(newValue));
