@@ -518,8 +518,8 @@ void loop() {
 
   long looptime = millis();
 
-  //if((state = SetupAndDebug.tryEnterSetupDebugMode(state)) == SETUP_DEBUG)
-  //  return;
+  if((state = SetupAndDebug.tryEnterSetupDebugMode(state)) == SETUP_DEBUG)
+    return;
 
   Battery.updateVoltage();
 
