@@ -383,7 +383,7 @@ void doDocking() {
     Mower.runBackward(FULLSPEED);
     delay(1300);
     Mower.stop();
-
+    Mower.runForward(FULLSPEED);
 
     // After third try. Try to go around obstacle
     if(collisionCount >= 3) {
@@ -393,17 +393,26 @@ void doDocking() {
       lastOutside = millis();
       Mower.runForward(FULLSPEED);
     }
-    return; //Stale sensor data after previous delays
+    return; 
   }
 
   // Check regularly if right sensor is outside
   if(Sensor.isOutOfBounds(1)) {
     // Serial.println("Right out");
     Mower.stop();
+    int angle;
+    //More angle if hitting the bwf in such a "backwards" angle that the bwftracking sensor is still inside the lawn. 
+    if (Sensor.isOutOfBounds(0)) {
+      angle = 20;
+    }
+    else {
+      angle = 90;
+    }
     Mower.runBackward(FULLSPEED);
     delay(700);
     Mower.stop();
-    Mower.turnRight(20);
+    
+    Mower.turnRight(angle);
     Mower.runForward(FULLSPEED);
     return;  //Stale sensor data after previous delays
   }
