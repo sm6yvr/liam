@@ -398,23 +398,20 @@ void doDocking() {
 
   // Check regularly if right sensor is outside
   if(Sensor.isOutOfBounds(1)) {
-    // Serial.println("Right out");
-    Mower.stop();
-    int angle;
-    //More angle if hitting the bwf in such a "backwards" angle that the bwftracking sensor is still inside the lawn. 
-    if (Sensor.isOutOfBounds(0)) {
-      angle = 20;
+    long turnstart = millis();
+    while (millis() - turnstart > 1500 && Sensor.isOutOfBounds(1)) {
+      Mower.turnRight(20);
+    }
+    if (Sensor.isOutOfBounds(1)) {
+      Mower.stop();
+      Mower.runBackward(FULLSPEED);
+      delay(700);
+      Mower.stop();
     }
     else {
-      angle = 90;
+      Mower.runForward(FULLSPEED);
     }
-    Mower.runBackward(FULLSPEED);
-    delay(700);
-    Mower.stop();
-    
-    Mower.turnRight(angle);
-    Mower.runForward(FULLSPEED);
-    return;  //Stale sensor data after previous delays
+    return; 
   }
 
   // If left sensor has been inside fence for a long time
