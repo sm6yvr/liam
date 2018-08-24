@@ -47,13 +47,13 @@ int CONTROLLER::getFirstSensorOutOfBounds() {
 }
 
 int CONTROLLER::turnToReleaseLeft(int angle) {
-  turnLeft(angle);
   //return 0; //Hack to get it running until we figure out what the heck is going on
 
-  for (int i=0; i<20; i++) {
+  for (int i=0; i<180; i++) {
     if (!sensor->isOutOfBounds(0) && !sensor->isOutOfBounds(1))
     {
-        return 0;       // OK
+      turnLeft(angle);
+      return 0;       // OK
     }
 
     if (wheelsAreOverloaded())
@@ -66,13 +66,14 @@ int CONTROLLER::turnToReleaseLeft(int angle) {
 }
 
 int CONTROLLER::turnToReleaseRight(int angle) {
-  turnRight(angle);
+  
   //return 0; //Hack to get it running until we figure out what the heck is going on
 
-  for (int i=0; i<(180-angle) / 10; i++) {
+  for (int i=0; i<(180) / 10; i++) {
 
     if (!sensor->isOutOfBounds(0) && !sensor->isOutOfBounds(1))
     {
+        turnRight(angle);
         return 0;       // OK
     }
 
@@ -224,7 +225,7 @@ void CONTROLLER::adjustMotorSpeeds(bool isOutOfBounds) {
   int  rms;
   int ltime;
   int rtime;
-  int lowSpeed = 40;
+  int lowSpeed = 30;
   int highSpeed = FULLSPEED;
   int shortTime = 10;
   int longTime = 1000;

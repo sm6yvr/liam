@@ -289,9 +289,9 @@ void doMowing() {
 
     // Try to turn away from BWF
     if(i == 0)
-      err = Mower.turnToReleaseRight(30);
+      err = Mower.turnToReleaseRight(50);
     else
-      err = Mower.turnToReleaseLeft(30);
+      err = Mower.turnToReleaseLeft(50);
 
     if(err) {
       // If turning failed, reverse and try once more
@@ -557,11 +557,11 @@ void loop() {
       break;
   }
 
-  if(millis()-lastDisplayUpdate > 30000) {
+  if(millis()-lastDisplayUpdate > 5000) {
     // olastemp = millis();
-    Mower.stop();
+    //Mower.stop();
     Display.update();
-    Mower.runForwardOverTime(SLOWSPEED, FULLSPEED, ACCELERATION_DURATION);
+    //Mower.runForwardOverTime(SLOWSPEED, FULLSPEED, ACCELERATION_DURATION);
     // Serial.print("\nprintTime : ");
     // Serial.println(millis() -olastemp);
     lastDisplayUpdate = millis();
