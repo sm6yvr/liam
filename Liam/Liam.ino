@@ -349,8 +349,33 @@ void doDocking() {
   static int collisionCount = 0;
   static long lastCollision = 0;
   static long lastOutside = 0;
+  static bool currentSideIsOutSide = true;
 
   Mower.stopCutter();
+
+  if (currentSideIsOutSide && !Sensor.isOutOfBounds(0)) {
+    currentSideIsOutSide = Sensor.isOutOfBounds(0);
+    time_at_turning = millis();
+  }
+
+  // Make regular turns to avoid getting stuck on things
+  if ((millis() - time_at_turning) > TURN_INTERVAL) {
+    Mower.stop();
+    Mower.runBackward(FULLSPEED);
+    delay(2000);
+    Mower.stop();
+    time_at_turning = millis();
+    return;
+  }
+
+  if (Mower.hasBumped()) {
+    Mower.stop();
+    Mower.runBackward(FULLSPEED);
+    delay(2000);
+    Mower.stop();
+    time_at_turning = millis();
+    return;
+  }
 
   if(Sensor.isOutOfBounds(0))
     lastOutside = millis();
@@ -393,13 +418,14 @@ void doDocking() {
       lastOutside = millis();
       Mower.runForward(FULLSPEED);
     }
-    return; 
+    time_at_turning = millis();
+    return;
   }
 
   // Check regularly if right sensor is outside
   if(Sensor.isOutOfBounds(1)) {
     long turnstart = millis();
-    while (millis() - turnstart > 1500 && Sensor.isOutOfBounds(1)) {
+    while (millis() - turnstart < 1500 && Sensor.isOutOfBounds(1)) {
       Mower.turnRight(20);
     }
     if (Sensor.isOutOfBounds(1)) {
@@ -411,7 +437,8 @@ void doDocking() {
     else {
       Mower.runForward(FULLSPEED);
     }
-    return; 
+    time_at_turning = millis();
+    return;
   }
 
   // If left sensor has been inside fence for a long time
@@ -451,6 +478,7 @@ void doLookForBWF() {
   // If sensor is outside, then the BWF has been found
   if(Sensor.isOutOfBounds(0) || Sensor.isOutOfBounds(1)) {
     state = DOCKING;
+    time_at_turning = millis();
     return;
   }
 
