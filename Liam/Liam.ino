@@ -368,6 +368,7 @@ void doDocking() {
     return;
   }
 
+#if defined __Bumper__
   if (Mower.hasBumped()) {
     Mower.stop();
     Mower.runBackward(FULLSPEED);
@@ -376,6 +377,7 @@ void doDocking() {
     time_at_turning = millis();
     return;
   }
+#endif
 
   if(Sensor.isOutOfBounds(0))
     lastOutside = millis();
