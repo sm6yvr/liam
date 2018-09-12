@@ -213,7 +213,8 @@ void SETUPDEBUG::getBwfSignals() {
   Serial.println("Send d to abort");
   delay(3000);
   int i = 0;
-  while (1)
+  bool done = false;
+  while (!done)
   {
     while (Serial.available())
     {
@@ -221,6 +222,7 @@ void SETUPDEBUG::getBwfSignals() {
       if (inChar == 'd' || inChar == 'D')
       {
         Serial.println(F("Returning to debug mode"));
+        done = true;
         break;
       }
     }
