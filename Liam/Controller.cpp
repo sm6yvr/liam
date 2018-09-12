@@ -146,28 +146,17 @@ int CONTROLLER::waitWhileInside(int duration) {
   return 0;
 }
 
-int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
+int CONTROLLER::GoBackwardUntilInside (int sensorNumber) {
 #ifdef GO_BACKWARD_UNTIL_INSIDE
   int counter=MAX_GO_BACKWARD_TIME;
   //Mover has just stoped. Let it pause for a second.
-  delay(1000);
+  stop();
   long now = millis();
   long timeout = now + (MAX_GO_BACKWARD_TIME * 1000);
   // while(!sensor->isOutOfBounds()==false)
-  while(sensor->sensorOutside[0] || sensor->sensorOutside[1])
+  while(sensor->isOutOfBounds(sensorNumber))
   {
-    // if(sensor->sensorOutside[0])
-    // {
-    //   sprintf(buf,"left sensor is outside %i",sensor->sensorOutside[0]);
-    // Serial.println(buf);
-    // }
-    // if(sensor->sensorOutside[1])
-    // {
-    //   sprintf(buf,"ringht sensor is outside %i",sensor->sensorOutside[1]);
-    // Serial.println(buf);
-    // }
-
-    runBackward(FULLSPEED);
+    runBackwardOverTime(SLOWSPEED, FULLSPEED, ACCELERATION_DURATION);
     if(timeout - millis() < 0)
       return ERROR_OUTSIDE;
   }
@@ -202,6 +191,13 @@ void CONTROLLER::runForwardOverTime(int minSpeed, int targetSpeed, int time) {
   rightMotor->setSpeedOverTime(default_dir_fwd*targetSpeed, time);
 }
 
+
+void CONTROLLER::runBackwardOverTime(int minSpeed, int targetSpeed, int time) {
+  if (leftMotor->getSpeed() > -minSpeed) leftMotor->setSpeed(-minSpeed);
+  if (rightMotor->getSpeed() > -minSpeed) rightMotor->setSpeed(-minSpeed);
+  leftMotor->setSpeedOverTime(default_dir_fwd*-targetSpeed, time);
+  rightMotor->setSpeedOverTime(default_dir_fwd*-targetSpeed, time);
+}
 
 void CONTROLLER::runForward(int speed) {
   leftMotor->setSpeed(default_dir_fwd*speed);

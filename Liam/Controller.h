@@ -29,10 +29,11 @@ class CONTROLLER {
     int turn(int angle, bool toLeft);
     int waitWhileChecking(int duration);
     int waitWhileInside(int duration);
-    int GoBackwardUntilInside(BWFSENSOR *Sensor);
+    int GoBackwardUntilInside(int sensorNumber);
     void runForward(int speed);
     void runForwardOverTime(int minSpeed, int targetSpeed, int time);
     void runBackward(int speed);
+    void runBackwardOverTime(int minSpeed, int targetSpeed, int time);
     void stop();
     void turnIfObstacle();
 

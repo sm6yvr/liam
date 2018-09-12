@@ -283,7 +283,7 @@ void doMowing() {
 
     Mower.stop();
 
-    int err = Mower.GoBackwardUntilInside(&Sensor);
+    int err = Mower.GoBackwardUntilInside(i);
       if(err)
         Error.flag(err);
 
@@ -426,6 +426,13 @@ void doDocking() {
 
   // Check regularly if right sensor is outside
   if(Sensor.isOutOfBounds(1)) {
+
+#ifdef GO_BACKWARD_UNTIL_INSIDE
+        int err = Mower.GoBackwardUntilInside(1);
+        if (err)
+          Error.flag(err);
+        Mower.turnRight(30);
+#else
     long turnstart = millis();
     while (millis() - turnstart < 1500 && Sensor.isOutOfBounds(1)) {
       Mower.turnRight(20);
@@ -441,6 +448,8 @@ void doDocking() {
     }
     time_at_turning = millis();
     return;
+
+#endif
   }
 
   // If left sensor has been inside fence for a long time

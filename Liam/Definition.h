@@ -149,7 +149,7 @@ const int IDLE = 6;
 // Default behavior is to turn directly when mower is outside BWF, if definition below is enabled this might help mower not to get stuck in slopes.
 // If mower is not inside within x seconds mower will stop.
 //#define GO_BACKWARD_UNTIL_INSIDE
-//#define MAX_GO_BACKWARD_TIME  5 // try to get inside for max x seconds, then stop and error.
+#define MAX_GO_BACKWARD_TIME  5 // try to get inside for max x seconds, then stop and error.
 
 class DEFINITION {
   public:
