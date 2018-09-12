@@ -361,7 +361,7 @@ void doDocking() {
   // Make regular turns to avoid getting stuck on things
   if ((millis() - time_at_turning) > TURN_INTERVAL) {
     Mower.stop();
-    Mower.runBackward(FULLSPEED);
+    Mower.runBackward(DOCKING_WHEEL_HIGH_SPEED);
     delay(2000);
     Mower.stop();
     time_at_turning = millis();
@@ -371,9 +371,12 @@ void doDocking() {
 #if defined __Bumper__
   if (Mower.hasBumped()) {
     Mower.stop();
-    Mower.runBackward(FULLSPEED);
+    Mower.runBackward(DOCKING_WHEEL_HIGH_SPEED);
     delay(2000);
     Mower.stop();
+    if (Mower.hasBumped()) {
+      Error.flag(ERROR_BUMPERSTUCK);
+    }
     time_at_turning = millis();
     return;
   }
@@ -407,10 +410,10 @@ void doDocking() {
     }
 
     // Go back a bit and try again
-    Mower.runBackward(FULLSPEED);
+    Mower.runBackward(DOCKING_WHEEL_HIGH_SPEED);
     delay(1300);
     Mower.stop();
-    Mower.runForward(FULLSPEED);
+    Mower.runForward(DOCKING_WHEEL_HIGH_SPEED);
 
     // After third try. Try to go around obstacle
     if(collisionCount >= 3) {
@@ -418,20 +421,23 @@ void doDocking() {
       Mower.stop();
       collisionCount = 0;
       lastOutside = millis();
-      Mower.runForward(FULLSPEED);
+      Mower.runForward(DOCKING_WHEEL_HIGH_SPEED);
     }
     time_at_turning = millis();
     return;
   }
 
   // Check regularly if right sensor is outside
-  if(Sensor.isOutOfBounds(1)) {
+  if (Sensor.isOutOfBounds(1)) {
 
-#ifdef GO_BACKWARD_UNTIL_INSIDE
-        int err = Mower.GoBackwardUntilInside(1);
-        if (err)
-          Error.flag(err);
-        Mower.turnRight(30);
+#ifdef DOCKING_BACK_WHEN_INNER_SENSOR_IS_OUT
+    Mower.stop();
+    Mower.runBackward(FULLSPEED);
+    delay(500);
+    Mower.stop();
+    Mower.turnRight(DOCKING_TURN_ANGLE_AFTER_BACK_UP);
+    Mower.stop();
+    Mower.runForward(DOCKING_WHEEL_HIGH_SPEED);
 #else
     long turnstart = millis();
     while (millis() - turnstart < 1500 && Sensor.isOutOfBounds(1)) {
@@ -453,9 +459,9 @@ void doDocking() {
   }
 
   // If left sensor has been inside fence for a long time
-  if(millis() - lastOutside > 10000) {
+  if(millis() - lastOutside > DOCKING_INSIDE_TIMEOUT) {
     Mower.stop();
-    Mower.turnLeft(30);
+    Mower.turnLeft(DOCKING_TURN_AFTER_TIMEOUT);
     state = LOOKING_FOR_BWF;
     Serial.println("Start look for BWF");
     time_at_turning = millis();

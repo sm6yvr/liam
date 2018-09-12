@@ -145,11 +145,26 @@ const int IDLE = 6;
 #define CUTTERSPEED           100
 #define ACCELERATION_DURATION 400
 
+
+
+
 // Enable this if you need the mower to go backward until it's inside and then turn.
 // Default behavior is to turn directly when mower is outside BWF, if definition below is enabled this might help mower not to get stuck in slopes.
 // If mower is not inside within x seconds mower will stop.
 //#define GO_BACKWARD_UNTIL_INSIDE
 #define MAX_GO_BACKWARD_TIME  5 // try to get inside for max x seconds, then stop and error.
+
+
+//Settings for docking behavour. Alter these to adapt to your mower behavour at docking time
+#define DOCKING_WHEEL_HIGH_SPEED 100                //Speed for the fast wheel when downing
+#define DOCKING_WHEEL_LOW_SPEED 30                  //Speed for the slower wheel when docking
+#define DOCKING_TIME_TO_SLOW_SPEED 1000             //Time used for the slower wheel to slow down to its target speed
+#define DOCKING_TIME_TO_HIGH_SPEED 10               //Time used for the fast wheel to speed up to its target speed
+#define DOCKING_INSIDE_TIMEOUT 10000                //Time to spend continously on the inside of the BWF before restarting state LOOK_FOR_BWF
+#define DOCKING_TURN_AFTER_TIMEOUT 30               //Angle to turn inside-timeout has occurred and the mower is about to start looking for BWF.
+#define DOCKING_BACK_WHEN_INNER_SENSOR_IS_OUT false //Should the mower back up a little when the inner sensor is out of bounds. Otherwise just turn right on the spot.
+#define DOCKING_TURN_ANGLE_AFTER_BACK_UP 40         //If backing up when the inner sensor is out of bounds, then this is the turn angle to try to line up with the BWF.
+
 
 class DEFINITION {
   public:

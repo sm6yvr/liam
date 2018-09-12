@@ -221,10 +221,10 @@ void CONTROLLER::adjustMotorSpeeds(bool isOutOfBounds) {
   int  rms;
   int ltime;
   int rtime;
-  int lowSpeed = 30;
-  int highSpeed = FULLSPEED;
-  int shortTime = 10;
-  int longTime = 1000;
+  int lowSpeed = DOCKING_WHEEL_LOW_SPEED;
+  int highSpeed = DOCKING_WHEEL_HIGH_SPEED;
+  int shortTime = DOCKING_TIME_TO_HIGH_SPEED;
+  int longTime = DOCKING_TIME_TO_SLOW_SPEED;
 
   if (isOutOfBounds) {
 	  //Serial.println("Adjust to out of bounds");
