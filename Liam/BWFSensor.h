@@ -44,6 +44,7 @@ class BWFSENSOR {
     void printSignal();
 
   private:
+    String getSignalStatusName(int signalStatus);
     void assignIfNeeded(int sensor, int signalStatus);
     void select(int sensornumber);
     int sensorValue[NUMBER_OF_SENSORS];

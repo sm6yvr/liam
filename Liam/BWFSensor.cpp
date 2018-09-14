@@ -207,7 +207,26 @@ void BWFSENSOR::assignIfNeeded(int sensor, int signalStatus) {
   if (sensorValue[sensor] != signalStatus) {
     sensorValue[_currentSensor] = signalStatus;
     //Signal change here if needed
+    Serial.print(F("Sensor "));
+    Serial.print(sensor);
+    Serial.print(F(" "));
+    Serial.println(getSignalStatusName(signalStatus));
   };
+}
+
+String BWFSENSOR::getSignalStatusName(int signalStatus) {
+
+  switch (signalStatus)
+  {
+  case INSIDE:
+    return F("Inside");
+  case OUTSIDE:
+    return F("Outside");
+  case NOSIGNAL:
+    return F("No signal");
+  default:
+    return F("UNKNOWN");
+  }
 }
 
 
