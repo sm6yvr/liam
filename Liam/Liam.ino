@@ -68,6 +68,7 @@
 // Global variables
 int state;
 long time_at_turning = millis();
+int extraTurnAngle = 0;
 
 long olastemp = millis();
 // Set up all the defaults (check the Definition.h file for all default values)
@@ -287,11 +288,20 @@ void doMowing() {
       if(err)
         Error.flag(err);
 
+
+      if (millis()- time_at_turning < 3000) {
+        extraTurnAngle = extraTurnAngle + 10;
+      }
+      else {
+        extraTurnAngle = 0;
+      }
+      int turnAngle = 50 + extraTurnAngle ;
+      
     // Try to turn away from BWF
     if(i == 0)
-      err = Mower.turnToReleaseRight(50);
+      err = Mower.turnToReleaseRight(turnAngle);
     else
-      err = Mower.turnToReleaseLeft(50);
+      err = Mower.turnToReleaseLeft(turnAngle);
 
     if(err) {
       // If turning failed, reverse and try once more
@@ -300,9 +310,9 @@ void doMowing() {
       Mower.stop();
 
       if(i == 0)
-        err = Mower.turnToReleaseRight(30);
+        err = Mower.turnToReleaseRight(turnAngle);
       else
-        err = Mower.turnToReleaseLeft(30);
+        err = Mower.turnToReleaseLeft(turnAngle);
 
       if (err && err != ERROR_OVERLOAD) {
         Error.flag(err);
@@ -438,6 +448,8 @@ void doDocking() {
     Mower.turnRight(DOCKING_TURN_ANGLE_AFTER_BACK_UP);
     Mower.stop();
     Mower.runForward(DOCKING_WHEEL_HIGH_SPEED);
+    time_at_turning = millis();
+    lastOutside = millis();
 #else
     long turnstart = millis();
     while (millis() - turnstart < 1500 && Sensor.isOutOfBounds(1)) {
