@@ -1,4 +1,4 @@
-# liam - DIY Robot lawn mover
+# liam - DIY Robot lawn mower
 
 Liam is an arduino project for the DIY Robot Lawn Mover.
 
