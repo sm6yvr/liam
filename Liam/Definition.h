@@ -140,7 +140,8 @@ const int IDLE = 6;
 #define FLIPANGLE           75
 
 // Motor Speeds
-#define FULLSPEED           100
+#define MOWING_SPEED 100
+#define FULLSPEED 100
 #define SLOWSPEED           30
 #define CUTTERSPEED           100
 #define ACCELERATION_DURATION 400

@@ -228,7 +228,7 @@ void randomTurn(bool goBack) {
   }
   time_at_turning = millis();
   Compass.setNewTargetHeading();
-  Mower.runForward(FULLSPEED);
+  Mower.runForward(MOWING_SPEED);
 }
 
 
@@ -296,7 +296,7 @@ void doMowing() {
         extraTurnAngle = 0;
       }
       int turnAngle = 50 + extraTurnAngle ;
-      
+
     // Try to turn away from BWF
     if(i == 0)
       err = Mower.turnToReleaseRight(turnAngle);
@@ -329,7 +329,7 @@ void doMowing() {
 
   // When mowing, the cutter should be on and we should be going forward
   Mower.startCutter();
-  Mower.runForwardOverTime(SLOWSPEED, FULLSPEED, ACCELERATION_DURATION);
+  Mower.runForwardOverTime(SLOWSPEED, MOWING_SPEED, ACCELERATION_DURATION);
 
   // Adjust the speed of the mower to the grass thickness
   Mower.compensateSpeedToCutterLoad();
@@ -462,7 +462,7 @@ void doDocking() {
       Mower.stop();
     }
     else {
-      Mower.runForward(FULLSPEED);
+      Mower.runForward(MOWING_SPEED);
     }
     time_at_turning = millis();
     return;
@@ -517,7 +517,7 @@ void doLookForBWF() {
     return;
   }
 
-  Mower.runForwardOverTime(SLOWSPEED, FULLSPEED, ACCELERATION_DURATION);
+  Mower.runForwardOverTime(SLOWSPEED, MOWING_SPEED, ACCELERATION_DURATION);
   Mower.turnIfObstacle();
 }
 
@@ -566,7 +566,7 @@ void doCharging() {
 //}
 // ***************** MAIN LOOP ***************************************
 void loop() {
-  
+
   static long lastDisplayUpdate = 0;
   static int previousState;
 
@@ -577,7 +577,7 @@ void loop() {
 
   Battery.updateVoltage();
 
-  
+
   // int startingSensor = Sensor.getCurrentSensor();
   // Check state of all sensors
   // for(int i = startingSensor; i < startingSensor + NUMBER_OF_SENSORS; i++) {
@@ -615,7 +615,7 @@ void loop() {
     // olastemp = millis();
     //Mower.stop();
     Display.update();
-    //Mower.runForwardOverTime(SLOWSPEED, FULLSPEED, ACCELERATION_DURATION);
+    //Mower.runForwardOverTime(SLOWSPEED, MOWING_SPEED, ACCELERATION_DURATION);
     // Serial.print("\nprintTime : ");
     // Serial.println(millis() -olastemp);
     lastDisplayUpdate = millis();

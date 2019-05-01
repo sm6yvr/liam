@@ -154,7 +154,7 @@ void SETUPDEBUG::RampUpMotor(WHEELMOTOR* motor)
   motor->setSpeedOverTime(FULLSPEED, ACCELERATION_DURATION);
   while (!motor->isAtTargetSpeed()) {
     motor->setSpeedOverTime(FULLSPEED, ACCELERATION_DURATION);
-    delay(500);
+    delay(100);
   }
 }
 

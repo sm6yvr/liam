@@ -66,7 +66,7 @@ int CONTROLLER::turnToReleaseLeft(int angle) {
 }
 
 int CONTROLLER::turnToReleaseRight(int angle) {
-  
+
   //return 0; //Hack to get it running until we figure out what the heck is going on
 
   for (int i=0; i<(180) / 10; i++) {
@@ -295,10 +295,10 @@ boolean CONTROLLER::wheelsAreOverloaded() {
 	while (millis() - now <= 200)
 	{
     l_load = leftMotor->isAtTargetSpeed() ? leftMotor->getLoad() : 0;
-    l_load_limit = WHEELMOTOR_OVERLOAD;// *max(60, abs(leftMotor->getSpeed())) / FULLSPEED;
+    l_load_limit = WHEELMOTOR_OVERLOAD;// *max(60, abs(leftMotor->getSpeed())) / MOWING_SPEED;
 
 		r_load = rightMotor->isAtTargetSpeed() ? rightMotor->getLoad() : 0;
-    r_load_limit = WHEELMOTOR_OVERLOAD;// *max(60, abs(rightMotor->getSpeed())) / FULLSPEED;
+    r_load_limit = WHEELMOTOR_OVERLOAD;// *max(60, abs(rightMotor->getSpeed())) / MOWING_SPEED;
 		/*counter++;*/
 		delay(1);
 		if (l_load  < l_load_limit && r_load < r_load_limit)
@@ -334,7 +334,7 @@ void CONTROLLER::turnIfObstacle() {
     time_at_turning = millis();
     compass->setNewTargetHeading();
 
-    //runForward(FULLSPEED);
+    //runForward(MOWING_SPEED);
   }
 }
 boolean CONTROLLER::hasBumped() {
