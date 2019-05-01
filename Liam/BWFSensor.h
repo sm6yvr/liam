@@ -29,6 +29,8 @@ class BWFSENSOR {
     void setup();
 
     void selectNext();
+    void select(int sensornumber);
+    void SetManualSensorSelect(bool useManualMode);
 
 
     bool isInside(int sensornumber);
@@ -46,7 +48,7 @@ class BWFSENSOR {
   private:
     String getSignalStatusName(int signalStatus);
     void assignIfNeeded(int sensor, int signalStatus);
-    void select(int sensornumber);
+
     int sensorValue[NUMBER_OF_SENSORS];
     int getCurrentSensor();
     void clearSignal();
@@ -71,6 +73,7 @@ class BWFSENSOR {
     const static int arr_length=10;
     int arr[arr_length];
     int arr_count;
+    bool _manualSensorSelect = false;
 };
 
 #endif /* _BWFSENSOR_H_ */

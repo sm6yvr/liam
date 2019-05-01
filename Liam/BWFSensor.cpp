@@ -56,11 +56,14 @@ int BWFSENSOR::getCurrentSensor() {
 }
 
 void BWFSENSOR::setup() {
-  
+
   //select(0);
 }
 
 void BWFSENSOR::selectNext() {
+  if (_manualSensorSelect) {
+    return;
+  }
   if (signal_status != NOSIGNAL) {
     //Serial.println("Got signal");
     select((_currentSensor + 1) % NUMBER_OF_SENSORS);
@@ -77,11 +80,15 @@ void BWFSENSOR::selectNext() {
   }
 }
 
+void BWFSENSOR::SetManualSensorSelect(bool useManualMode){
+  _manualSensorSelect = useManualMode;
+}
+
 // Select active sensor
 void BWFSENSOR::select(int sensornumber) {
   //Serial.print("Selecting sensor: ");
   //Serial.println(sensornumber);
- 
+
    if (_currentSensor == sensornumber) {
     return;
   }
@@ -96,7 +103,7 @@ void BWFSENSOR::select(int sensornumber) {
   // clearSignal();
 
   _switching = false;
-  
+
    //long time = millis();
    //while (signal_status == NOSIGNAL
    //  && millis() - time < BWF_COLLECT_SIGNAL_TIME) // max time of 200ms
@@ -192,7 +199,7 @@ void BWFSENSOR::readSensor() {
     pulse_count_outside=0;
 
   }
-  
+
 
 
   // Store the received code for debug output

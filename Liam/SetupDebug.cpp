@@ -40,7 +40,7 @@ int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
     }
     return currentState;
   }
-  
+
   printHelpHelp();
   while (!Serial.available());      // Stay here until data is available
   inChar = (char)Serial.read(); // get the new byte:
@@ -195,9 +195,14 @@ void SETUPDEBUG::togglewheelRight() {
 }
 
 void SETUPDEBUG::getBwfSignals() {
-  Serial.println(F("-------- Testing Sensors 0 -> 3 --------"));
-  for (int i=0; i<4; i++) {
-    //sensor->select(i);
+  Serial.println(F("-------- Testing Sensors 0 -> "));
+  Serial.println(NUMBER_OF_SENSORS - 1);
+  Serial.println(F(" --------"));
+
+  sensor->SetManualSensorSelect(true);
+  for (int i=0; i < NUMBER_OF_SENSORS; i++) {
+
+    sensor->select(i);
     delay(1000);
     Serial.print(i);
     Serial.print(F(": "));
@@ -208,34 +213,7 @@ void SETUPDEBUG::getBwfSignals() {
     Serial.print(sensor->isOutside(i));
     Serial.println();
   }
-
-  Serial.println("Fast swapping sensors...");
-  Serial.println("Send d to abort");
-  delay(3000);
-  int i = 0;
-  bool done = false;
-  while (!done)
-  {
-    while (Serial.available())
-    {
-      char inChar = (char)Serial.read();
-      if (inChar == 'd' || inChar == 'D')
-      {
-        Serial.println(F("Returning to debug mode"));
-        done = true;
-        break;
-      }
-    }
-    Serial.print("Out of bounds:");
-
-    for (int i = 0; i < NUMBER_OF_SENSORS; i++) {
-      //sensor->select(i);
-      Serial.print(" ");
-      Serial.print(sensor->isOutOfBounds(i));
-    }
-    Serial.println("");
-    delay(500);
-  }
+  sensor->SetManualSensorSelect(false);
 
   Serial.println(F("Sensor test completed"));
 }
@@ -282,7 +260,7 @@ void SETUPDEBUG::cutterSpeedUp() {
   cutterspeed += 10;
   if(cutterspeed > 100) cutterspeed = 100;
   cutter->setSpeedOverTime(cutterspeed, 0);
- 
+
   cutter_motor_is_on = cutterspeed != 0;
   Serial.println(cutterspeed);
 }
@@ -368,4 +346,3 @@ void SETUPDEBUG::trimpotAdjust()
     delay(500);
   }
 }
-
