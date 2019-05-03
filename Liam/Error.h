@@ -20,6 +20,7 @@
 #define ERROR_OVERLOAD 2
 #define ERROR_TILT 3
 #define ERROR_LIFT 4
+#define ERROR_BUMPERSTUCK 5
 
 
 class ERROR {

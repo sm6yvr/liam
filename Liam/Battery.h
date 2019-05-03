@@ -22,7 +22,7 @@
 #define LEADACIDEMPTY   12000
 
 // Running average sample size
-#define FILTER        5
+#define FILTER        40
 
 // Voltage divider factor x10 to avoid decimal ( 4 = 40)
 #define VOLTDIVATOR   42

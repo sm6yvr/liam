@@ -22,6 +22,9 @@ SETUPDEBUG::SETUPDEBUG(CONTROLLER* controller, WHEELMOTOR* left, WHEELMOTOR* rig
 }
 
 int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
+#ifndef DEBUG_ENABLED
+  return currentState;
+#endif
 
   char inChar;
 
@@ -38,6 +41,7 @@ int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
     return currentState;
   }
 
+  printHelpHelp();
   while (!Serial.available());      // Stay here until data is available
   inChar = (char)Serial.read(); // get the new byte:
 
@@ -99,7 +103,6 @@ int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
       break;
     case 'm':
     case 'M':
-      mower->runForward(FULLSPEED);
       return MOWING;
     case 'b':
     case 'B':
@@ -114,6 +117,10 @@ int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
   inChar = 0;
 
 return SETUP_DEBUG;
+}
+
+void SETUPDEBUG::printHelpHelp() {
+  Serial.println(F("Send H for command list"));
 }
 
 void SETUPDEBUG::printHelp() {
@@ -142,21 +149,32 @@ void SETUPDEBUG::toggleLed() {
   led_is_on = !led_is_on;
 }
 
+void SETUPDEBUG::RampUpMotor(WHEELMOTOR* motor)
+{
+  motor->setSpeedOverTime(FULLSPEED, ACCELERATION_DURATION);
+  while (!motor->isAtTargetSpeed()) {
+    motor->setSpeedOverTime(FULLSPEED, ACCELERATION_DURATION);
+    delay(100);
+  }
+}
+
+void SETUPDEBUG::RampDownMotor(WHEELMOTOR* motor)
+{
+  motor->setSpeedOverTime(0, ACCELERATION_DURATION);
+  while (!motor->isAtTargetSpeed()) {
+    motor->setSpeedOverTime(0, ACCELERATION_DURATION);
+    delay(500);
+  }
+}
 void SETUPDEBUG::toggleWheelLeft() {
   if (left_wheel_motor_is_on == true) {
     Serial.println(F("Ramping down left wheel"));
-    for (int i=100; i>0; i--) {
-      leftMotor->setSpeed(i);
-      delay(10);
-    }
+    RampDownMotor(leftMotor);
     Serial.println(F("Ramp down completed"));
     left_wheel_motor_is_on = false;
   } else {
     Serial.println(F("Ramping up left wheel"));
-    for (int i=0; i<100; i++) {
-      leftMotor->setSpeed(i);
-      delay(10);
-    }
+    RampUpMotor(leftMotor);
     Serial.println(F("Ramp up completed"));
     left_wheel_motor_is_on = true;
   }
@@ -165,45 +183,46 @@ void SETUPDEBUG::toggleWheelLeft() {
 void SETUPDEBUG::togglewheelRight() {
   if (right_wheel_motor_is_on == true) {
     Serial.println(F("Ramping down right wheel"));
-    for (int i=100; i>0; i--) {
-      rightMotor->setSpeed(i);
-      delay(10);
-    }
+    RampDownMotor(rightMotor);
     Serial.println(F("Ramp down completed"));
     right_wheel_motor_is_on = false;
   } else {
     Serial.println(F("Ramping up right wheel"));
-    for (int i=0; i<100; i++) {
-      rightMotor->setSpeed(i);
-      delay(10);
-    }
+    RampUpMotor(rightMotor);
     Serial.println(F("Ramp up completed"));
     right_wheel_motor_is_on = true;
   }
 }
 
 void SETUPDEBUG::getBwfSignals() {
-  Serial.println(F("-------- Testing Sensors 0 -> 3 --------"));
-  for (int i=0; i<4; i++) {
+  Serial.println(F("-------- Testing Sensors 0 -> "));
+  Serial.println(NUMBER_OF_SENSORS - 1);
+  Serial.println(F(" --------"));
+
+  sensor->SetManualSensorSelect(true);
+  for (int i=0; i < NUMBER_OF_SENSORS; i++) {
+
     sensor->select(i);
     delay(1000);
     Serial.print(i);
     Serial.print(F(": "));
     sensor->printSignal();
     Serial.print(F(" in:"));
-    Serial.print(sensor->isInside());
+    Serial.print(sensor->isInside(i));
     Serial.print(F(" out:"));
-    Serial.print(sensor->isOutside());
+    Serial.print(sensor->isOutside(i));
     Serial.println();
   }
+  sensor->SetManualSensorSelect(false);
+
   Serial.println(F("Sensor test completed"));
 }
 
 void SETUPDEBUG::toggleCutterMotor() {
   if (cutter_motor_is_on) {
     Serial.println(F("Ramping down cutter"));
-    for (int i=100; i>=0; i--) {
-      cutter->setSpeed(i);
+    while (cutter->setSpeedOverTime(0, CUTTER_SPINUP_TIME) != 0)
+    {
       delay(10);
     }
     Serial.println(F("Ramp down completed"));
@@ -213,8 +232,8 @@ void SETUPDEBUG::toggleCutterMotor() {
   else
   {
     Serial.println(F("Ramping up cutter"));
-    for (int i=0; i<100; i++) {
-      cutter->setSpeed(i);
+    while (cutter->setSpeedOverTime(CUTTERSPEED, CUTTER_SPINUP_TIME) != 0)
+    {
       delay(10);
     }
     Serial.println(F("Ramp up completed"));
@@ -225,13 +244,13 @@ void SETUPDEBUG::toggleCutterMotor() {
 
 void SETUPDEBUG::testRun() {
   for (int i=0; i<100; i++) {
-    sensor->select(0);
+    //sensor->select(0);
     delay(100);
-    rightMotor->setSpeed((!sensor->isOutOfBounds()?100:-100));
+    rightMotor->setSpeed((!sensor->isOutOfBounds(0)?100:-100));
 
-    sensor->select(1);
+//    sensor->select(1);
     delay(100);
-    leftMotor->setSpeed((!sensor->isOutOfBounds()?100:-100));
+    leftMotor->setSpeed((!sensor->isOutOfBounds(1)?100:-100));
   }
   leftMotor->setSpeed(0);
   rightMotor->setSpeed(0);
@@ -240,14 +259,17 @@ void SETUPDEBUG::testRun() {
 void SETUPDEBUG::cutterSpeedUp() {
   cutterspeed += 10;
   if(cutterspeed > 100) cutterspeed = 100;
-  cutter->setSpeed(cutterspeed);
+  cutter->setSpeedOverTime(cutterspeed, 0);
+
+  cutter_motor_is_on = cutterspeed != 0;
   Serial.println(cutterspeed);
 }
 
 void SETUPDEBUG::cutterSpeedDown() {
   cutterspeed -= 10;
   if(cutterspeed < 0) cutterspeed = 0;
-  cutter->setSpeed(cutterspeed);
+  cutter->setSpeedOverTime(cutterspeed, 0);
+  cutter_motor_is_on = cutterspeed != 0;
   Serial.println(cutterspeed);
 }
 
@@ -324,4 +346,3 @@ void SETUPDEBUG::trimpotAdjust()
     delay(500);
   }
 }
-

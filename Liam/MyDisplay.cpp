@@ -59,7 +59,8 @@ void MYDISPLAY::update()
 #endif
 
   print(F("InOut: "));
-  print(!sensor->isOutOfBounds());
+  print(!sensor->isOutOfBounds(0));
+  print(!sensor->isOutOfBounds(1));
 
   print("\n");
   // Row 2: Motor load
@@ -75,7 +76,7 @@ void MYDISPLAY::update()
 
   print("\n");
   // Row 4: State and Error data
-  print(F("State:"));
+  print(F("State: "));
 
   switch (*moverstate)
   {
@@ -90,6 +91,12 @@ void MYDISPLAY::update()
       break;
     case CHARGING:
       print(F("CHARGING"));
+      break;
+    case LOOKING_FOR_BWF:
+      print(F("LOOKING"));
+      break;
+      case IDLE:
+      print(F("IDLE"));
       break;
   }
 }

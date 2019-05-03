@@ -1,6 +1,6 @@
 Liam/LocalDefinition.h
 .DS_Store
-.vscode
+.vscode/*
 */.vs/
 */__vm/
 */Debug/
@@ -8,3 +8,6 @@ Liam/LocalDefinition.h
 *.vcxproj*
 *.orig
 */Release/*
+node_modules/*
+.browse.VC.db
+yarn.lock

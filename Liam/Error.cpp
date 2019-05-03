@@ -31,6 +31,8 @@ String ERROR::errorMessage(int error_number)
       return F("TILTED");
     case ERROR_LIFT:
       return F("FRONT LIFTED");
+    case ERROR_BUMPERSTUCK:
+      return F("BUMPER STUCK");
     default:
       return F("UNKNOWN ERROR");
   }

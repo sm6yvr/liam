@@ -19,6 +19,7 @@ class CUTTERMOTOR {
     CUTTERMOTOR(int type_, int pwmpin_, int loadpin_);
 
     void initialize();
+    int setSpeedOverTime(int setspeed, int time);
     void setSpeed(int setspeed);
     int getSpeed();
 
@@ -36,6 +37,12 @@ class CUTTERMOTOR {
     int speed;
     int overload_level;
     Servo cutter;
+
+
+    int ot_setTime = 0;
+    int ot_currentTargetValue = 0;
+    int ot_startingValue = 0;
+    int ot_currentValue = 0;
 };
 
 #endif /* _CUTTERMOTOR_H_ */

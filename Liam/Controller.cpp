@@ -12,6 +12,8 @@
 #include "Definition.h"
 #include "Error.h"
 
+extern long time_at_turning;
+
 /** Specific constructor.
 */
 CONTROLLER::CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp) {
@@ -28,8 +30,7 @@ CONTROLLER::CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BW
 boolean CONTROLLER::allSensorsAreOutside() {
 
   for(int i=0; i<NUMBER_OF_SENSORS; i++) {
-    sensor->select(i);
-    if (!sensor->isOutOfBounds())
+    if (!sensor->isOutOfBounds(i))
       return false;
   }
 
@@ -38,8 +39,7 @@ boolean CONTROLLER::allSensorsAreOutside() {
 
 int CONTROLLER::getFirstSensorOutOfBounds() {
 	for (int i = 0; i<NUMBER_OF_SENSORS; i++) {
-		sensor->select(i);
-		if (sensor->isOutOfBounds())
+		if (sensor->isOutOfBounds(i))
 			return i;
 	}
 
@@ -47,15 +47,13 @@ int CONTROLLER::getFirstSensorOutOfBounds() {
 }
 
 int CONTROLLER::turnToReleaseLeft(int angle) {
-  turnLeft(angle);
+  //return 0; //Hack to get it running until we figure out what the heck is going on
 
-  for (int i=0; i<20; i++) {
-    sensor->select(1);
-
-    if (!sensor->isOutOfBounds()) {
-      sensor->select(0);
-      if (!sensor->isOutOfBounds())
-        return 0;       // OK
+  for (int i=0; i<180; i++) {
+    if (!sensor->isOutOfBounds(0) && !sensor->isOutOfBounds(1))
+    {
+      turnLeft(angle);
+      return 0;       // OK
     }
 
     if (wheelsAreOverloaded())
@@ -68,14 +66,14 @@ int CONTROLLER::turnToReleaseLeft(int angle) {
 }
 
 int CONTROLLER::turnToReleaseRight(int angle) {
-  turnRight(angle);
 
-  for (int i=0; i<20; i++) {
-    sensor->select(0);
+  //return 0; //Hack to get it running until we figure out what the heck is going on
 
-    if (!sensor->isOutOfBounds()) {
-      sensor->select(1);
-      if (!sensor->isOutOfBounds())
+  for (int i=0; i<(180) / 10; i++) {
+
+    if (!sensor->isOutOfBounds(0) && !sensor->isOutOfBounds(1))
+    {
+        turnRight(angle);
         return 0;       // OK
     }
 
@@ -88,26 +86,28 @@ int CONTROLLER::turnToReleaseRight(int angle) {
   return ERROR_OUTSIDE;             // Timed Out
 }
 
-int CONTROLLER::turnRight(int angle) {
+int CONTROLLER::turn(int angle, bool toLeft) {
+  unsigned long start = millis();
   int outcome = 0;
-
-  leftMotor->setSpeed(default_dir_fwd*100);
-  rightMotor->setSpeed(default_dir_fwd*-100);
-
-  delay(angle*TURNDELAY);
-
+  int leftFactor = toLeft ? -1 :  1;
+  bool done = false;
+  while (!done){
+    int l = leftMotor->setSpeedOverTime(leftFactor * default_dir_fwd * 100, 30);
+    int r = rightMotor->setSpeedOverTime(-leftFactor * default_dir_fwd * 100, 30);
+    done = l == 0 && r == 0;
+    delay(1);
+  }
+  delay(angle*TURNDELAY + start - millis());
+  stop();
   return outcome;
 }
 
+int CONTROLLER::turnRight(int angle) {
+  return turn(angle, false);
+}
+
 int CONTROLLER::turnLeft(int angle) {
-  int outcome = 0;
-
-  leftMotor->setSpeed(default_dir_fwd*-100);
-  rightMotor->setSpeed(default_dir_fwd*100);
-
-  delay(angle*TURNDELAY);
-
-  return outcome;
+  return turn(angle, true);
 }
 
 
@@ -138,8 +138,7 @@ int CONTROLLER::waitWhileInside(int duration) {
 
   for (int k=0; k<duration/(NUMBER_OF_SENSORS*200); k++)
     for (int i=0; i<NUMBER_OF_SENSORS; i++) {
-      sensor->select(i);
-      if(sensor->isOutOfBounds())
+      if(sensor->isOutOfBounds(i))
         return 2;
     }
 
@@ -147,29 +146,29 @@ int CONTROLLER::waitWhileInside(int duration) {
   return 0;
 }
 
+int CONTROLLER::GoBackwardUntilInside (int sensorNumber) {
 #ifdef GO_BACKWARD_UNTIL_INSIDE
-int CONTROLLER::GoBackwardUntilInside (BWFSENSOR *Sensor) {
   int counter=MAX_GO_BACKWARD_TIME;
   //Mover has just stoped. Let it pause for a second.
-  delay(1000);
-  while(!sensor->isOutOfBounds()==false)
+  stop();
+  long now = millis();
+  long timeout = now + (MAX_GO_BACKWARD_TIME * 1000);
+  // while(!sensor->isOutOfBounds()==false)
+  while(sensor->isOutOfBounds(sensorNumber))
   {
-    runBackward(FULLSPEED);
-    delay(1000);
-    counter--;
-    if(counter<=0)
+    runBackwardOverTime(SLOWSPEED, FULLSPEED, ACCELERATION_DURATION);
+    if(timeout - millis() < 0)
       return ERROR_OUTSIDE;
   }
+#endif
   return 0;
 }
-#endif
 void CONTROLLER::startCutter() {
-  for (int i=0; i<CUTTERSPEED; i++)
-    cutter->setSpeed(i);
+  cutter->setSpeedOverTime(CUTTERSPEED, CUTTER_SPINUP_TIME);
 }
 
 void CONTROLLER::stopCutter() {
-  cutter->setSpeed(0);
+  cutter->setSpeedOverTime(0, 0);
 }
 
 void CONTROLLER::storeState() {
@@ -182,6 +181,22 @@ void CONTROLLER::restoreState() {
   leftMotor->setSpeed(leftMotorSpeed);
   rightMotor->setSpeed(rightMotorSpeed);
   cutter->setSpeed(cutterSpeed);
+}
+
+
+void CONTROLLER::runForwardOverTime(int minSpeed, int targetSpeed, int time) {
+  if (leftMotor->getSpeed() < minSpeed) leftMotor->setSpeed(minSpeed);
+  if (rightMotor->getSpeed() < minSpeed) rightMotor->setSpeed(minSpeed);
+  leftMotor->setSpeedOverTime(default_dir_fwd*targetSpeed, time);
+  rightMotor->setSpeedOverTime(default_dir_fwd*targetSpeed, time);
+}
+
+
+void CONTROLLER::runBackwardOverTime(int minSpeed, int targetSpeed, int time) {
+  if (leftMotor->getSpeed() > -minSpeed) leftMotor->setSpeed(-minSpeed);
+  if (rightMotor->getSpeed() > -minSpeed) rightMotor->setSpeed(-minSpeed);
+  leftMotor->setSpeedOverTime(default_dir_fwd*-targetSpeed, time);
+  rightMotor->setSpeedOverTime(default_dir_fwd*-targetSpeed, time);
 }
 
 void CONTROLLER::runForward(int speed) {
@@ -201,17 +216,17 @@ void CONTROLLER::setDefaultDirectionForward(bool fwd) {
     default_dir_fwd = -1;
 };
 
-void CONTROLLER::adjustMotorSpeeds() {
+void CONTROLLER::adjustMotorSpeeds(bool isOutOfBounds) {
   int  lms;
   int  rms;
   int ltime;
   int rtime;
-  int lowSpeed = 40;
-  int highSpeed = FULLSPEED;
-  int shortTime = 10;
-  int longTime = 500;
+  int lowSpeed = DOCKING_WHEEL_LOW_SPEED;
+  int highSpeed = DOCKING_WHEEL_HIGH_SPEED;
+  int shortTime = DOCKING_TIME_TO_HIGH_SPEED;
+  int longTime = DOCKING_TIME_TO_SLOW_SPEED;
 
-  if (sensor->isOutOfBounds()) {
+  if (isOutOfBounds) {
 	  //Serial.println("Adjust to out of bounds");
     lms = highSpeed;
 	ltime = shortTime;
@@ -254,6 +269,8 @@ int CONTROLLER::compensateSpeedToCutterLoad() {
 }
 
 int CONTROLLER::compensateSpeedToCompassHeading() {
+  if (!leftMotor->isAtTargetSpeed() || !rightMotor->isAtTargetSpeed()) return;
+
   int  lms = abs(leftMotor->getSpeed());
   int  rms = abs(rightMotor->getSpeed());
 
@@ -277,11 +294,11 @@ boolean CONTROLLER::wheelsAreOverloaded() {
 	int counter = 0;
 	while (millis() - now <= 200)
 	{
-		l_load = leftMotor->getLoad();
-		l_load_limit = WHEELMOTOR_OVERLOAD * max(30,abs(leftMotor->getSpeed())) / FULLSPEED;
+    l_load = leftMotor->isAtTargetSpeed() ? leftMotor->getLoad() : 0;
+    l_load_limit = WHEELMOTOR_OVERLOAD;// *max(60, abs(leftMotor->getSpeed())) / MOWING_SPEED;
 
-		r_load = rightMotor->getLoad();
-		r_load_limit = WHEELMOTOR_OVERLOAD * max(30,abs(rightMotor->getSpeed())) / FULLSPEED;
+		r_load = rightMotor->isAtTargetSpeed() ? rightMotor->getLoad() : 0;
+    r_load_limit = WHEELMOTOR_OVERLOAD;// *max(60, abs(rightMotor->getSpeed())) / MOWING_SPEED;
 		/*counter++;*/
 		delay(1);
 		if (l_load  < l_load_limit && r_load < r_load_limit)
@@ -299,7 +316,7 @@ void CONTROLLER::turnIfObstacle() {
 #if defined __Bumper__
     hasBumped() ||
 #endif
-#if defined __MS9150__ || defined __MS5883L__
+#if defined __MS9150__ || defined __MS5883L__ || defined __ADXL345__
     hasTilted() ||
 #endif
     wheelsAreOverloaded()) {
@@ -313,8 +330,11 @@ void CONTROLLER::turnIfObstacle() {
     else {
       turnLeft(angle);
     }
+    stop();
+    time_at_turning = millis();
     compass->setNewTargetHeading();
-    runForward(FULLSPEED);
+
+    //runForward(MOWING_SPEED);
   }
 }
 boolean CONTROLLER::hasBumped() {
