@@ -621,3 +621,9 @@ void loop() {
     lastDisplayUpdate = millis();
   }
 }
+
+// The following sets C++ mode in Emacs
+//
+// Local Variables:
+// mode:c++
+// End:
