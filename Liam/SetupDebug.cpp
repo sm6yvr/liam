@@ -243,6 +243,11 @@ void SETUPDEBUG::toggleCutterMotor() {
 }
 
 void SETUPDEBUG::testRun() {
+  Serial.println(F("Test run"));
+  
+  if (sensor->isOutOfBounds(0)||sensor->isOutOfBounds(1)) {
+    Serial.println("Out of bounds");  
+  }
   for (int i=0; i<100; i++) {
     //sensor->select(0);
     delay(100);
@@ -254,6 +259,7 @@ void SETUPDEBUG::testRun() {
   }
   leftMotor->setSpeed(0);
   rightMotor->setSpeed(0);
+  Serial.println(F("Test run ended"));
 }
 
 void SETUPDEBUG::cutterSpeedUp() {
