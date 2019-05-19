@@ -10,6 +10,7 @@
 
 #include "SetupDebug.h"
 #include "Definition.h"
+#include "StateManager.h"
 
 SETUPDEBUG::SETUPDEBUG(CONTROLLER* controller, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt) {
   mower = controller;
@@ -21,29 +22,16 @@ SETUPDEBUG::SETUPDEBUG(CONTROLLER* controller, WHEELMOTOR* left, WHEELMOTOR* rig
   battery = batt;
 }
 
-int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
-#ifndef DEBUG_ENABLED
-  return currentState;
-#endif
+void SETUPDEBUG::InitializeDebugMode() {
+  mower->stopCutter();
+  mower->stop();
+  printHelp();
+}
 
-  char inChar;
+OperationStates SETUPDEBUG::runSetupDebug(OperationStates currentOpState){
 
-  if (currentState != SETUP_DEBUG) {
-    if (Serial.available()) {
-      inChar = (char)Serial.read();
-      if (inChar == 'd' || inChar == 'D') {
-        mower->stopCutter();
-        mower->stop();
-        SETUPDEBUG::printHelp();
-        return SETUP_DEBUG;
-      }
-    }
-    return currentState;
-  }
-
-  printHelpHelp();
-  while (!Serial.available());      // Stay here until data is available
-  inChar = (char)Serial.read(); // get the new byte:
+  if (!Serial.available()) return OperationStates::IDLE;      //Exit early if no data is available
+  char inChar = (char)Serial.read(); // get the new byte:
 
   switch (inChar) {
     case 'H':
@@ -54,59 +42,73 @@ int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
     case 'D':
     case 'd':
       SETUPDEBUG::toggleLed();
+      printHelpHelp();
       break;
 
     case 'L':
     case 'l':
       SETUPDEBUG::toggleWheelLeft();
+      printHelpHelp();
       break;
 
     case 'R':
     case 'r':
       SETUPDEBUG::togglewheelRight();
+      printHelpHelp();
       break;
 
     case 'S':
     case 's':
       SETUPDEBUG::getBwfSignals();
+      printHelpHelp();
       break;
 
-    case 'C':
-    case 'c':
+    case 'V':
+    case 'v':
       SETUPDEBUG::toggleCutterMotor();
+      printHelpHelp();
       break;
 
     case 'T':
     case 't':
       SETUPDEBUG::testRun();
+      printHelpHelp();
       break;
 
     case '+':
       SETUPDEBUG::cutterSpeedUp();
+      printHelpHelp();
       break;
 
     case '-':
       SETUPDEBUG::cutterSpeedDown();
+      printHelpHelp();
       break;
 
     case 'P':
     case 'p':
       SETUPDEBUG::printStatus();
+      printHelpHelp();
       break;
 
     case '9':
       SETUPDEBUG::turnRight();
+      printHelpHelp();
       break;
     case 'g':
     case 'G':
       SETUPDEBUG::getMotionValues();
+      printHelpHelp();
       break;
     case 'm':
     case 'M':
-      return MOWING;
-    case 'b':
-    case 'B':
-      return LOOKING_FOR_BWF;
+      return OperationStates::MOW;
+    case 'o':
+    case 'O':
+      return OperationStates::MOW_ONCE;
+    case 'c':
+    case 'C':
+      return OperationStates::CHARGE;
 
     case 'a':
     case 'A':
@@ -116,7 +118,7 @@ int SETUPDEBUG::tryEnterSetupDebugMode(int currentState) {
 
   inChar = 0;
 
-return SETUP_DEBUG;
+  return OperationStates::IDLE;
 }
 
 void SETUPDEBUG::printHelpHelp() {
@@ -128,15 +130,15 @@ void SETUPDEBUG::printHelp() {
   Serial.println(F("L = Left Wheel motor on/off"));
   Serial.println(F("R = Right Wheel motor on/off"));
   Serial.println(F("9 = Turn 90 degrees right"));
-  Serial.println(F("C = Cutter motor on/off"));
+  Serial.println(F("V = Cutter motor on/off"));
   Serial.println(F("S = test BWF Sensor"));
   Serial.println(F("G = test Gyro/Compass/Accelerometer"));
   Serial.println(F("D = turn LED on/off"));
   Serial.println(F("T = make a 10 second test run"));
   Serial.println(F("P = print battery & debug values"));
   Serial.println(F("A = Trimpot adjust mode"));
-  Serial.println(F("M = Start mowing"));
-  Serial.println(F("B = Look for BWF and dock"));
+  Serial.println(F("M = Set operation state: MOW"));
+  Serial.println(F("C = Set operation state: CHARGE"));
 }
 
 void SETUPDEBUG::toggleLed() {

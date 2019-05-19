@@ -322,7 +322,7 @@ void CONTROLLER::turnIfObstacle() {
     wheelsAreOverloaded()) {
     int angle = random(90, 160);
     runBackward(FULLSPEED);
-    delay(1200);
+    delay(800);
 
     if (random(0, 100) % 2 == 0) {
       turnRight(angle);

@@ -16,13 +16,15 @@
 #include "Definition.h"
 #include "Controller.h"
 
+
 #ifndef _SETUPDEBUG_H_
 #define _SETUPDEBUG_H_
 
 class SETUPDEBUG {
   public:
     SETUPDEBUG(CONTROLLER* mower, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt);
-    int tryEnterSetupDebugMode(int currentState);
+    void InitializeDebugMode();
+    OperationStates runSetupDebug(OperationStates currentOpState);
     void printHelpHelp();
   private:
     CONTROLLER* mower;

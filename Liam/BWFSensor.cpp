@@ -48,6 +48,9 @@ int BWFSENSOR::inside_code[] = {INSIDE_BWF, INSIDE_BWF};
 BWFSENSOR::BWFSENSOR(int selA, int selB) {
   selpin_A = selA;
   selpin_B = selB;
+  for (int i = 0; i < arr_length; i++) {
+    assignIfNeeded(i, NOSIGNAL);
+  }
 }
 
 
@@ -213,11 +216,14 @@ void BWFSENSOR::readSensor() {
 void BWFSENSOR::assignIfNeeded(int sensor, int signalStatus) {
   if (sensorValue[sensor] != signalStatus) {
     sensorValue[_currentSensor] = signalStatus;
+
     //Signal change here if needed
-    Serial.print(F("Sensor "));
-    Serial.print(sensor);
-    Serial.print(F(" "));
-    Serial.println(getSignalStatusName(signalStatus));
+    if(logAllSensorChanges) {
+      Serial.print(F("Sensor "));
+      Serial.print(sensor);
+      Serial.print(F(" "));
+      Serial.println(getSignalStatusName(signalStatus));
+    }
   };
 }
 

@@ -33,6 +33,8 @@ String ERROR::errorMessage(int error_number)
       return F("FRONT LIFTED");
     case ERROR_BUMPERSTUCK:
       return F("BUMPER STUCK");
+    case ERROR_FATAL_TIMEOUT:
+      return F("FATAL TIMEOUT");
     default:
       return F("UNKNOWN ERROR");
   }

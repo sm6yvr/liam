@@ -81,22 +81,22 @@ void MYDISPLAY::update()
   switch (*moverstate)
   {
     case MOWING:
-      print(F("MOWING"));
+      println(F("MOWING"));
       break;
     case LAUNCHING:
-      print(F("LAUNCHING"));
+      println(F("LAUNCHING"));
       break;
     case DOCKING:
-      print(F("DOCKING"));
+      println(F("DOCKING"));
       break;
     case CHARGING:
-      print(F("CHARGING"));
+      println(F("CHARGING"));
       break;
     case LOOKING_FOR_BWF:
-      print(F("LOOKING"));
+      println(F("LOOKING"));
       break;
-      case IDLE:
-      print(F("IDLE"));
+    case SETUP_DEBUG:
+      println(F("IDLE"));
       break;
   }
 }

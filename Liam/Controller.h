@@ -34,6 +34,7 @@ class CONTROLLER {
     void runForwardOverTime(int minSpeed, int targetSpeed, int time);
     void runBackward(int speed);
     void runBackwardOverTime(int minSpeed, int targetSpeed, int time);
+    int runBackwardsToInside(int speed, int duration);
     void stop();
     void turnIfObstacle();
 

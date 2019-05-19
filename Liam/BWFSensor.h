@@ -41,6 +41,7 @@ class BWFSENSOR {
     bool gotSignal();
 
     void readSensor();
+    bool logAllSensorChanges = false;
 
 
     void printSignal();

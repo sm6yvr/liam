@@ -36,8 +36,6 @@
 
 #define BATTERY_TYPE LIION
 
-#define DEBUG_ENABLED true
-
 const int NUMBER_OF_SENSORS = 2;  // Number of BWF sensors can be 1-4 depending on shield default 2 left and right front.
 
 // Pin setup following Morgan 1.5 shield and up
@@ -79,7 +77,15 @@ const int DOCKING = 2;
 const int CHARGING = 3;
 const int LOOKING_FOR_BWF = 4;
 const int SETUP_DEBUG = 5;
-const int IDLE = 6;
+
+
+enum OperationStates {
+  MOW = 0,
+  CHARGE = 1,
+  IDLE = 2,
+  BOOTING = 3,
+  MOW_ONCE = 4,
+};
 
 
 // Turning details
@@ -87,6 +93,7 @@ const int IDLE = 6;
 #define TURNDELAY           20 //Reduce for smaller turning angle
 // Max expected time between turns
 #define TURN_INTERVAL         60000
+#define FATAL_TURN_INTERVAL 300000
 
 #pragma region BWF
 
