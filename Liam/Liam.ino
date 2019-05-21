@@ -60,17 +60,16 @@
 #include "Sens5883L.h"
 #include "Sens9150.h"
 #include "Definition.h"
-#include "StateManager.h"
+#include "ModeManager.h"
 
 #include "SetupDebug.h"
 
 
 // Global variables
 int state;
-int operationState;
 long time_at_turning = millis();
 int extraTurnAngle = 0;
-
+float filteredLooptime;
 long olastemp = millis();
 // Set up all the defaults (check the Definition.h file for all default values)
 DEFINITION Defaults;
@@ -104,13 +103,13 @@ CONTROLLER Mower(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass);
 
 SETUPDEBUG SetupAndDebug(&Mower, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery);
 
-STATEMANAGER StateManager(&Mower, &Sensor, &Battery, &SetupAndDebug);
+MODEMANAGER ModeManager(&Mower, &Sensor, &Battery, &SetupAndDebug);
 
 // Display
 #if defined __LCD__
-myLCD Display(&Battery, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &state);
+myLCD Display(&Battery, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &state, &ModeManager);
 #else
-MYDISPLAY Display(&Battery, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &state);
+MYDISPLAY Display(&Battery, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &state, &ModeManager);
 #endif
 
 // RTC clock
@@ -119,7 +118,7 @@ CLOCK Clock(GO_OUT_TIME, GO_HOME_TIME);
 #endif
 
 // Error handler
-ERROR Error(&Display, LED_PIN, &Mower);
+ERROR Error(&Display, LED_PIN, &Mower, &ModeManager);
 
 // This function calls the sensor object every time there is a new signal pulse on pin2
 void updateBWF() {
@@ -195,37 +194,6 @@ void setup() {
   Serial.println(F("----------------"));
   delay(5000);
   Display.clear();
-}
-
-void __setOperationState(int opState) {
-
-  if (opState == operationState) return;
-
-
-
-  operationState = opState;
-  Serial.print(F("New state: "));
-  Serial.println(operationState);
-
-  if (opState == MOW || opState == MOW_ONCE) {
-    state = Battery.isBeingCharged() ? CHARGING : MOWING;
-    operationState = opState;
-    Sensor.logAllSensorChanges = false;
-    return;
-  }
-  if (opState == CHARGE) {
-    state = Battery.isBeingCharged() ? CHARGING : LOOKING_FOR_BWF;
-    operationState = opState;
-    Sensor.logAllSensorChanges = false;
-    return;
-  }
-
-  Sensor.logAllSensorChanges = true;
-
-  if (opState == BOOTING) return;
-
-  SetupAndDebug.InitializeDebugMode();
-  state = SETUP_DEBUG;
 }
 
 // TODO: This should probably be in Controller
@@ -531,6 +499,11 @@ void doWait()
 void doLookForBWF() {
   Mower.stopCutter();
 
+  if (ModeManager.getCurrentMode() == CutterModes::MOW_ONCE) {
+    setAndSetupMode(CHARGE_ONLY);
+  }
+
+
   // If sensor is outside, then the BWF has been found
   if(Sensor.isOutOfBounds(0) || Sensor.isOutOfBounds(1)) {
     state = DOCKING;
@@ -551,7 +524,6 @@ void doLookForBWF() {
 
 // ***************** CHARGING ****************************************
 void doCharging() {
-  if (StateManager.getCurrentOperationalState() == OperationStates::MOW_ONCE) StateManager.setOperationState(OperationStates::CHARGE);
   time_at_turning = millis();
   static long lastContact = 0;
   Mower.stop();
@@ -579,7 +551,7 @@ void doCharging() {
 #endif
     ) {
     // Don't launch if no BWF signal is present
-    if(operationState == MOW && Sensor.isInside(0) || Sensor.isOutside(0) || Sensor.isInside(1) || Sensor.isOutside(1) ) {
+    if(ModeManager.CurrentModeAllowsLaunch() && (Sensor.isInside(0) || Sensor.isOutside(0) || Sensor.isInside(1) || Sensor.isOutside(1))) {
       state = LAUNCHING;
       return;
     }
@@ -587,7 +559,7 @@ void doCharging() {
 }
 
 void handleOperationalState() {
-  if (operationState == BOOTING) {
+  if (ModeManager.getCurrentMode() == CutterModes::BOOTING) {
     Serial.println("Selecting intital operation state.");
     Mower.stopCutter();
     Mower.stop();
@@ -609,32 +581,66 @@ void handleOperationalState() {
 
     if (Battery.isBeingCharged()) {
         Serial.println("Mower is beeing charged, selecting state CHARGE");
-        StateManager.setOperationState(CHARGE);
+        setAndSetupMode(CHARGE_ONLY);
         Serial.println(F("Send D to enter setup and debug mode"));
         return;
     }
 
     if (Sensor.isOutOfBounds(0) && !Sensor.isOutOfBounds(1)) {
       Serial.println("Mower is placed on BWF, selecting state CHARGE");
-      StateManager.setOperationState(CHARGE);
+      setAndSetupMode(CHARGE_ONLY);
       Serial.println(F("Send D to enter setup and debug mode"));
       return;
     }
 
     if (Sensor.isOutOfBounds(0) && Sensor.isOutOfBounds(1)) {
       Serial.println("Mower is placed on out of bounds, selecting state IDLE");
-      StateManager.setOperationState(IDLE);
+      setAndSetupMode(IDLE);
       return;
     }
 
-    Serial.println("MOW selected.");
+    Serial.println("MOW_REPEAT selected.");
     Serial.println(F("Send D to enter setup and debug mode"));
 
-    StateManager.setOperationState(MOW);
+
+    setAndSetupMode(MOW_REPEAT);
     return;
   }
 
-  StateManager.tryChangeOperationState();
+  if (ModeManager.tryChangeMode()) {
+
+    setupForMode(ModeManager.getCurrentMode());
+  }
+}
+
+void setAndSetupMode(CutterModes newMode){
+  if (!ModeManager.setMode(newMode)) return; //Exit early if mode was not changed
+
+  time_at_turning = millis();
+  setupForMode(newMode);
+}
+
+void setupForMode(CutterModes newMode) {
+  if (newMode == MOW_REPEAT || newMode == MOW_ONCE) {
+    Serial.println("Setting up for mowing");
+    state = Battery.isBeingCharged() ? CHARGING : MOWING;
+    return;
+  }
+  if (newMode == CHARGE_ONLY) {
+    Serial.println("Setting up for charge");
+    state = Battery.isBeingCharged() ? CHARGING : LOOKING_FOR_BWF;
+    return;
+  }
+
+  if (newMode == BOOTING) {
+    Serial.println("New state is booting. Unexpected.");
+
+    return;
+  }
+  Serial.println("Setting up for IDLE");
+
+  SetupAndDebug.InitializeDebugMode();
+  state = SETUP_DEBUG;
 }
 
 //void awareDelay(int ms) {
@@ -647,6 +653,8 @@ void handleOperationalState() {
 //}
 // ***************** MAIN LOOP ***************************************
 void loop() {
+  long loopStart = millis();
+  Battery.updateVoltage();
 
   static long lastDisplayUpdate = 0;
   static int previousState;
@@ -654,44 +662,44 @@ void loop() {
   long looptime = millis();
 
   handleOperationalState();
+  if (ModeManager.getCurrentMode() == CutterModes:: HOLD_FOR_ERROR){
+    Mower.stop();
+    Mower.stopCutter();
 
-  Battery.updateVoltage();
 
-
-  // int startingSensor = Sensor.getCurrentSensor();
-  // Check state of all sensors
-  // for(int i = startingSensor; i < startingSensor + NUMBER_OF_SENSORS; i++) {
-
-  //   Sensor.select(i % NUMBER_OF_SENSORS);
-  //   Sensor.sensorOutside[Sensor.getCurrentSensor()] = Sensor.isOutOfBounds();
-  // }
-
-  // Safety checks
-  if (state != SETUP_DEBUG) {
-    checkIfFlipped();
-    checkIfLifted();
+    Error.show();
+    return;
   }
+  else {
+    // Safety checks
+    if (state != SETUP_DEBUG) {
+      checkIfFlipped();
+      checkIfLifted();
+    }
 
-  switch(state) {
-    case MOWING:
-      doMowing();
-      break;
-    case LAUNCHING:
-      doLaunching();
-      break;
-    case DOCKING:
-      doDocking();
-      break;
-    case LOOKING_FOR_BWF:
-      doLookForBWF();
-      break;
-    case CHARGING:
-      doCharging();
-      break;
-    case SETUP_DEBUG:
-      StateManager.setOperationState(SetupAndDebug.runSetupDebug(StateManager.getCurrentOperationalState()));
-      time_at_turning = millis();
-      break;
+    switch(state) {
+      case MOWING:
+        doMowing();
+        break;
+      case LAUNCHING:
+        doLaunching();
+        break;
+      case DOCKING:
+        doDocking();
+        break;
+      case LOOKING_FOR_BWF:
+        doLookForBWF();
+        break;
+      case CHARGING:
+        doCharging();
+        break;
+      case SETUP_DEBUG:
+        setAndSetupMode(SetupAndDebug.runSetupDebug(ModeManager.getCurrentMode()));
+        time_at_turning = millis();
+        break;
+    }
+    checkIfFatalTimeout();
+
   }
 
   if(millis()-lastDisplayUpdate > 5000) {
@@ -699,12 +707,17 @@ void loop() {
     //Mower.stop();
     Display.update();
     //Mower.runForwardOverTime(SLOWSPEED, MOWING_SPEED, ACCELERATION_DURATION);
-    // Serial.print("\nprintTime : ");
+    Serial.print("Looptime: ");
+    Serial.println(filteredLooptime);
+    filteredLooptime = 0;
     // Serial.println(millis() -olastemp);
     lastDisplayUpdate = millis();
+
   }
+  if (filteredLooptime == 0) {
+    filteredLooptime = millis() - loopStart;
+  } else {
 
-  checkIfFatalTimeout();
-
-
+    filteredLooptime = filteredLooptime * 0.95 + 0.05 * (millis() - loopStart);
+  }
 }

@@ -10,7 +10,7 @@
 
 #include "SetupDebug.h"
 #include "Definition.h"
-#include "StateManager.h"
+#include "ModeManager.h"
 
 SETUPDEBUG::SETUPDEBUG(CONTROLLER* controller, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt) {
   mower = controller;
@@ -28,9 +28,9 @@ void SETUPDEBUG::InitializeDebugMode() {
   printHelp();
 }
 
-OperationStates SETUPDEBUG::runSetupDebug(OperationStates currentOpState){
+CutterModes SETUPDEBUG::runSetupDebug(CutterModes currentOpState){
 
-  if (!Serial.available()) return OperationStates::IDLE;      //Exit early if no data is available
+  if (!Serial.available()) return currentOpState;      //Exit early if no data is available
   char inChar = (char)Serial.read(); // get the new byte:
 
   switch (inChar) {
@@ -102,13 +102,13 @@ OperationStates SETUPDEBUG::runSetupDebug(OperationStates currentOpState){
       break;
     case 'm':
     case 'M':
-      return OperationStates::MOW;
+      return CutterModes::MOW_REPEAT;
     case 'o':
     case 'O':
-      return OperationStates::MOW_ONCE;
+      return CutterModes::MOW_ONCE;
     case 'c':
     case 'C':
-      return OperationStates::CHARGE;
+      return CutterModes::CHARGE_ONLY;
 
     case 'a':
     case 'A':
@@ -118,7 +118,7 @@ OperationStates SETUPDEBUG::runSetupDebug(OperationStates currentOpState){
 
   inChar = 0;
 
-  return OperationStates::IDLE;
+  return CutterModes::IDLE;
 }
 
 void SETUPDEBUG::printHelpHelp() {

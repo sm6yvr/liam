@@ -27,11 +27,12 @@
 #include "BWFSensor.h"
 #include "MotionSensor.h"
 #include "Battery.h"
+#include "ModeManager.h"
 
 class MYDISPLAY : public Print
 {
   public:
-    MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state);
+    MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state, MODEMANAGER* modeManager_);
     virtual boolean initialize();
     void update();
 
@@ -48,6 +49,7 @@ class MYDISPLAY : public Print
     BWFSENSOR* sensor;
     MOTIONSENSOR* compass;
     int* moverstate;
+    MODEMANAGER* modeManager;
 };
 
 #endif /* _MYDISPLAY_H_ */

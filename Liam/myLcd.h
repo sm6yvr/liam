@@ -18,6 +18,7 @@
 #include "MotionSensor.h"
 #include "Battery.h"
 #include "MyDisplay.h"
+#include "ModeManager.h"
 
 #ifndef _MYLCD_H_
 #define _MYLCD_H_
@@ -25,7 +26,7 @@
 class myLCD : public MYDISPLAY
 {
   public:
-    myLCD(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state);
+    myLCD(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state, MODEMANAGER* modeManager_);
 
     boolean initialize();
 

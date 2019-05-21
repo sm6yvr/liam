@@ -12,6 +12,7 @@
 #include <Wire.h>  // For LCD
 #include "MyDisplay.h"
 #include "Controller.h"
+#include "ModeManager.h"
 
 #ifndef _ERROR_H_
 #define _ERROR_H_
@@ -26,15 +27,18 @@
 
 class ERROR {
   public:
-    ERROR(MYDISPLAY* display_, int led_pin_, CONTROLLER* Mower_);
+    ERROR(MYDISPLAY* display_, int led_pin_, CONTROLLER* Mower_, MODEMANAGER* stateManager_);
 
     String errorMessage(int error_number);
     void flag(int error_number);
+    void show();
 
   private:
     MYDISPLAY* display;
     CONTROLLER* Mower;
+    MODEMANAGER* stateManager;
     int led_pin;
+    int error;
 
 };
 

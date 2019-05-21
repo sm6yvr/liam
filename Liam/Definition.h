@@ -79,12 +79,13 @@ const int LOOKING_FOR_BWF = 4;
 const int SETUP_DEBUG = 5;
 
 
-enum OperationStates {
-  MOW = 0,
-  CHARGE = 1,
+enum CutterModes {
+  MOW_REPEAT = 0,
+  CHARGE_ONLY = 1,
   IDLE = 2,
   BOOTING = 3,
   MOW_ONCE = 4,
+  HOLD_FOR_ERROR = 5
 };
 
 

@@ -24,7 +24,7 @@ class SETUPDEBUG {
   public:
     SETUPDEBUG(CONTROLLER* mower, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, BATTERY* batt);
     void InitializeDebugMode();
-    OperationStates runSetupDebug(OperationStates currentOpState);
+    CutterModes runSetupDebug(CutterModes currentOpState);
     void printHelpHelp();
   private:
     CONTROLLER* mower;

@@ -24,7 +24,7 @@
 
 #include "MyDisplay.h"
 
-MYDISPLAY::MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state)
+MYDISPLAY::MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state, MODEMANAGER* modeManager_)
 {
   Battery = batt;
   leftMotor = left;
@@ -33,6 +33,7 @@ MYDISPLAY::MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERM
   sensor = bwf;
   compass = comp;
   moverstate = state;
+  modeManager = modeManager_;
 }
 
 boolean MYDISPLAY::initialize()
@@ -77,7 +78,8 @@ void MYDISPLAY::update()
   print("\n");
   // Row 4: State and Error data
   print(F("State: "));
-
+  print(modeManager->getModeText(modeManager->getCurrentMode()));
+  print("/");
   switch (*moverstate)
   {
     case MOWING:

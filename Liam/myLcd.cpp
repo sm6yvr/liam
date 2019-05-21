@@ -11,8 +11,8 @@
 #include "myLcd.h"
 #include <LiquidCrystal_I2C.h>
 
-myLCD::myLCD(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state) :
-  MYDISPLAY(batt, left, right, cut, bwf, comp, state),
+myLCD::myLCD(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state, MODEMANAGER* modeManager_) :
+  MYDISPLAY(batt, left, right, cut, bwf, comp, state, modeManager_),
   // You may need to modify this line to work with your LCD controller
   lcd(LCD_I2C_ADDRESS, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE)
 {

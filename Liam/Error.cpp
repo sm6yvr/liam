@@ -10,9 +10,10 @@
 
 #include "Error.h"
 
-ERROR::ERROR(MYDISPLAY* display_, int led_pin_, CONTROLLER* Mower_) {
+ERROR::ERROR(MYDISPLAY* display_, int led_pin_, CONTROLLER* Mower_, MODEMANAGER* stateManager_) {
   display = display_;
   led_pin = led_pin_;
+  stateManager = stateManager_;
   Mower = Mower_;
 }
 
@@ -41,7 +42,7 @@ String ERROR::errorMessage(int error_number)
 }
 
 void ERROR::flag(int error_number) {
-
+  stateManager->setMode(CutterModes::HOLD_FOR_ERROR);
   Mower->stopCutter();
   Mower->stop();
   display->clear();
@@ -49,15 +50,17 @@ void ERROR::flag(int error_number) {
   display->print("ERROR!");
   display->print("\n");
   display->print(errorMessage(error_number));
+  error = error_number;
 
-  while(true)
-  {
-    for(int i = 0; i < error_number; i++) {
-      digitalWrite(led_pin, HIGH);
-      delay(500);
-      digitalWrite(led_pin, LOW);
-      delay(500);
-    }
-    delay(2000);
+
+}
+
+void ERROR::show(){
+  for(int i = 0; i < error; i++) {
+    digitalWrite(led_pin, HIGH);
+    delay(500);
+    digitalWrite(led_pin, LOW);
+    delay(500);
   }
+  delay(2000);
 }
