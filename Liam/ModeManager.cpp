@@ -24,8 +24,8 @@ bool MODEMANAGER::setMode(CutterModes opState) {
 
 
   currentOpState = opState;
-  Serial.print(F("New state: "));
-  Serial.println(currentOpState);
+  Serial.print(F("New mode: "));
+  Serial.println(getModeText(currentOpState));
 
   switch (currentOpState) {
     case CutterModes::MOW_REPEAT:

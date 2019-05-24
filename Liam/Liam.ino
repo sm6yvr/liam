@@ -70,6 +70,7 @@ int state;
 long time_at_turning = millis();
 int extraTurnAngle = 0;
 float filteredLooptime;
+int slowLoopCount = 0;
 long olastemp = millis();
 // Set up all the defaults (check the Definition.h file for all default values)
 DEFINITION Defaults;
@@ -560,28 +561,15 @@ void doCharging() {
 
 void handleOperationalState() {
   if (ModeManager.getCurrentMode() == CutterModes::BOOTING) {
-    Serial.println("Selecting intital operation state.");
+    Serial.println("Selecting intital mode.");
     Mower.stopCutter();
     Mower.stop();
     delay(1000); // Wait for collecting sensor data
 
-    Serial.print("Sensor 0: In=");
-    Serial.print(Sensor.isInside(0));
-    Serial.print(" Out=");
-    Serial.print(Sensor.isOutside(0));
-    Serial.print(" OutOfBounds=");
-    Serial.println(Sensor.isOutOfBounds(0));
-
-    Serial.print("Sensor 1: In=");
-    Serial.print(Sensor.isInside(1));
-    Serial.print(" Out=");
-    Serial.print(Sensor.isOutside(1));
-    Serial.print(" OutOfBounds=");
-    Serial.println(Sensor.isOutOfBounds(1));
 
     if (Battery.isBeingCharged()) {
-        Serial.println("Mower is beeing charged, selecting state CHARGE");
-        setAndSetupMode(CHARGE_ONLY);
+        Serial.println("Mower is beeing charged, selecting mode MOW and state CHARGE");
+        setAndSetupMode(MOW_REPEAT);
         Serial.println(F("Send D to enter setup and debug mode"));
         return;
     }
@@ -601,7 +589,6 @@ void handleOperationalState() {
 
     Serial.println("MOW_REPEAT selected.");
     Serial.println(F("Send D to enter setup and debug mode"));
-
 
     setAndSetupMode(MOW_REPEAT);
     return;
@@ -659,7 +646,6 @@ void loop() {
   static long lastDisplayUpdate = 0;
   static int previousState;
 
-  long looptime = millis();
 
   handleOperationalState();
   if (ModeManager.getCurrentMode() == CutterModes:: HOLD_FOR_ERROR){
@@ -707,8 +693,11 @@ void loop() {
     //Mower.stop();
     Display.update();
     //Mower.runForwardOverTime(SLOWSPEED, MOWING_SPEED, ACCELERATION_DURATION);
-    Serial.print("Looptime: ");
-    Serial.println(filteredLooptime);
+    Serial.print("Avg looptime: ");
+    Serial.print(filteredLooptime);
+    Serial.print(" Slow loop count: ");
+    Serial.print(slowLoopCount);
+    slowLoopCount = 0;
     filteredLooptime = 0;
     // Serial.println(millis() -olastemp);
     lastDisplayUpdate = millis();
@@ -717,7 +706,8 @@ void loop() {
   if (filteredLooptime == 0) {
     filteredLooptime = millis() - loopStart;
   } else {
-
-    filteredLooptime = filteredLooptime * 0.95 + 0.05 * (millis() - loopStart);
+    int loopTime = millis() - loopStart;
+    if (loopTime > 500) slowLoopCount++;
+    filteredLooptime = filteredLooptime * 0.95 + 0.05 * loopTime;
   }
 }
