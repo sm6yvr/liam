@@ -474,7 +474,6 @@ void doDocking() {
     }
     time_at_turning = millis();
     return;
-
 #endif
   }
 
@@ -559,6 +558,15 @@ void doCharging() {
   }
 }
 
+void printModeHint(){
+  Serial.println(F(""));
+  Serial.println(F("Select mode by sending:"));
+  Serial.println(F("M: Mow. Repeat mowing and charging forever."));
+  Serial.println(F("O: Mow once. Mow one cycle and then stay in the dock."));
+  Serial.println(F("C: Charge. Go to the dock and stay there."));
+  Serial.println(F("D: Debug/Idle: Stop and wait for futher instructions."));
+}
+
 void handleOperationalState() {
   if (ModeManager.getCurrentMode() == CutterModes::BOOTING) {
     Serial.println("Selecting intital mode.");
@@ -570,20 +578,21 @@ void handleOperationalState() {
     if (Battery.isBeingCharged()) {
         Serial.println("Mower is beeing charged, selecting mode MOW and state CHARGE");
         setAndSetupMode(MOW_REPEAT);
-        Serial.println(F("Send D to enter setup and debug mode"));
+        printModeHint();
         return;
     }
 
     if (Sensor.isOutOfBounds(0) && !Sensor.isOutOfBounds(1)) {
       Serial.println("Mower is placed on BWF, selecting state CHARGE");
       setAndSetupMode(CHARGE_ONLY);
-      Serial.println(F("Send D to enter setup and debug mode"));
+      printModeHint();
       return;
     }
 
     if (Sensor.isOutOfBounds(0) && Sensor.isOutOfBounds(1)) {
       Serial.println("Mower is placed on out of bounds, selecting state IDLE");
       setAndSetupMode(IDLE);
+      printModeHint;
       return;
     }
 
@@ -591,11 +600,11 @@ void handleOperationalState() {
     Serial.println(F("Send D to enter setup and debug mode"));
 
     setAndSetupMode(MOW_REPEAT);
+    printModeHint();
     return;
   }
 
   if (ModeManager.tryChangeMode()) {
-
     setupForMode(ModeManager.getCurrentMode());
   }
 }
@@ -696,7 +705,7 @@ void loop() {
     Serial.print("Avg looptime: ");
     Serial.print(filteredLooptime);
     Serial.print(" Slow loop count: ");
-    Serial.print(slowLoopCount);
+    Serial.println(slowLoopCount);
     slowLoopCount = 0;
     filteredLooptime = 0;
     // Serial.println(millis() -olastemp);
