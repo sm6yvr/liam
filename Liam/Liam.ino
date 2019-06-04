@@ -79,8 +79,8 @@ DEFINITION Defaults;
 CUTTERMOTOR CutterMotor(CUTTER_MOTOR_TYPE, CUTTER_PWM_PIN, CUTTER_CURRENT_PIN);
 
 // Wheelmotors
-WHEELMOTOR rightMotor(WHEEL_MOTOR_A_PWM_PIN, WHEEL_MOTOR_A_DIRECTION_PIN, WHEEL_MOTOR_A_CURRENT_PIN, WHEELMOTOR_SMOOTHNESS);
-WHEELMOTOR leftMotor(WHEEL_MOTOR_B_PWM_PIN, WHEEL_MOTOR_B_DIRECTION_PIN, WHEEL_MOTOR_B_CURRENT_PIN, WHEELMOTOR_SMOOTHNESS);
+WHEELMOTOR rightMotor(WHEEL_MOTOR_A_PWM_PIN, WHEEL_MOTOR_A_DIRECTION_PIN, WHEEL_MOTOR_A_CURRENT_PIN, WHEELMOTOR_SMOOTHNESS, WHEEL_MOTOR_ADJUST_FACTOR_RIGHT);
+WHEELMOTOR leftMotor(WHEEL_MOTOR_B_PWM_PIN, WHEEL_MOTOR_B_DIRECTION_PIN, WHEEL_MOTOR_B_CURRENT_PIN, WHEELMOTOR_SMOOTHNESS, WHEEL_MOTOR_ADJUST_FACTOR_LEFT);
 
 // Battery
 BATTERY Battery(BATTERY_TYPE, BAT_PIN, DOCK_PIN);
@@ -343,10 +343,11 @@ void doMowing() {
 // ***************** LAUNCHING ***************************************
 void doLaunching() {
   // Back out of charger, turn and start mowing
-  Mower.runBackward(FULLSPEED);
-  delay(5000);
-  Mower.stop();
-  Mower.turnRight(90);
+  if(Mower.runBackwardOverTime(SLOWSPEED, FULLSPEED, ACCELERATION_DURATION)) {
+    delay(LAUNCH_TIME - ACCELERATION_DURATION);
+    Mower.stop();
+    Mower.turnRight(90);
+  }
   //randomTurn(false);
 
   Battery.resetVoltage();
@@ -382,7 +383,7 @@ void doDocking() {
   if (Mower.hasBumped()) {
     Mower.stop();
     Mower.runBackward(DOCKING_WHEEL_HIGH_SPEED);
-    delay(800);
+    delay(700);
     Mower.stop();
     if (Mower.hasBumped()) {
       Error.flag(ERROR_BUMPERSTUCK);
@@ -421,7 +422,7 @@ void doDocking() {
 
     // Go back a bit and try again
     Mower.runBackward(DOCKING_WHEEL_HIGH_SPEED);
-    delay(1300);
+    delay(700);
     Mower.stop();
     Mower.runForward(DOCKING_WHEEL_HIGH_SPEED);
 
@@ -468,6 +469,9 @@ void doDocking() {
       Mower.runBackward(FULLSPEED);
       delay(700);
       Mower.stop();
+      if (Sensor.isOutOfBounds(1)){
+        Error.flag(ERROR_OUTSIDE);
+      }
     }
     else {
       Mower.runForward(FULLSPEED);

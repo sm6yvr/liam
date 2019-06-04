@@ -11,11 +11,12 @@
 #include "Wheelmotor.h"
 
 
-WHEELMOTOR::WHEELMOTOR(int pwmpin_, int dirpin_, int loadpin_, int smoothness) {
+WHEELMOTOR::WHEELMOTOR(int pwmpin_, int dirpin_, int loadpin_, int smoothness, float adjustFactor_) {
   pwmpin = pwmpin_;
   dirpin = dirpin_;
   loadpin = loadpin_;
   smoothness_delay = smoothness;
+  adjustFactor = adjustFactor_;
 }
 
 
@@ -63,7 +64,7 @@ int WHEELMOTOR::setSpeedOverTime(int targetSpeed, int actionTime) {
     //Serial.println(newValue);
 
 
-		analogWrite(pwmpin, 2.55*abs(newValue));
+		analogWrite(pwmpin, 2.55*abs(newValue)*adjustFactor);
 		digitalWrite(dirpin, (newValue > 0));
 
 		ot_currentValue = newValue;

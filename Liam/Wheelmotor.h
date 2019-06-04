@@ -18,7 +18,7 @@
 
 class WHEELMOTOR {
   public:
-    WHEELMOTOR(int pwmpin_, int dirpin_, int loadpin_, int smoothness);
+    WHEELMOTOR(int pwmpin_, int dirpin_, int loadpin_, int smoothness, float adjustFactor_);
 
     void setSpeed(int setspeed);
     int getSpeed();
@@ -41,6 +41,7 @@ class WHEELMOTOR {
     int speed;
     int overload_level;
     int smoothness_delay;
+    float adjustFactor;
 
     unsigned long ot_setTime = 0;
 	int ot_currentTargetValue = 0;

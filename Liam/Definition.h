@@ -66,6 +66,9 @@ const int NUMBER_OF_SENSORS = 2;  // Number of BWF sensors can be 1-4 depending 
 #define WHEELMOTOR_OVERLOAD   130
 #define WHEELMOTOR_SMOOTHNESS 300
 
+#define WHEEL_MOTOR_ADJUST_FACTOR_RIGHT 1
+#define WHEEL_MOTOR_ADJUST_FACTOR_LEFT 1
+
 // CUTTER
 #define CUTTER_OVERLOAD     100
 #define CUTTER_SPINUP_TIME 4000
@@ -153,6 +156,7 @@ enum CutterModes {
 #define SLOWSPEED           30
 #define CUTTERSPEED           100
 #define ACCELERATION_DURATION 400
+#define LAUNCH_TIME 5000
 
 
 
@@ -173,7 +177,6 @@ enum CutterModes {
 #define DOCKING_TURN_AFTER_TIMEOUT 30               //Angle to turn inside-timeout has occurred and the mower is about to start looking for BWF.
 #define DOCKING_BACK_WHEN_INNER_SENSOR_IS_OUT false //Should the mower back up a little when the inner sensor is out of bounds. Otherwise just turn right on the spot.
 #define DOCKING_TURN_ANGLE_AFTER_BACK_UP 40         //If backing up when the inner sensor is out of bounds, then this is the turn angle to try to line up with the BWF.
-
 
 class DEFINITION {
   public:

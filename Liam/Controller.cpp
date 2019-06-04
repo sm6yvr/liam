@@ -192,11 +192,11 @@ void CONTROLLER::runForwardOverTime(int minSpeed, int targetSpeed, int time) {
 }
 
 
-void CONTROLLER::runBackwardOverTime(int minSpeed, int targetSpeed, int time) {
+bool CONTROLLER::runBackwardOverTime(int minSpeed, int targetSpeed, int time) {
   if (leftMotor->getSpeed() > -minSpeed) leftMotor->setSpeed(-minSpeed);
   if (rightMotor->getSpeed() > -minSpeed) rightMotor->setSpeed(-minSpeed);
-  leftMotor->setSpeedOverTime(default_dir_fwd*-targetSpeed, time);
-  rightMotor->setSpeedOverTime(default_dir_fwd*-targetSpeed, time);
+  return ((leftMotor->setSpeedOverTime(default_dir_fwd*-targetSpeed, time) == 0) &
+  (rightMotor->setSpeedOverTime(default_dir_fwd*-targetSpeed, time) == 0));
 }
 
 void CONTROLLER::runForward(int speed) {
