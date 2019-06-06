@@ -256,7 +256,7 @@ void checkIfLifted() {
     delay(2000);
     if(Mower.isLifted())
       Error.flag(ERROR_LIFT);
-    Mower.randomTurn(false);
+    randomTurn(false);
   }
 #endif
 }

@@ -38,7 +38,7 @@ void DEFINITION::definePinsInputOutput() {
   pinMode(CUTTER_PWM_PIN, OUTPUT);
   pinMode(BWF_SELECT_B_PIN, OUTPUT);
 
-#if __Bumper__
+#ifdef __Bumper__
   pinMode(BUMPER, INPUT);
   digitalWrite(BUMPER, HIGH);
 #else
@@ -46,7 +46,7 @@ void DEFINITION::definePinsInputOutput() {
   digitalWrite(BUMPER, LOW);
 #endif
 
-#if __Lift_Sensor__
+#ifdef __Lift_Sensor__
   pinMode(LIFT_SENSOR_PIN, INPUT);
   digitalWrite(LIFT_SENSOR_PIN, HIGH);
 #else
