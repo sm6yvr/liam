@@ -327,8 +327,14 @@ void doMowing() {
   // Avoid obstacles
   Mower.turnIfObstacle();
 
-  // When mowing, the cutter should be on and we should be going forward
-  Mower.startCutter();
+  if (millis() % 10000 < 50) {
+    Mower.restartCutter();
+    //Serial.println("Restart cutter");
+  } else {
+    Mower.startCutter();
+
+  }
+
   Mower.runForwardOverTime(SLOWSPEED, MOWING_SPEED, ACCELERATION_DURATION);
 
   // Adjust the speed of the mower to the grass thickness

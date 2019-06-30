@@ -171,6 +171,13 @@ void CONTROLLER::stopCutter() {
   cutter->setSpeedOverTime(0, 0);
 }
 
+void CONTROLLER::restartCutter(){
+  int currentSpeed = cutter->getSpeed();
+  cutter->setSpeedOverTime(0, 0);
+  delay(100);
+  cutter->setSpeed(currentSpeed);
+}
+
 void CONTROLLER::storeState() {
   leftMotorSpeed = leftMotor->getSpeed();
   rightMotorSpeed = rightMotor->getSpeed();

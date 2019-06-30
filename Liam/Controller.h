@@ -43,6 +43,7 @@ class CONTROLLER {
 
     void startCutter();
     void stopCutter();
+    void restartCutter();
 
     void setDefaultDirectionForward(bool fwd);
 
