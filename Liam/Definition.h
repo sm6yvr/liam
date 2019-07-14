@@ -56,7 +56,7 @@ const int NUMBER_OF_SENSORS = 2;  // Number of BWF sensors can be 1-4 depending 
 #define BWF_SELECT_B_PIN                7
 #define BUMPER                          8
 #define LIFT_SENSOR_PIN                 9
-#define LED_PIN                         13
+#define LED_PIN                         10
 #define WHEEL_MOTOR_B_PWM_PIN           11
 #define WHEEL_MOTOR_A_DIRECTION_PIN     12
 #define WHEEL_MOTOR_B_DIRECTION_PIN     13
