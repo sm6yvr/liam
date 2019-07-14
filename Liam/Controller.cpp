@@ -301,10 +301,10 @@ boolean CONTROLLER::wheelsAreOverloaded() {
 	int counter = 0;
 	while (millis() - now <= 200)
 	{
-    l_load = leftMotor->isAtTargetSpeed() ? leftMotor->getLoad() : 0;
+    l_load = leftMotor->isAtTargetSpeed() && (leftMotor->getSpeed() > 80) ? leftMotor->getLoad() : 0;
     l_load_limit = WHEELMOTOR_OVERLOAD;// *max(60, abs(leftMotor->getSpeed())) / MOWING_SPEED;
 
-		r_load = rightMotor->isAtTargetSpeed() ? rightMotor->getLoad() : 0;
+		r_load = rightMotor->isAtTargetSpeed() && (rightMotor->getSpeed() > 80)? rightMotor->getLoad() : 0;
     r_load_limit = WHEELMOTOR_OVERLOAD;// *max(60, abs(rightMotor->getSpeed())) / MOWING_SPEED;
 		/*counter++;*/
 		delay(1);
