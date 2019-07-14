@@ -172,10 +172,10 @@ void CONTROLLER::stopCutter() {
 }
 
 void CONTROLLER::restartCutter(){
-  int currentSpeed = cutter->getSpeed();
-  cutter->setSpeedOverTime(0, 0);
+  //int currentSpeed = cutter->getSpeed();
+  cutter->setSpeed(0);
   delay(100);
-  cutter->setSpeed(currentSpeed);
+  cutter->setSpeed(CUTTERSPEED);
 }
 
 void CONTROLLER::storeState() {
