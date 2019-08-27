@@ -61,7 +61,7 @@
 #include "Sens9150.h"
 #include "Definition.h"
 #include "ModeManager.h"
-
+#include "MowerState.h"
 #include "SetupDebug.h"
 
 
@@ -72,6 +72,15 @@ int extraTurnAngle = 0;
 float filteredLooptime;
 int slowLoopCount = 0;
 long olastemp = millis();
+
+// Global variables for receiving json on serial SerialApi
+const byte numChars = 150;
+char receivedChars[numChars];
+boolean newData = false;
+char data;
+DeserializationError deserializError;
+StaticJsonDocument<200> doc;
+
 // Set up all the defaults (check the Definition.h file for all default values)
 DEFINITION Defaults;
 
@@ -121,6 +130,7 @@ CLOCK Clock(GO_OUT_TIME, GO_HOME_TIME);
 // Error handler
 ERROR Error(&Display, LED_PIN, &Mower, &ModeManager);
 
+MOWERSTATE MowerState(&Battery, &ModeManager, &Sensor, &leftMotor, &rightMotor, &Error);
 // This function calls the sensor object every time there is a new signal pulse on pin2
 void updateBWF() {
   Sensor.readSensor();
@@ -163,7 +173,7 @@ void doInterruptThings() {
 // ****************** SETUP ******************************************
 void setup() {
   // Fast communication on the serial port for all terminal messages
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   // Configure all the pins for input or output
   Defaults.definePinsInputOutput();
@@ -195,6 +205,8 @@ void setup() {
   Serial.println(F("----------------"));
   delay(5000);
   Display.clear();
+
+  // serializeJson(MowerState.toJson(), Serial);
 }
 
 // TODO: This should probably be in Controller
@@ -643,6 +655,41 @@ void setupForMode(CutterModes newMode) {
   state = SETUP_DEBUG;
 }
 
+void receiveJsonFromSerial() {
+    static boolean recvInProgress = false;
+    static byte ndx = 1;
+    char startMarker = '{';
+    char endMarker = '}';
+    char rc;
+ 
+    while (Serial.available() > 0 && newData == false) {
+        rc = Serial.read();
+        if (recvInProgress == true) {
+            if (rc != endMarker) {
+
+                receivedChars[ndx] = rc;
+                ndx++;
+                if (ndx >= numChars) {
+                    ndx = numChars - 1;
+                }
+            }
+            else {
+                receivedChars[ndx] = '}'; // Append end marker
+                ndx++;
+                receivedChars[ndx] = '\0'; // terminate the string
+                recvInProgress = false;
+                ndx = 1;
+                newData = true;
+            }
+        }
+
+        else if (rc == startMarker) {
+            recvInProgress = true;
+            receivedChars[0] = '{';
+        }
+    }
+}
+
 //void awareDelay(int ms) {
 //  unsigned long exitAt = millis() + ms;
 //  int sensor = Sensor.getCurrentSensor();
@@ -659,6 +706,7 @@ void loop() {
   static long lastDisplayUpdate = 0;
   static int previousState;
 
+  
 
   handleOperationalState();
   if (ModeManager.getCurrentMode() == CutterModes:: HOLD_FOR_ERROR){
@@ -701,20 +749,53 @@ void loop() {
 
   }
 
-  if(millis()-lastDisplayUpdate > 5000) {
-    // olastemp = millis();
-    //Mower.stop();
-    Display.update();
-    //Mower.runForwardOverTime(SLOWSPEED, MOWING_SPEED, ACCELERATION_DURATION);
-    Serial.print("Avg looptime: ");
-    Serial.print(filteredLooptime);
-    Serial.print(" Slow loop count: ");
-    Serial.println(slowLoopCount);
+  if(millis()-lastDisplayUpdate > 2000) {
+    receiveJsonFromSerial();
+  
+    if (newData == true) {
+    
+      deserializError = deserializeJson(doc, receivedChars);
+      if (deserializError == DeserializationError::Ok) {
+        char* mode = doc["mode"];
+        //int intMode = mode - '0';
+
+        Serial.print(F("received mode: "));
+        Serial.println(mode);
+/*         Serial.print(F("received intMode: "));
+        Serial.println(intMode);
+ */      
+        CutterModes newMode = CutterModes::MOW_ONCE;
+        if (strcmp(mode, "0") == 0) {
+          Serial.println(F("C:0"));
+          newMode = CutterModes::MOW_REPEAT;
+        } else if (strcmp(mode, "1") == 0) {
+          Serial.println(F("C:1"));
+          newMode = CutterModes::CHARGE_ONLY;
+        } else if (mode == '2') {
+          Serial.println(F("C:2"));
+          newMode = CutterModes::IDLE;
+        } else if (mode == '3') {
+          Serial.println(F("C:3"));
+          newMode = CutterModes::BOOTING;
+        } else if (mode == '4') {
+          Serial.println(F("C:4"));
+          newMode = CutterModes::MOW_ONCE;
+        } 
+        setAndSetupMode(newMode);
+      } else {
+        Serial.println(F("{'debug':'Failed to parse json}"));
+      }
+    newData = false;
+  }
+
+    MowerState.setLooptime(filteredLooptime);
     slowLoopCount = 0;
     filteredLooptime = 0;
-    // Serial.println(millis() -olastemp);
     lastDisplayUpdate = millis();
-
+    
+    serializeJson(MowerState.toJson(), Serial);
+    Serial.println("");
+    
   }
   if (filteredLooptime == 0) {
     filteredLooptime = millis() - loopStart;

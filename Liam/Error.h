@@ -32,6 +32,7 @@ class ERROR {
     String errorMessage(int error_number);
     void flag(int error_number);
     void show();
+    String getErrorMsg();
 
   private:
     MYDISPLAY* display;

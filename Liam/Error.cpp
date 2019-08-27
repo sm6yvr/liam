@@ -64,3 +64,7 @@ void ERROR::show(){
   }
   delay(2000);
 }
+
+String ERROR::getErrorMsg(){
+  return errorMessage(error);
+}
