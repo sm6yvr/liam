@@ -11,3 +11,4 @@ Liam/LocalDefinition.h
 node_modules/*
 .browse.VC.db
 yarn.lock
+.vscode
