@@ -173,7 +173,7 @@ void doInterruptThings() {
 // ****************** SETUP ******************************************
 void setup() {
   // Fast communication on the serial port for all terminal messages
-  Serial.begin(9600);
+  Serial.begin(SERIAL_SPEED);
 
   // Configure all the pins for input or output
   Defaults.definePinsInputOutput();
@@ -620,9 +620,9 @@ void handleOperationalState() {
     return;
   }
 
-  if (ModeManager.tryChangeMode()) {
-    setupForMode(ModeManager.getCurrentMode());
-  }
+  // if (ModeManager.tryChangeMode()) {
+  //   setupForMode(ModeManager.getCurrentMode());
+  // }
 }
 
 void setAndSetupMode(CutterModes newMode){
@@ -771,13 +771,13 @@ void loop() {
         } else if (strcmp(mode, "1") == 0) {
           Serial.println(F("C:1"));
           newMode = CutterModes::CHARGE_ONLY;
-        } else if (mode == '2') {
+        } else if (strcmp(mode, "2") == 0) {
           Serial.println(F("C:2"));
           newMode = CutterModes::IDLE;
-        } else if (mode == '3') {
+        } else if (strcmp(mode, "3") == 0) {
           Serial.println(F("C:3"));
           newMode = CutterModes::BOOTING;
-        } else if (mode == '4') {
+        } else if (strcmp(mode, "4") == 0) {
           Serial.println(F("C:4"));
           newMode = CutterModes::MOW_ONCE;
         } 

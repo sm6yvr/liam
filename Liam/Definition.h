@@ -92,6 +92,7 @@ enum CutterModes {
 };
 
 
+#define SERIAL_SPEED 115200
 // Turning details
 #define REVERSE_DELAY         2
 #define TURNDELAY           20 //Reduce for smaller turning angle
