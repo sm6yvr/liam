@@ -50,7 +50,7 @@ void MYDISPLAY::update()
 {
   // Row 1: Sensor status
   setCursor(0,0);
-#if __MS9150__ || __MS5883L__ || __ADXL345__ || __MMA7455__
+#if __MS9150__ || __MS5883L__ || __ADXL345__ || __MMA7455__ || __GY86__
   print(F("Comp: "));
   print(compass->getHeading());
 #else
