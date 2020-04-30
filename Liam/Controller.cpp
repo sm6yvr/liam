@@ -316,7 +316,7 @@ void CONTROLLER::turnIfObstacle() {
 #if defined __Bumper__
     hasBumped() ||
 #endif
-#if defined __MS9150__ || defined __MS5883L__ || defined __ADXL345__
+#if defined __MS9150__ || defined __MS5883L__ || defined __ADXL345__ || __GY86__
     hasTilted() ||
 #endif
     wheelsAreOverloaded()) {
