@@ -278,6 +278,10 @@ void SETUPDEBUG::printStatus() {
   Serial.print(leftMotor->getLoad());
   Serial.print(F(" RMot: "));
   Serial.print(rightMotor->getLoad());
+  
+  Serial.print(F(" CutMot: ")); // Load information for cut motor.
+  Serial.print(cutter->getLoad());
+ 
   Serial.print(F(" BAT: "));
   battery->resetVoltage();
   Serial.print(battery->getVoltage());
@@ -297,17 +301,11 @@ void SETUPDEBUG::getMotionValues() {
 #endif
 
   int tilt_angle = compass->getTiltAngle();
-
-  int x = compass->getXAngle();
-  int y = compass->getYAngle();
-  int z = compass->getZAngle();
-
-  Serial.print(F("Z = "));
-  Serial.println(z);
-  Serial.print(F("Y = "));
-  Serial.println(y);
-  Serial.print(F("X = "));
-  Serial.println(x);
+  
+ int heading = compass->getHeading();  //Printout compass heading value.
+  Serial.print(F("Heading = "));
+  Serial.println(heading);
+ 
 
   Serial.print(F("Tilt angle = "));
   Serial.println(tilt_angle);
