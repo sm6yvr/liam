@@ -94,6 +94,8 @@ MS5883L Compass;
 MS9150 Compass;
 #elif defined __ADXL345__
 MS9150 Compass;
+#elif defined __GY86__
+GY86 Compass;
 #else
 MOTIONSENSOR Compass;
 #endif
