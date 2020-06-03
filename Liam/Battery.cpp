@@ -79,7 +79,7 @@ bool BATTERY::isFullyCharged() {
 
 // Get battery voltage in mV (filtered through running average)
 int BATTERY::getVoltage() {
-  return averageVoltage;
+  return averageVoltage/100;
 }
 
 void BATTERY::resetVoltage() {

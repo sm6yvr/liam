@@ -125,7 +125,7 @@ int WHEELMOTOR::getLoad() {
 
 
 bool WHEELMOTOR::isOverloaded() {
-  return (getLoad() > overload_level);
+  return (getLoad() < overload_level);
 }
 
 void WHEELMOTOR::setOverloadLevel(int level) {

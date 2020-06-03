@@ -43,10 +43,12 @@
 
 #include <Servo.h>
 #include <Wire.h>
-#include <LiquidCrystal_I2C.h>
+//#include <LiquidCrystal_I2C.h>
+#include <LiquidCrystal_PCF8574.h>
+
 #include <I2Cdev.h>
 #include "RTClib.h"
-#include "HMC5883L.h"
+//#include "HMC5883L.h"
 #include "MPU9150.h"
 #include "Battery.h"
 #include "Wheelmotor.h"
@@ -66,6 +68,22 @@
 #endif
 
 // Global variables
+  unsigned long lastUpdate;           //Move to global variables
+  int interval = 1000;                //Move to global variables
+  struct MOWERDATA {          // move to global variable
+    String activity;          //Current activity, I.E mowing, looking for signal, charging etc.
+    int SoC;                  //Current battery level
+    String SoCString;         //Current battery level in string format 
+    float batMin;             //Minimum defined level of battery. Depleted level.
+    float batMax;             //Maximum defined level of battery. SoC when to consider charging complete
+    int leftBWF;              //Status of left BWF. IN (1) or OUT (0).
+    int rightBWF;             //Status of left BWF. IN (1) or OUT (0).
+    int leftRearBWF;          //Status of rear BWF. IN (1) or OUT (0).
+    int rightRearBWF;         //Status of rear BWF. IN (1) or OUT (0).
+    bool insideCable;         //Variable used to check if the mower is inside or outside the BWF or cannot see it.
+  } mowerData;                //Object name. Fetch or edit data by calling for instance mowerData.SoC = batteryLevel;
+
+
 int state;
 long time_at_turning = millis();
 int extraTurnAngle = 0;
@@ -175,10 +193,14 @@ void setup() {
 
   setupInterrupt();
 
+  Serial.println("Init display (setup)");
+
   // Start up the display
   Display.initialize();
 
   // Reset the battery voltage reading
+  Serial.println("Reset batt reading");
+
   Battery.resetVoltage();
   Compass.initialize();
 
@@ -571,6 +593,11 @@ void loop() {
   static int previousState;
 
   long looptime = millis();
+
+  if ((millis() - lastUpdate) > interval) {   //Place this if statement to void loop
+    mowerData.activity = state;
+    connectedLiam();
+  }
 
   if((state = SetupAndDebug.tryEnterSetupDebugMode(state)) == SETUP_DEBUG)
     return;

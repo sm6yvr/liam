@@ -14,8 +14,8 @@
 #define _BATTERY_H_
 
 // Voltages should be specified in mV (12.56 V = 12560 mV)
-#define LIIONFULL       12560
-#define LIIONEMPTY      10400
+#define LIIONFULL       29400
+#define LIIONEMPTY      21000
 #define NIMHFULL        14500
 #define NIMHEMPTY       11500
 #define LEADACIDFULL    13300
@@ -25,7 +25,7 @@
 #define FILTER        40
 
 // Voltage divider factor x10 to avoid decimal ( 4 = 40)
-#define VOLTDIVATOR   42
+#define VOLTDIVATOR   63.9
 
 
 class BATTERY {

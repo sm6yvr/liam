@@ -37,11 +37,21 @@ MYDISPLAY::MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERM
 
 boolean MYDISPLAY::initialize()
 {
+    Serial.println("MYDISPLAY::initialize");
+
+    Wire.begin();
+  Wire.beginTransmission(0x27);
+  int error = Wire.endTransmission();
+  if (error == 0) {
+    Serial.println("LCD found.");
+
+  } else {
+    Serial.println("LCD not found.");
+  } 
   for (int i=0; i<3; i++)
     blink();
 
   clear();
-
   return true;
 }
 
@@ -50,6 +60,7 @@ void MYDISPLAY::update()
 {
   // Row 1: Sensor status
   setCursor(0,0);
+/*
 #if __MS9150__ || __MS5883L__ || __ADXL345__ || __MMA7455__
   print(F("Comp: "));
   print(compass->getHeading());
@@ -64,19 +75,23 @@ void MYDISPLAY::update()
 
   print("\n");
   // Row 2: Motor load
-  print(F("LMoto: "));
+  print(F("LM:"));
   print(leftMotor->getLoad());
-  print(F(" RMoto: "));
+  print(F("RM:"));
   print(rightMotor->getLoad());
-
-  print("\n");
+*/
+  //print("\n");
   // Row 3: Battery
-  print(F("Battery: "));
+  print(F("B:"));
   print(Battery->getVoltage());
-
-  print("\n");
+  print(F(" IO:"));
+  print(!sensor->isOutOfBounds(0));
+  print(!sensor->isOutOfBounds(1));
+  
+  //print("\n");
   // Row 4: State and Error data
-  print(F("State: "));
+  //print(F("State: "));
+  setCursor(0,1);
 
   switch (*moverstate)
   {
@@ -99,6 +114,10 @@ void MYDISPLAY::update()
       print(F("IDLE"));
       break;
   }
+  print(F("L:"));
+  print(leftMotor->getLoad());
+  print(F("R:"));
+  print(rightMotor->getLoad());
 }
 
 

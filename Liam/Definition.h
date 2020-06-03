@@ -125,8 +125,8 @@ const int IDLE = 6;
 
 // Do you have a Display? If so, uncomment one of these lines
 //#define __OLED__
-//#define __LCD__
-#define LCD_I2C_ADDRESS 0x3F
+#define __LCD__
+#define LCD_I2C_ADDRESS 0x20
 
 // Do you have a clock? If so, uncomment the line below
 //#define __RTC_CLOCK__
