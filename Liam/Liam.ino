@@ -1,6 +1,8 @@
 /*
  Liam - DIY Robot Lawn Mower
 
+Using an Arduin Uno
+
  ======================
   Licensed under GPLv3
  ======================
@@ -179,8 +181,9 @@ void doInterruptThings() {
 
 // ****************** SETUP ******************************************
 void setup() {
-  // Fast communication on the serial port for all terminal messages
-  Serial.begin(115200);
+  // Slow communication on the serial port for all terminal messages.
+  // Slowed down for better stability. 
+  Serial.begin(9600);
 
   // Configure all the pins for input or output
   Defaults.definePinsInputOutput();

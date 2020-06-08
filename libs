@@ -1,0 +1,68 @@
+
+Alla lib finns i en zip-fil vid Releases
+https://github.com/sm6yvr/liam/releases
+
+Ladda ned, packa upp i din Libraries-katalog
+Starta om Arduino Ide
+
+Notes:
+Om du använder hög spänning går det inte att koppla B+ direkt till Vin på Morgankortet. Spänningen blir för hög och Arduinon låser sig. Använd istället en extern spänningsdelare. 
+
+Kod för BWF-sändaren finns på https://github.com/sm6yvr/liam-bwf-transmitter
+
+Om du använder en annan Arduino med annat fysiskt format kan komponenterna kopplas enligt 
+https://github.com/sm6yvr/liam/blob/ad2837044d24d5d12273218eec95ffc1665642cf/Liam/Definition.h#L43
+
+Analog pins, An:
+#define WHEEL_MOTOR_A_CURRENT_PIN       0
+#define WHEEL_MOTOR_B_CURRENT_PIN       1
+#define BAT_PIN                         2 Vin voltage
+#define CUTTER_CURRENT_PIN              3 Cutter power via resistor on top shield
+#define I2C_SDA_PIN                     4
+#define I2C_SDL_PIN                     5
+
+Digital pins, Dn:
+#define RX_PIN                          0
+#define TX_PIN                          1
+#define BWF_SENSOR_INPUT_PIN            2
+#define WHEEL_MOTOR_A_PWM_PIN           3
+#define BWF_SELECT_A_PIN                4
+#define DOCK_PIN                        5
+#define CUTTER_PWM_PIN                  6 Cutter PWM
+#define BWF_SELECT_B_PIN                7
+#define BUMPER                          8
+#define LIFT_SENSOR_PIN                 9
+#define LED_PIN                         13
+#define WHEEL_MOTOR_B_PWM_PIN           11
+#define WHEEL_MOTOR_A_DIRECTION_PIN     12
+#define WHEEL_MOTOR_B_DIRECTION_PIN     13
+
+Från Microcutter.se
+PINOUT ARDUINO:
+
+D0   = RX
+D1   = TX
+D2   = BWF
+D3   = PWM hjulmotor A
+D4   = Select A
+D5   = Dock/Charge
+D6   = PWM cutter
+D7   = Select B
+D8   = Brake hjulmotor B
+D9   = Brake hjulmotor A
+D10 = LED indikering
+D11 = PWM hjulmotor B
+D12 = Dir hjulmotor A
+D13 = Dir hjulmotor B
+
+A0 = Hjulmotor last A
+A1 = Hjulmotor last B
+A2 = Vin (Batterispänning)
+A3 = Cutter load
+A4 = I2C
+A5 = I2C
+
+
+För att öka strömtåligheten kan två L298-moduler användas som motorstyrning istället för en motorshield. Dessa bryggkopplas då enligt https://www.ardumower.de/index.php/en/motor-driver.
+För att bli kompatibelt med Liam-koden måste en liten adapter byggas. [Fixa schema + tabell över inkopplingen]
+
