@@ -88,6 +88,7 @@ const int IDLE = 6;
 // Max expected time between turns
 #define TURN_INTERVAL         60000
 
+/*
 #pragma region BWF
 
 // BWF Detection method (true = always, false = only at wire)
@@ -101,7 +102,7 @@ const int IDLE = 6;
 #define OUTSIDE_BWF         5
 
 #pragma endregion BWF
-
+*/
 
 #define MAJOR_VERSION           5
 #define MINOR_VERSION_1         4

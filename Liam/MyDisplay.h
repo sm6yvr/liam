@@ -24,14 +24,14 @@
 #include "Definition.h"
 #include "Wheelmotor.h"
 #include "CutterMotor.h"
-#include "BWFSensor.h"
 #include "MotionSensor.h"
 #include "Battery.h"
 
 class MYDISPLAY : public Print
 {
   public:
-    MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state);
+    //MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state);
+    MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, MOTIONSENSOR* comp, int* state);
     virtual boolean initialize();
     void update();
 
@@ -45,7 +45,6 @@ class MYDISPLAY : public Print
     WHEELMOTOR* leftMotor;
     WHEELMOTOR* rightMotor;
     CUTTERMOTOR* cutter;
-    BWFSENSOR* sensor;
     MOTIONSENSOR* compass;
     int* moverstate;
 };

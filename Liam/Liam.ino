@@ -1,7 +1,7 @@
 /*
  Liam - DIY Robot Lawn Mower
 
-Using an Arduin Uno
+Using an Arduino Uno
 
  ======================
   Licensed under GPLv3
@@ -55,13 +55,14 @@ Using an Arduin Uno
 #include "Battery.h"
 #include "Wheelmotor.h"
 #include "CutterMotor.h"
-#include "BWFSensor.h"
+//#include "BWFSensor.h"
 #include "Controller.h"
 #include "myLcd.h"
 #include "Clock.h"
 #include "Error.h"
 #include "MotionSensor.h"
-#include "Sens5883L.h"
+// Compass
+//#include "Sens5883L.h"
 #include "Sens9150.h"
 #include "Definition.h"
 
@@ -78,10 +79,12 @@ Using an Arduin Uno
     String SoCString;         //Current battery level in string format 
     float batMin;             //Minimum defined level of battery. Depleted level.
     float batMax;             //Maximum defined level of battery. SoC when to consider charging complete
+    /*
     int leftBWF;              //Status of left BWF. IN (1) or OUT (0).
     int rightBWF;             //Status of left BWF. IN (1) or OUT (0).
     int leftRearBWF;          //Status of rear BWF. IN (1) or OUT (0).
     int rightRearBWF;         //Status of rear BWF. IN (1) or OUT (0).
+    */
     bool insideCable;         //Variable used to check if the mower is inside or outside the BWF or cannot see it.
   } mowerData;                //Object name. Fetch or edit data by calling for instance mowerData.SoC = batteryLevel;
 
@@ -105,7 +108,7 @@ WHEELMOTOR leftMotor(WHEEL_MOTOR_B_PWM_PIN, WHEEL_MOTOR_B_DIRECTION_PIN, WHEEL_M
 BATTERY Battery(BATTERY_TYPE, BAT_PIN, DOCK_PIN);
 
 // BWF Sensors
-BWFSENSOR Sensor(BWF_SELECT_B_PIN, BWF_SELECT_A_PIN);
+//BWFSENSOR Sensor(BWF_SELECT_B_PIN, BWF_SELECT_A_PIN);
 
 // Compass
 #if defined __MS5883L__
@@ -119,15 +122,18 @@ MOTIONSENSOR Compass;
 #endif
 
 // Controller (pass adresses to the motors and sensors for the controller to operate on)
-CONTROLLER Mower(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass);
+//CONTROLLER Mower(&leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass);
+CONTROLLER Mower(&leftMotor, &rightMotor, &CutterMotor, &Compass);
 
 #ifdef DEBUG_ENABLED
-SETUPDEBUG SetupAndDebug(&Mower, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery);
+//SETUPDEBUG SetupAndDebug(&Mower, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &Battery);
+SETUPDEBUG SetupAndDebug(&Mower, &leftMotor, &rightMotor, &CutterMotor, &Compass, &Battery);
 #endif
 
 // Display
 #if defined __LCD__
-myLCD Display(&Battery, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &state);
+//myLCD Display(&Battery, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &state);
+myLCD Display(&Battery, &leftMotor, &rightMotor, &CutterMotor, &Compass, &state);
 #else
 MYDISPLAY Display(&Battery, &leftMotor, &rightMotor, &CutterMotor, &Sensor, &Compass, &state);
 #endif
@@ -141,9 +147,11 @@ CLOCK Clock(GO_OUT_TIME, GO_HOME_TIME);
 ERROR Error(&Display, LED_PIN, &Mower);
 
 // This function calls the sensor object every time there is a new signal pulse on pin2
+/*
 void updateBWF() {
   Sensor.readSensor();
 }
+*/
 
 void setupInterrupt() {
 
@@ -176,7 +184,7 @@ SIGNAL(TIMER0_COMPA_vect)
 
 
 void doInterruptThings() {
-  Sensor.selectNext();
+  //Sensor.selectNext();
 }
 
 // ****************** SETUP ******************************************
@@ -205,11 +213,10 @@ void setup() {
   Serial.println("Reset batt reading");
 
   Battery.resetVoltage();
-  Compass.initialize();
 
   // Run the updateBWF function every time there is a pulse on digital pin2
-  attachInterrupt(0, updateBWF, RISING);
-  Sensor.setup();
+//  attachInterrupt(0, updateBWF, RISING);
+//  Sensor.setup();
   // Print version information for five seconds before starting
   Display.clear();
   Display.print(F("--- LIAM ---\n"));
@@ -303,16 +310,18 @@ void doMowing() {
   // Check if any sensor is outside
   for(int i = 0; i < 2; i++) {
     // If sensor is inside, don't do anything
-    if(!Sensor.isOutOfBounds(i))
-      continue;
+//    if(!Sensor.isOutOfBounds(i))
+//      continue;
     // ... otherwise ...
 
     Mower.stop();
 
+    int err;
+/*
     int err = Mower.GoBackwardUntilInside(i);
       if(err)
         Error.flag(err);
-
+*/
 
       if (millis()- time_at_turning < 3000) {
         extraTurnAngle = extraTurnAngle + 10;
@@ -387,12 +396,12 @@ void doDocking() {
   static bool currentSideIsOutSide = true;
 
   Mower.stopCutter();
-
+/*
   if (currentSideIsOutSide && !Sensor.isOutOfBounds(0)) {
     currentSideIsOutSide = Sensor.isOutOfBounds(0);
     time_at_turning = millis();
   }
-
+*/
   // Make regular turns to avoid getting stuck on things
   if ((millis() - time_at_turning) > TURN_INTERVAL) {
     Mower.stop();
@@ -417,8 +426,8 @@ void doDocking() {
   }
 #endif
 
-  if(Sensor.isOutOfBounds(0))
-    lastOutside = millis();
+//  if(Sensor.isOutOfBounds(0))
+//    lastOutside = millis();
 
   if(Battery.isBeingCharged()) {
     Mower.stop();
@@ -463,6 +472,7 @@ void doDocking() {
   }
 
   // Check regularly if right sensor is outside
+/*
   if (Sensor.isOutOfBounds(1)) {
 
 #ifdef DOCKING_BACK_WHEN_INNER_SENSOR_IS_OUT
@@ -494,8 +504,9 @@ void doDocking() {
 
 #endif
   }
-
+*/
   // If left sensor has been inside fence for a long time
+  /*
   if(millis() - lastOutside > DOCKING_INSIDE_TIMEOUT) {
     Mower.stop();
     Mower.turnLeft(DOCKING_TURN_AFTER_TIMEOUT);
@@ -504,10 +515,10 @@ void doDocking() {
     time_at_turning = millis();
     return;
   }
-
+  */
   // Track the BWF by compensating the wheel motor speeds
   //Sensor.select(0);
-  Mower.adjustMotorSpeeds(Sensor.isOutOfBounds(0));
+//  Mower.adjustMotorSpeeds(Sensor.isOutOfBounds(0));
 }
 void doWait()
 {
@@ -516,8 +527,8 @@ void doWait()
   {
     // only here for debug purpose
     // If sensor is inside, don't do anything
-    if (!Sensor.isOutOfBounds(i))
-      continue;
+//    if (!Sensor.isOutOfBounds(i))
+//      continue;
     // ... otherwise ...
 
     sprintf(buf,"Sensor %i is outside",i);
@@ -530,12 +541,13 @@ void doLookForBWF() {
   Mower.stopCutter();
 
   // If sensor is outside, then the BWF has been found
+/*
   if(Sensor.isOutOfBounds(0) || Sensor.isOutOfBounds(1)) {
     state = DOCKING;
     time_at_turning = millis();
     return;
   }
-
+*/
   // Make regular turns to avoid getting stuck on things
   if ((millis() - time_at_turning) > TURN_INTERVAL) {
     randomTurn(true);
@@ -574,10 +586,12 @@ void doCharging() {
 #endif
     ) {
     // Don't launch if no BWF signal is present
+/*
     if(Sensor.isInside(0) || Sensor.isOutside(0)) {
       state = LAUNCHING;
       return;
     }
+    */
   }
 }
 

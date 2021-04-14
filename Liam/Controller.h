@@ -11,7 +11,7 @@
 #include <Arduino.h>
 #include "Wheelmotor.h"
 #include "CutterMotor.h"
-#include "BWFSensor.h"
+//#include "BWFSensor.h"
 #include "MotionSensor.h"
 #include "Definition.h"
 #include "MMA_7455.h"
@@ -21,7 +21,8 @@
 
 class CONTROLLER {
   public:
-    CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp);
+//    CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp);
+    CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, MOTIONSENSOR* comp);
 
     //
     int turnToReleaseLeft(int degrees);
@@ -72,10 +73,10 @@ class CONTROLLER {
     WHEELMOTOR* leftMotor;
     WHEELMOTOR* rightMotor;
     CUTTERMOTOR* cutter;
-    BWFSENSOR* sensor;
+    //BWFSENSOR* sensor;
     MOTIONSENSOR* compass;
     const static int turnDelay = TURNDELAY;
-    const static int mowerTimeout = TIMEOUT;
+    //const static int mowerTimeout = TIMEOUT;
 
     int default_dir_fwd;
     int balance;

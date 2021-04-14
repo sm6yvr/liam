@@ -24,13 +24,14 @@
 
 #include "MyDisplay.h"
 
-MYDISPLAY::MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state)
+//MYDISPLAY::MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state)
+MYDISPLAY::MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, MOTIONSENSOR* comp, int* state)
 {
   Battery = batt;
   leftMotor = left;
   rightMotor = right;
   cutter = cut;
-  sensor = bwf;
+//  sensor = bwf;
   compass = comp;
   moverstate = state;
 }
@@ -84,10 +85,10 @@ void MYDISPLAY::update()
   // Row 3: Battery
   print(F("B:"));
   print(Battery->getVoltage());
-  print(F(" IO:"));
+/*  print(F(" IO:"));
   print(!sensor->isOutOfBounds(0));
   print(!sensor->isOutOfBounds(1));
-  
+*/  
   //print("\n");
   // Row 4: State and Error data
   //print(F("State: "));

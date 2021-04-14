@@ -1,6 +1,7 @@
 Liam/LocalDefinition.h
 .DS_Store
 .vscode/*
+*/.vscode
 */.vs/
 */__vm/
 */Debug/

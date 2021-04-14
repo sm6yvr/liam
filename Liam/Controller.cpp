@@ -16,17 +16,18 @@ extern long time_at_turning;
 
 /** Specific constructor.
 */
-CONTROLLER::CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp) {
+//CONTROLLER::CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp) {
+CONTROLLER::CONTROLLER(WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, MOTIONSENSOR* comp) {  
   leftMotor = left;
   rightMotor = right;
   cutter = cut;
-  sensor = bwf;
+//  sensor = bwf;
   compass = comp;
   default_dir_fwd = 1;
   balance = 0;
 }
 
-
+/*
 boolean CONTROLLER::allSensorsAreOutside() {
 
   for(int i=0; i<NUMBER_OF_SENSORS; i++) {
@@ -45,17 +46,19 @@ int CONTROLLER::getFirstSensorOutOfBounds() {
 
 	return -1;
 }
+*/
 
 int CONTROLLER::turnToReleaseLeft(int angle) {
   //return 0; //Hack to get it running until we figure out what the heck is going on
 
   for (int i=0; i<180; i++) {
+  /*
     if (!sensor->isOutOfBounds(0) && !sensor->isOutOfBounds(1))
     {
       turnLeft(angle);
       return 0;       // OK
     }
-
+  */
     if (wheelsAreOverloaded())
       return ERROR_OVERLOAD;         // Overloaded
 
@@ -71,12 +74,13 @@ int CONTROLLER::turnToReleaseRight(int angle) {
 
   for (int i=0; i<(180) / 10; i++) {
 
+/*
     if (!sensor->isOutOfBounds(0) && !sensor->isOutOfBounds(1))
     {
         turnRight(angle);
         return 0;       // OK
     }
-
+*/
     if (wheelsAreOverloaded())
       return ERROR_OVERLOAD;         // Overloaded
 
@@ -115,7 +119,7 @@ int CONTROLLER::turnLeft(int angle) {
 int CONTROLLER::waitWhileChecking(int duration) {
 
   delay(200);   // Let any current spikes settle
-
+/*
   for (int i=0; i<duration/30; i++) {
     // check for problems
     if(leftMotor->isOverloaded())
@@ -124,16 +128,16 @@ int CONTROLLER::waitWhileChecking(int duration) {
       return 2;
     if (sensor->isTimedOut())
       return 3;
-
     delay(turnDelay);
   }
+*/
 
   // Successful delay
   return 0;
 }
 
 
-
+/*
 int CONTROLLER::waitWhileInside(int duration) {
 
   for (int k=0; k<duration/(NUMBER_OF_SENSORS*200); k++)
@@ -145,7 +149,9 @@ int CONTROLLER::waitWhileInside(int duration) {
   // Successful delay
   return 0;
 }
+*/
 
+/*
 int CONTROLLER::GoBackwardUntilInside (int sensorNumber) {
 #ifdef GO_BACKWARD_UNTIL_INSIDE
   int counter=MAX_GO_BACKWARD_TIME;
@@ -163,6 +169,8 @@ int CONTROLLER::GoBackwardUntilInside (int sensorNumber) {
 #endif
   return 0;
 }
+*/
+
 void CONTROLLER::startCutter() {
   cutter->setSpeedOverTime(CUTTERSPEED, CUTTER_SPINUP_TIME);
 }

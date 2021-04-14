@@ -15,7 +15,7 @@
 #include "Definition.h"
 #include "Wheelmotor.h"
 #include "CutterMotor.h"
-#include "BWFSensor.h"
+//#include "BWFSensor.h"
 #include "MotionSensor.h"
 #include "Battery.h"
 #include "MyDisplay.h"
@@ -26,7 +26,7 @@
 class myLCD : public MYDISPLAY
 {
   public:
-    myLCD(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp, int* state);
+    myLCD(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, MOTIONSENSOR* comp, int* state);
     //myLCD(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERMOTOR* cut, BWFSENSOR* bwf, MOTIONSENSOR* comp);
     boolean initialize();
 
