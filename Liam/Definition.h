@@ -13,7 +13,7 @@
  named `LocalDefinition.h` which is not tracked by git.
 */
 
-#include <Arduino.h>
+//#include <Arduino.h>
 #include "Wheelmotor.h"
 #include "CutterMotor.h"
 #include "Battery.h"
@@ -80,6 +80,7 @@ const int CHARGING = 3;
 const int LOOKING_FOR_BWF = 4;
 const int SETUP_DEBUG = 5;
 const int IDLE = 6;
+const int NEED_CHARGE = 7;
 
 
 // Turning details

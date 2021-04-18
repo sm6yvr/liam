@@ -45,13 +45,13 @@ Using an Arduino Uno
 
 #include <Servo.h>
 #include <Wire.h>
-//#include <LiquidCrystal_I2C.h>
+#include <LiquidCrystal_I2C.h>
 #include <LiquidCrystal_PCF8574.h>
 
-#include <I2Cdev.h>
+//#include <I2Cdev.h>
 #include "RTClib.h"
 //#include "HMC5883L.h"
-#include "MPU9150.h"
+//#include "MPU9150.h"
 #include "Battery.h"
 #include "Wheelmotor.h"
 #include "CutterMotor.h"
@@ -90,7 +90,9 @@ Using an Arduino Uno
 
 
 int state;
+char buffer[30];
 long time_at_turning = millis();
+long time_now = millis();
 int extraTurnAngle = 0;
 
 long olastemp = millis();
@@ -151,8 +153,7 @@ ERROR Error(&Display, LED_PIN, &Mower);
 void updateBWF() {
   Sensor.readSensor();
 }
-*/
-
+*//*
 void setupInterrupt() {
 
   // Timer0 is already used for millis() - we'll just interrupt somewhere
@@ -186,12 +187,14 @@ SIGNAL(TIMER0_COMPA_vect)
 void doInterruptThings() {
   //Sensor.selectNext();
 }
+*/
 
 // ****************** SETUP ******************************************
 void setup() {
   // Slow communication on the serial port for all terminal messages.
   // Slowed down for better stability. 
   Serial.begin(9600);
+  Serial.println("Welcome to Liam PH edition");
 
   // Configure all the pins for input or output
   Defaults.definePinsInputOutput();
@@ -202,12 +205,13 @@ void setup() {
   // Set default levels (defined in Definition.h) for your mower
   Defaults.setDefaultLevels(&Battery, &leftMotor, &rightMotor, &CutterMotor);
 
-  setupInterrupt();
+  //setupInterrupt();
 
-  Serial.println("Init display (setup)");
-
+#if defined __LCD__
   // Start up the display
+  Serial.println("Init display (setup)");
   Display.initialize();
+#endif
 
   // Reset the battery voltage reading
   Serial.println("Reset batt reading");
@@ -297,7 +301,7 @@ void checkIfLifted() {
 // ***************** MOWING ******************************************
 void doMowing() {
   if (Battery.mustCharge()) {
-    state = LOOKING_FOR_BWF;
+    state = NEED_CHARGE;
     return;
   }
 
@@ -307,6 +311,7 @@ void doMowing() {
     return;
   }
 
+/*
   // Check if any sensor is outside
   for(int i = 0; i < 2; i++) {
     // If sensor is inside, don't do anything
@@ -322,7 +327,7 @@ void doMowing() {
       if(err)
         Error.flag(err);
 */
-
+/*
       if (millis()- time_at_turning < 3000) {
         extraTurnAngle = extraTurnAngle + 10;
       }
@@ -357,7 +362,7 @@ void doMowing() {
     Compass.setNewTargetHeading();
     return; //Stale sensor data after previous delays
   }
-
+*/
   // Avoid obstacles
   Mower.turnIfObstacle();
 
@@ -369,9 +374,9 @@ void doMowing() {
   Mower.compensateSpeedToCutterLoad();
 
   // Adjust the speed of the mower to the compass heading
-  Compass.updateHeading();
+  //Compass.updateHeading();
 
-  Mower.compensateSpeedToCompassHeading();
+  //Mower.compensateSpeedToCompassHeading();
 }
 
 // ***************** LAUNCHING ***************************************
@@ -522,6 +527,7 @@ void doDocking() {
 }
 void doWait()
 {
+  /*
   char buf[30];
   for (int i = 0; i < 2; i++)
   {
@@ -534,9 +540,18 @@ void doWait()
     sprintf(buf,"Sensor %i is outside",i);
     Serial.println(buf);
   }
+  */
   delay(500);
 }
 
+void waitForCharge() {
+  Mower.stop();
+  Mower.stopCutter();
+  Serial.println("Please recharge me!");
+
+}
+
+/*
 void doLookForBWF() {
   Mower.stopCutter();
 
@@ -548,6 +563,7 @@ void doLookForBWF() {
     return;
   }
 */
+/*
   // Make regular turns to avoid getting stuck on things
   if ((millis() - time_at_turning) > TURN_INTERVAL) {
     randomTurn(true);
@@ -557,8 +573,10 @@ void doLookForBWF() {
   Mower.runForwardOverTime(SLOWSPEED, MOWING_SPEED, ACCELERATION_DURATION);
   Mower.turnIfObstacle();
 }
+*/
 
 // ***************** CHARGING ****************************************
+/*
 void doCharging() {
   static long lastContact = 0;
   Mower.stop();
@@ -580,6 +598,7 @@ void doCharging() {
     lastContact = millis();
   }
 
+/*
   if(Battery.isFullyCharged()
 #if defined __RTC__CLOCK__
     && Clock.timeToCut()
@@ -592,8 +611,10 @@ void doCharging() {
       return;
     }
     */
+/*    
   }
 }
+*/
 
 //void awareDelay(int ms) {
 //  unsigned long exitAt = millis() + ms;
@@ -644,15 +665,18 @@ void loop() {
     case DOCKING:
       doDocking();
       break;
-    case LOOKING_FOR_BWF:
-      doLookForBWF();
-      break;
+    /*
     case CHARGING:
       doCharging();
       break;
-      case IDLE:
+    */
+    case IDLE:
       doWait();
       break;
+    case NEED_CHARGE:
+      waitForCharge();
+      break;
+
   }
 
   if(millis()-lastDisplayUpdate > 5000) {

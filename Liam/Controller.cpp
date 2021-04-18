@@ -13,6 +13,7 @@
 #include "Error.h"
 
 extern long time_at_turning;
+extern char buffer[30];
 
 /** Specific constructor.
 */
@@ -273,6 +274,13 @@ void CONTROLLER::stop() {
 }
 
 int CONTROLLER::compensateSpeedToCutterLoad() {
+  int lms = abs(leftMotor->getSpeed());
+  int rms = abs(rightMotor->getSpeed());
+  int cutterMotorSpeed = cutter->getSpeed();
+  int cutterMotorLoad = cutter->getLoad();
+  
+  sprintf(buffer, "Status: %d", cutterMotorLoad);
+  Serial.println(buffer);
 
 }
 

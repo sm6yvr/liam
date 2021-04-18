@@ -38,9 +38,12 @@ MYDISPLAY::MYDISPLAY(BATTERY* batt, WHEELMOTOR* left, WHEELMOTOR* right, CUTTERM
 
 boolean MYDISPLAY::initialize()
 {
-    Serial.println("MYDISPLAY::initialize");
+  Serial.println("MYDISPLAY::initialize");
 
-    Wire.begin();
+  Wire.begin();
+  #if defined(WIRE_HAS_TIMEOUT)
+    Wire.setWireTimeout(3000 /* us */, true /* reset_on_timeout */);
+  #endif
   Wire.beginTransmission(0x27);
   int error = Wire.endTransmission();
   if (error == 0) {
@@ -59,6 +62,11 @@ boolean MYDISPLAY::initialize()
 // Do NOT override. Implement basic commands here
 void MYDISPLAY::update()
 {
+  Serial.println("Status update");
+  char buffer[30];
+  sprintf(buffer, "Status: %d", moverstate);
+  Serial.println(buffer);
+
   // Row 1: Sensor status
   setCursor(0,0);
 /*

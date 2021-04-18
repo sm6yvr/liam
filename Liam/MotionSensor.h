@@ -12,7 +12,7 @@
 #define _MOTIONSENSOR_H_
 
 #include <Wire.h> // For Compass
-#include <I2Cdev.h>
+//#include <I2Cdev.h>
 #include "Definition.h"
 
 class MOTIONSENSOR
